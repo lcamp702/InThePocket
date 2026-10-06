@@ -1,8 +1,7 @@
 #include "raster.h"
-#include <OSBIND.H>
 
-const UINT16 COLS = 640;
-const UINT16 ROWS = 400;
+#define COLS 640
+#define ROWS 400
 
 /*----- Function: clear_screen -----
 
@@ -13,29 +12,35 @@ const UINT16 ROWS = 400;
  OUTPUT: None
 
 */
-void clear_screen(UINT32 *base) {
-       int longWords = (COLS * ROWS) >> 5;
-       for(int i =0; i < longWords; i++)
-              *(base+i)=0x0;
-}
+void clear_screen(UINT32 *base)
+{
+    int l = (COLS * ROWS) >> 5;
+    int i;
 
+    for (i = 0; i < l; i++)
+        *(base + i) = 0;
+}
 
 /*----- Function: clear_region -----
 
  PURPOSE: Clear a region of the screen. The section is specified by the coordinates of the top left corner, and the height and width of the region.
 
  INPUT: Address(UINT32*): to the start of the screen
-        Position(row,col): the coordinates of the top left pixel of the region
-        Length: the lenth (number of rows) in pixels of the region
-        Width: the width (number of columns) in pixels of the region
+       Position(row,col): the coordinates of the top left pixel of the region
+       Length: the length (number of rows) in pixels of the region
+       Width: the width (number of columns) in pixels of the region
 
  OUTPUT: None
 
 */
-void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width) {
 
+void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
+{
+    int i = 1;           /* Memory bit index to start at */
+    int l_base = i >> 5; /* Memory longword position to start at */
+    UINT32 mask = 0xFFFF >> (i & (31));
+    *(base + l_base) &= mask;
 }
-
 
 /*----- Function: plot_pixel -----
 
@@ -47,8 +52,9 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width) {
  OUTPUT: None
 
 */
-void plot_pixel(UINT8 *base, int row, int col);
-
+void plot_pixel(UINT8 *base, int row, int col)
+{
+}
 
 /*----- Function: plot_horizontal_line -----
 
@@ -60,8 +66,9 @@ void plot_pixel(UINT8 *base, int row, int col);
 
  OUTPUT: None
 */
-void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length);
-
+void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
+{
+}
 
 /*----- Function: plot_vertical_line -----
 
@@ -73,8 +80,9 @@ void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length);
 
  OUTPUT: None
 */
-void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length);
-
+void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
+{
+}
 
 /*----- Function: plot_line -----
 
@@ -86,8 +94,9 @@ void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length);
 
  OUTPUT: None
 */
-void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col);
-
+void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col)
+{
+}
 
 /*----- Function: plot_rectangle -----
 
@@ -100,8 +109,9 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 
  OUTPUT: None
 */
-void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width);
-
+void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
+{
+}
 
 /*----- Function: plot_square -----
 
@@ -113,8 +123,9 @@ void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 
  OUTPUT: None
 */
-void plot_square(UINT32 *base, int row, int col, UINT16 side);
-
+void plot_square(UINT32 *base, int row, int col, UINT16 side)
+{
+}
 
 /*----- Function: plot_triangle -----
 
@@ -133,8 +144,9 @@ void plot_square(UINT32 *base, int row, int col, UINT16 side);
 
  OUTPUT: None
 */
-void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 height, UINT8 direction);
-
+void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 height, UINT8 direction)
+{
+}
 
 /*----- Function: plot_8bit_bitmap -----
 
@@ -146,8 +158,9 @@ void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 
 
  OUTPUT: None
 */
-void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height);
-
+void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height)
+{
+}
 
 /*----- Function: plot_16bit_bitmap -----
 
@@ -159,8 +172,9 @@ void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16
 
  OUTPUT: None
 */
-void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height);
-
+void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height)
+{
+}
 
 /*----- Function: plot_32bit_bitmap -----
 
@@ -172,8 +186,9 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 
  OUTPUT: None
 */
-void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UINT16 height);
-
+void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UINT16 height)
+{
+}
 
 /*----- Function: plot_character -----
 
@@ -185,8 +200,9 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 
  OUTPUT: None
 */
-void plot_character(UINT8 *base, int row, int col, char ch);
-
+void plot_character(UINT8 *base, int row, int col, char ch)
+{
+}
 
 /*----- Function: plot_string -----
 
@@ -198,4 +214,6 @@ void plot_character(UINT8 *base, int row, int col, char ch);
 
  OUTPUT: None
 */
-void plot_string(UINT8 *base, int row, int col, char *ch);
+void plot_string(UINT8 *base, int row, int col, char *ch)
+{
+}

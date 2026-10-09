@@ -1,0 +1,8 @@
+test.tos: tests.o raster.o
+	cc68x -g tests.o raster.o -o test.tos
+
+tests.o: tests.c raster.h
+	cc68x -g -c tests.c
+
+raster.o: raster.c
+	cc68x -g -c raster.c

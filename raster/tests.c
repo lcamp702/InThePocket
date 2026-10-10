@@ -42,7 +42,7 @@ int main()
 
     for (c=0; c<640; c++)
         for (r=0; r<400; r++)
-            if(r%2 == c%2)
+            if((r&1) == (c&1))
                 plot_pixel(b_fb, r, c);
 
     while (i < 6) 

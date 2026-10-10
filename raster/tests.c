@@ -40,6 +40,11 @@ int main()
     sync_wait(35);
     clear_screen(l_fb);
 
+    for (c=0; c<640; c++)
+        for (r=0; r<400; r++)
+            if(r%2 == c%2)
+                plot_pixel(b_fb, r, c);
+
     while (i < 6) 
     {
         sync_wait(10);

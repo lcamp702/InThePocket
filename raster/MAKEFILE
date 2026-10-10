@@ -1,8 +1,11 @@
-test.tos: tests.o raster.o
-	cc68x -g tests.o raster.o -o test.tos
+test.tos: tests.o raster_c.o raster_s.o
+	cc68x -g tests.o raster_c.o raster_s.o -o test.tos
 
 tests.o: tests.c raster.h
 	cc68x -g -c tests.c
 
-raster.o: raster.c
-	cc68x -g -c raster.c
+raster_c.o: raster_c.c
+	cc68x -g -c raster_c.c
+
+raster_s.o: raster_s.s
+	gen -D -L2 raster_s.s

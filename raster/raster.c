@@ -59,6 +59,22 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 */
 void plot_pixel(UINT8 *base, int row, int col)
 {
+       register UINT8 rem;
+       register UINT8 mask;
+
+       if (row >= ROWS)
+              return;
+
+       if (col >= COLS)
+              return;
+       
+       base += row * BYTE_COLS;
+       base += col >> 3;
+
+       rem = col & 7;
+       mask = 1 << (7-rem);
+
+       *base |= mask;
 }
 
 /*----- Function: plot_horizontal_line -----
@@ -225,7 +241,7 @@ void plot_character(UINT8 *base, int row, int col, char ch)
         *(base) |=  letter >> offset;   /* Shift if needed and mask */
 
         if (offset != 0)    /* If the bitmap was shifted, part will be in the next byte. */
-            *(base + 1) |= letter << (8 - offset); 
+            *(base + 1) |= letter << (7 - offset); 
 
         base += BYTE_COLS; /* Next row */
         i++;    /* Increment row count */

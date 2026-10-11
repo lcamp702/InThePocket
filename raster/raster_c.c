@@ -45,6 +45,7 @@ void clear_screen(UINT32 *base)
 
 void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 {
+	
 }
 
 /*----- Function: plot_pixel -----
@@ -91,6 +92,7 @@ void plot_pixel(UINT8 *base, int row, int col)
 */
 void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 {
+	
 }
 
 /*----- Function: plot_vertical_line -----
@@ -105,6 +107,13 @@ void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 */
 void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 {
+	int end_row; /*create target row to end vertical line draw*/
+	end_row=row; /*line will end at starting row + length of line*/
+	end_row+=length;
+	while(row<end_row){
+		plot_pixel(base, row, col); /*draw pixel on current row*/
+		row++; /*increment down the line*/
+	}
 }
 
 /*----- Function: plot_line -----

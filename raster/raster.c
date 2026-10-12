@@ -23,9 +23,9 @@
 /*
 void clear_screen(UINT32 *base)
 {
-    register int i;
+    register int l;
 
-    while (i++ < SCREEN_LONGS)
+    while (l++ < SCREEN_LONGS)
         *(base++) = 0;
 }
 */
@@ -64,11 +64,10 @@ void plot_pixel(UINT8 *base, int row, int col)
        register UINT8 rem;
        register UINT8 mask;
 
-       if (row >= ROWS)
-              return;
-
-       if (col >= COLS)
-              return;
+       if (row < 0) return;
+       if (row >= ROWS) return;
+       if (col < 0) return;
+       if (col >= COLS) return;
        
        base += row * BYTE_COLS;
        base += col >> 3;
@@ -82,7 +81,7 @@ void plot_pixel(UINT8 *base, int row, int col)
 
 /*----- Function: plot_horizontal_line -----
 
- PURPOSE: Plot a hoizontal line on the screen. The horizontal line is specified by the leftmost pixel of the line and the length of the line.
+ PURPOSE: Plot a horizontal line on the screen. The horizontal line is specified by the leftmost pixel of the line and the length of the line.
 
  INPUT: Address(UINT32*): to the start of the screen
         Position(row,col): the coordinates of the leftmost pixel of the horizontal line
@@ -92,12 +91,12 @@ void plot_pixel(UINT8 *base, int row, int col)
 */
 void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 {
-	
+       
 }
 
 /*----- Function: plot_vertical_line -----
 
- PURPOSE: Plot a hoizontal line on the screen. The vertical line is specified by the topmost pixel of the line and the length of the line.
+ PURPOSE: Plot a vertical line on the screen. The vertical line is specified by the topmost pixel of the line and the length of the line.
 
  INPUT: Address(UINT32*): to the start of the screen
         Position(row,col): the coordinates of the topmost pixel of the vertical line
@@ -105,19 +104,61 @@ void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 
  OUTPUT: None
 */
+/*
 void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 {
-	int end_row; /*create target row to end vertical line draw*/
-	end_row=row; /*line will end at starting row + length of line*/
-	end_row+=length;
-	while(row<end_row){
-		plot_pixel(base, row, col); /*draw pixel on current row*/
-		row++; /*increment down the line*/
-	}
+       int end;       
+       ( int lc = LONG_COLS;   In ASM loading this into a register will save clocks for any length >= 1. )
+       int r_offset;
+       int c_offset;
+       int p_offset;
+       UINT32 *cursor;
+       UINT32 mask;
+       int l;
+
+       ( Bound checking )
+       if (row < 0)  return;
+       if (row >= ROWS) return;
+       if (col < 0) return;
+       if (col >= COLS) return;
+       if (length == 0) return;
+
+       ( Clipping )
+       l = length;
+       end = row;
+       end += length;
+       if (end > ROWS) {
+              l = ROWS;
+              l -= row;
+       }  
+
+       ( Calculate offsets )
+       r_offset = row;
+       r_offset *= LONG_COLS;
+
+       c_offset = col;
+       p_offset = c_offset;
+       c_offset >>= 5;
+
+       p_offset &= 31;
+
+       ( Move cursor pointer )
+       cursor = base;
+       cursor += r_offset;
+       cursor += c_offset;
+
+       ( In assembly this will take as long as subtracting to get bit position from the right )
+       mask = 0x80000000;
+       mask >>= p_offset;
+
+       while(--l >= 0) {
+              *(cursor) |= mask;
+              cursor += LONG_COLS;
+       }
 }
+*/
 
 /*----- Function: plot_line -----
-
  PURPOSE: Plots a line on the screen between the two given points.
 
  INPUT: Address(UINT32*): to the start of the screen
@@ -235,7 +276,7 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 void plot_character(UINT8 *base, int row, int col, char ch)
 {
     char *font; /* Base of font table */
-    register int i = 0; /* Loop counter for printing rows */
+    register int l = 0; /* Loop counter for printing rows */
     int offset; /* Column remainder after finding byte*/
 
     linea0();   /* Initialize line-a variables */
@@ -245,9 +286,9 @@ void plot_character(UINT8 *base, int row, int col, char ch)
     base += col >> 3;   /* Move base pointer to the starting byte. */
     offset = col & 7;   /* Column offset amount for the letter bitmap */
 
-    while (i < FONT_HEIGHT)
+    while (l < FONT_HEIGHT)
     {
-        UINT8 letter = *(font + ch + (i << 8)); /* Current bitmap row of the letter being printed */
+        UINT8 letter = *(font + ch + (l << 8)); /* Current bitmap row of the letter being printed */
 
         *(base) |=  letter >> offset;   /* Shift if needed and mask */
 
@@ -255,7 +296,7 @@ void plot_character(UINT8 *base, int row, int col, char ch)
             *(base + 1) |= letter << (7 - offset); 
 
         base += BYTE_COLS; /* Next row */
-        i++;    /* Increment row count */
+        l++;    /* Increment row count */
     }
 }
 

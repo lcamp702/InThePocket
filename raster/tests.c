@@ -58,6 +58,7 @@ int main()
     for (c=0; c<160; c++)
     {
         plot_vertical_line(l_fb, 0, c, 100);
+        Vsync();
     }
     for (c=160; c<320; c++)
     {

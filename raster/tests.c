@@ -58,30 +58,18 @@ int main()
     for (c=0; c<160; c++)
     {
         plot_vertical_line(l_fb, 0, c, 100);
-        Vsync();
-        clear_screen(l_fb);
-        Vsync();
     }
     for (c=160; c<320; c++)
     {
         plot_vertical_line(l_fb, 100, c, 100);
-        Vsync();
-        clear_screen(l_fb);
-        Vsync();
     }
     for (c=320; c<480; c++)
     {
         plot_vertical_line(l_fb, 200, c, 100);
-        Vsync();
-        clear_screen(l_fb);
-        Vsync();
     }
     for (c=480; c<640; c++)
     {
         plot_vertical_line(l_fb, 300, c, 100);
-        Vsync();
-        clear_screen(l_fb);
-        Vsync();
     }
     sync_wait(35);
     clear_screen(l_fb);

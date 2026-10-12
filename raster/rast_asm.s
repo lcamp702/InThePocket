@@ -1,10 +1,15 @@
 ;	Peter Ursem
 ;	purse327@mtroyal.ca
+
+;	Logan Campbell
+;	lcamp702@mtroyal.ca
+
 ;	COMP2659-001
 ;	Steve Kalmar
+
 ;	In the Pocket - Checkpoint 2
 ;	Due: Oct 19, 2026
-;	raster_s.s    
+;	rast_asm.s    
 
 ;	Status:
 ;	  Not Tested:
@@ -26,10 +31,14 @@ BYTE_COLS	equ		80
 cs_base		equ		64	; Offset from SP, not A6
 
 ;	_plot_pixel(UINT8 *base, int row, int col)
-pp_base		equ		20	; 4 + bytes in saved registers
-pp_row		equ		24	; 8 + bytes in saved registers
-pp_col		equ		26	; 10 + bytes in saved registers
+pp_base		equ		20	; 4 + (4*4) bytes in saved registers
+pp_row		equ		24	; 8 + (4*4) bytes in saved registers
+pp_col		equ		26	; 10 + (4*4) bytes in saved registers
 
+; ==== clear_screen(UINT32 *base) ====
+; PURPOSE: Clears the entire screen.
+; INPUT: Address(UINT32*): to the start of the screen
+; OUTPUT: None
 _clear_screen:	; Quick clear code from Raster Lab on D2L
 		movem.l	d0-7/a0-6,-(sp) ; Store existing register values
 
@@ -48,6 +57,11 @@ fill_loop:
 		movem.l		(sp)+,d0-7/a0-6 ; Return existing register values
 		rts
 
+; ==== plot_pixel(UINT8* base, int row, int col);
+; PURPOSE: Plots a single pixel on the screen.
+; INPUT: Address(UINT8*): to the start of the screen
+;       Position(row,col): the location of the pixel to plot
+; OUTPUT: None
 _plot_pixel:
 		movem.l		d0-2/a0,-(sp)
 

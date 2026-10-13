@@ -13,9 +13,26 @@
 
 ;	Status:
 ;	  Not Tested:
+;		plot_line
+;		plot_rectangle
+;		plot_square
+;		plot_triangle
+;		plot_8bit_bitmap
+;		plot_16bit_bitmap
+;		plot_32bit_bitmap
 ;	  Visual Tests:
 ;		clear_screen
+;		clear_region
 ;		plot_pixel
+;		plot_horizontal_line (c)
+;		plot_vertical_line
+;		plot_character (c)
+;		plot_string (c)
+
+;	Credits:
+
+;	[1] D. Salvato, “Assembly tricks for fast bounds checking,” @dansalvato, https://dansalva.to/assembly-tricks-for-fast-bounds-checking/ (accessed Oct. 13, 2026). 
+;	[2] StingRay, "Plotter / Dot Flag," English Amiga Board, https://eab.abime.net/showthread.php?t=50595 (Accessed Oct. 13 2026)
 
 ;	Purpose:
 ;	A raster engine for our game, In the Pocket on the Atari ST.
@@ -76,14 +93,12 @@ _plot_pixel:
 		movem.l		d0-2/a0,-(sp)
 
 		move.w		px_row(sp),d0	; d0.w = Row #
-		; Bound check for row (bhs allows testing d0 < 0 and d0 > ROWS with carry bit)
 		cmp.w		#ROWS,d0
-		bhs.b		pp_end
+		bhs.b		pp_end		; Fast row bound check [1]
 
 		move.w		px_col(sp),d1	; d1.w = Column #
-		; Bound check for col
 		cmp.w		#COLS,d1
-		bhs.b		pp_end
+		bhs.b		pp_end		; Fast col bound check [1]
 
 		; Multiplication broken into powers of two
 		move.w		d0,d2		; d2.w = Row #
@@ -92,12 +107,12 @@ _plot_pixel:
 		add.w		d2,d0		; d0.w = row * 80 = row * BYTE_COLS
 		
 		move.w		d1,d2		; d2.w = Column #
-		not.w		d2		; d2 (lowest 3 bits) = Column bit remainder (col % 8)
+		not.w		d2		; d2 (lowest 3 bits) = Column bit shift (7 - (col % 8))
+						; From the discussion in [2], a faster bitwise alternative.
 						; Works because bset source is mod 8. (https://68k.hax.com/BSET)
 		
 		lsr.w		#3,d1		; d1.w = Col byte offset (col / 8)
 		add.w		d1,d0		; d0.w = Total byte offset
-
 
 		movea.l		px_base(sp),a0	; a0 points to framebuffer base
 		bset.b		d2,0(a0,d0.w)	; Set specific bit in memory
@@ -115,27 +130,25 @@ _plot_vertical_line:
 		movem.l		d0-4/a0,-(sp)
 
 		move.w		vl_row(sp),d0	; d0.w = Row #
-		; Bound check for row
 		cmp.w		#ROWS,d0
-		bhs.b		vl_end
+		bhs.b		vl_end		; Fast row bound check [1]
 
 		move.w		vl_col(sp),d1	; d1.w = Column #
-		; Bound check for col
-		cmp.w		#COLS,d1
-		bhs.b		vl_end
+		cmp.w		#COLS,d1	
+		bhs.b		vl_end		; Fast col bound check [1]
 
-		; Zero length check
 		move.w		vl_len(sp),d3	; d3.w = length
-		ble.b		vl_end
+		ble.b		vl_end		; Zero / negative length check
 				
 		; Row clipping check
 		move.w		d0,d2
 		add.w		d3,d2		; d2.w = end row
 		
 		cmp.w		#ROWS,d2
-		bls.b		vl_fits
-		move.w		#ROWS,d3	; If end row >= rows, clip line length
-		sub.w		d0,d3
+		bls.b		vl_fits		; If end row < rows, line fits, continue
+
+		move.w		#ROWS,d3	
+		sub.w		d0,d3		; If end row >= rows, clip line length
 
 vl_fits:	; Line fits on screen
 		move.w		d1,d2		; d2.w = Column #

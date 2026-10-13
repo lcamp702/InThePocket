@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 
+UINT32 *l_fb;
+UINT8 *b_fb;
+
 void fill_screen(UINT32 *base)
 {
     register int i = 0;
@@ -25,22 +28,20 @@ void disable_cursor()
 	fflush(stdout);
 }
 
-int main()
+void test_clear() 
 {
-    int i = 0;
-    int c = 0;
-    int r = 0;
-    UINT32 *l_fb = Physbase();
-    UINT8 *b_fb = Physbase();
-
-    disable_cursor();
-
     plot_string(b_fb, 0, 0, "Clear Screen:");
     sync_wait(35);
     fill_screen(l_fb);
     sync_wait(35);
     clear_screen(l_fb);
+    sync_wait(70);
+}
 
+void test_pixel() 
+{
+    int c;
+    int r;
     plot_string(b_fb, 0, 0, "Plot Pixel:");
     sync_wait(35);
     clear_screen(l_fb);
@@ -48,9 +49,41 @@ int main()
         for (r=0; r<400; r++)
             if((r&1) == (c&1))
                 plot_pixel(b_fb, r, c);
+    sync_wait(70);
+    clear_screen(l_fb);
+}
+
+void test_h_line()
+{
+    int r;
+    plot_string(b_fb, 0, 0, "Plot Horizontal Line:");
     sync_wait(35);
     clear_screen(l_fb);
+    Vsync();
+    for (r=0; r<100; r++)
+    {
+        plot_horizontal_line(l_fb, r, 0, 160);
+        Vsync();
+    }
+    for (r=100; r<200; r++)
+    {
+        plot_horizontal_line(l_fb, r, 160, 160);
+    }
+    for (r=200; r<300; r++)
+    {
+        plot_horizontal_line(l_fb, r, 320, 160);
+    }
+    for (r=300; r<400; r++)
+    {
+        plot_horizontal_line(l_fb, r, 480, 160);
+    }
+    sync_wait(70);
+    clear_screen(l_fb);
+}
 
+void test_v_line()
+{
+    int c;
     plot_string(b_fb, 0, 0, "Plot Vertical Line:");
     sync_wait(35);
     clear_screen(l_fb);
@@ -72,9 +105,13 @@ int main()
     {
         plot_vertical_line(l_fb, 300, c, 100);
     }
-    sync_wait(35);
+    sync_wait(70);
     clear_screen(l_fb);
+}
 
+void test_char()
+{
+    int i = 0;
     plot_string(b_fb, 0, 0, "Plot Char:");
     sync_wait(35);
     clear_screen(l_fb);
@@ -83,9 +120,13 @@ int main()
         plot_character(b_fb, (i*16), (i*16), Cnecin());
         i++;
     }
-    sync_wait(35);
+    sync_wait(70);
     clear_screen(l_fb);
+}
 
+void test_string()
+{
+    int i;
     plot_string(b_fb, 0, 0, "Plot String:");
     sync_wait(35);
     clear_screen(l_fb);
@@ -95,7 +136,23 @@ int main()
         plot_string(b_fb, row, col, "Hi");
         Vsync();
     }
-    Cnecin();
+    sync_wait(70);
+}
+
+int main()
+{
+    l_fb = Physbase();
+    b_fb = Physbase();
+
+    disable_cursor();
+    clear_screen(l_fb);
+
+    test_clear();    
+    test_pixel();
+    test_h_line();
+    test_v_line();
+    test_char();
+    test_string();
 
     return 0;
 }

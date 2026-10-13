@@ -64,10 +64,8 @@ void plot_pixel(UINT8 *base, int row, int col)
        register UINT8 rem;
        register UINT8 mask;
 
-       if (row < 0) return;
-       if (row >= ROWS) return;
-       if (col < 0) return;
-       if (col >= COLS) return;
+       if (row < 0 || row >= ROWS) return;
+       if (col < 0 || col >= COLS) return;
        
        base += row * BYTE_COLS;
        base += col >> 3;
@@ -91,7 +89,56 @@ void plot_pixel(UINT8 *base, int row, int col)
 */
 void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 {
+       int col_rem;
+       int row_offset;
+       int col_offset;
+       int end_rem;
+       int fills;
+       UINT32 start_mask;
+       UINT32 end_mask;
+
+       /* Bound check */
+       if (row < 0 || row >= ROWS) return;
+       if (col < 0 || col >= COLS) return;
+
+       row_offset = row;
+       row_offset *= LONG_COLS;
+
+       base += row_offset;
+
+       col_offset = col;
+       col_offset >>= 5;
+
+       base += col_offset;
+
+       col_rem = col;
+       col_rem &= 31;
+
+       fills = length;
+       fills -= 31;
+       fills += col_rem;    /* fills = length - start*/
+       end_rem = fills;
+
+       if (fills < 0) return;
+
+       fills >>= 5;          /* fills = # of long fills */
+
+       end_rem &= 31;       /* end_rem = # of pixels to fill at the end*/
+
+       start_mask = -1;
+       start_mask >>= col_rem;
+
+       *(base++) |= start_mask;
+
+       end_mask = -1;
+       end_mask >>= end_rem;
+       end_mask = ~end_mask;
        
+       while (--fills >= 0) {
+              *(base++) = -1;
+       }
+
+       *(base) |= end_mask;
 }
 
 /*----- Function: plot_vertical_line -----

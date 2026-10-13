@@ -48,7 +48,9 @@
 #define WORD_COLS 40
 #define LONG_COLS 20
 #define ROWS 400
-#define LONG_LENGTH 32
+#define BYTE_LEN 8
+#define WORD_LEN 16
+#define LONG_LEN 32
 #define SCREEN_LONGS 8000
 
 #define FONT_HEIGHT 16
@@ -473,6 +475,16 @@ void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 
 */
 void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height)
 {
+	int i;
+	/*CASE 1: BITMAP IS PERFECTLY ALIGNED WITHIN ONE COLUMN OF BYTES*/
+	if(col%8==0){
+		base+=row*BYTE_COLS; /*move base pointer to starting row*/
+		base+=(col>>3); /*move base pointer to starting col*/
+		for(i=0;i<height;i++){
+			*base|=bitmap[i];
+			base+=BYTE_COLS;
+		}
+	}
 }
 
 /*----- Function: plot_16bit_bitmap -----

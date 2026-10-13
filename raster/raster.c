@@ -475,16 +475,34 @@ void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 
 */
 void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height)
 {
-	int i;
-	/*CASE 1: BITMAP IS PERFECTLY ALIGNED WITHIN ONE COLUMN OF BYTES*/
-	if(col%8==0){
-		base+=row*BYTE_COLS; /*move base pointer to starting row*/
-		base+=(col>>3); /*move base pointer to starting col*/
+	int i; /*LCV for printing bitmap*/
+	
+	base+=row*BYTE_COLS; /*move base pointer to starting row*/
+	base+=(col>>3); /*move base pointer to starting col*/
+	
+	
+	if(col%8==0){ /*CASE 1: BITMAP IS PERFECTLY ALIGNED WITHIN ONE COLUMN OF BYTES*/
 		for(i=0;i<height;i++){
 			*base|=bitmap[i];
 			base+=BYTE_COLS;
 		}
 	}
+	else{ /*CASE 2: BITMAP IS BEING SPLIT ALONG TWO COLUMNS OF BYTES*/
+		UINT8 left_mask, right_mask, lhs, rhs;
+		lhs=col<<3;
+		rhs=7-lhs;
+		for(i=0;i<height;i++){
+			left_mask=right_mask=bitmap[i];
+			left_mask>>=lhs;
+			right_mask<<=rhs;
+			*base=left_mask;
+			*(base+8)=right_mask;
+			base+=BYTE_COLS;
+		}
+	}
+	/*CASE 3: CLIPPING ETC.*/
+	
+	
 }
 
 /*----- Function: plot_16bit_bitmap -----

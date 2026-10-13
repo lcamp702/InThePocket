@@ -92,7 +92,10 @@ void plot_pixel(UINT8 *base, int row, int col)
 */
 void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 {
-	
+	while(length>0){
+		plot_pixel(base, row, col);
+		length--;
+	}
 }
 
 /*----- Function: plot_vertical_line -----
@@ -128,6 +131,28 @@ void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 */
 void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col)
 {
+	if(start_col==end_col && start_row == end_row){
+		plot_pixel(base, start_row, start_col); /*if "line" is just one pixel then call plot pixel*/
+	}
+	else if(start_row==end_row){ /* call plot_horizontal_line if line is on one row*/
+		if(end_col>start_col){
+			plot_horizontal_line(base, start_row, start_col, end_col-start_col);
+		}
+		else {
+			plot_horizontal_line(base, end_row, start_col, start_col-end_col);
+		}
+	}
+	else if(start_col==end_col){ /*call plot vertical line if the line if start and end col are the same*/
+		if(end_row>start_row){
+			plot_vertical_line(base, start_row, start_col, end_col-start_col);
+		}
+		else {
+			plot_vertical_line(base, start_row, start_col, start_col-end_col);
+		}
+	}
+	else{
+		/*TODO How to plot weird coordinates (like what if it goes 1 unit horizontal and 15 units up? How to plot?*/
+	}
 }
 
 /*----- Function: plot_rectangle -----
@@ -142,7 +167,11 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
  OUTPUT: None
 */
 void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
-{
+{	
+	plot_horizontal_line(base, row, col, width);
+	plot vertical line(base, row, col, length);
+	plot_horizontal_line(base, row, col+width, width);
+	plot_vertical_line(base, row+length, col, length);
 }
 
 /*----- Function: plot_square -----
@@ -157,6 +186,10 @@ void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 */
 void plot_square(UINT32 *base, int row, int col, UINT16 side)
 {
+	plot_horizontal_line(base, row, col, length); /*draw top side in square*/
+	plot vertical line(base, row, col, length); /*draw left side of square*/
+	plot_horizontal_line(base, row, col+length, length); /*draw bottom side of square*/
+	plot_vertical_line(base, row+length, col, length); /*draw right side of square*/
 }
 
 /*----- Function: plot_triangle -----

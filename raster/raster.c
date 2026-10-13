@@ -6,7 +6,7 @@
 #define WORD_COLS 40
 #define LONG_COLS 20
 #define ROWS 400
-
+#define LONG_LENGTH 32
 #define SCREEN_LONGS 8000
 
 #define FONT_HEIGHT 16
@@ -42,10 +42,24 @@ void clear_screen(UINT32 *base)
  OUTPUT: None
 
 */
-
+/*TODO: FIX. Right now broken garbage*/
 void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 {
+	UINT16 fills, distance, rem, i,j;
 	
+	distance = LONG_LENGTH-cols%LONG_LENGTH;
+	fills = (width-distance)/LONG_LENGTH;
+	rem = ((width)-distance)%LONG_LENGTH;
+	
+	for(j=0;j<length;j++){
+		if((col&31)+width>LONG_LENGTH){
+			*(base+LONG_COLS*(row+j)+(col>>5))&=~(~0u>>(col&31));
+		}
+		for(i=0; i<fills; i++){
+			*(base+LONG_COLS*(row+j)+((col>>5)+(i+1)*LONG_LENGTH)=0;
+		}
+		*(base+LONG_COLS*(row+j)+(col>>5)+fills*LONG_LENGTH)&=(~0u>>rem);
+	}
 }
 
 /*----- Function: plot_pixel -----

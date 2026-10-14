@@ -9,12 +9,9 @@ static const UINT8 bmp_box[] = {
 static const UINT8 bmp_cross[] = {
     0x81, 0x42, 0x24, 0x18, 0x18, 0x24, 0x42, 0x81
 };
-static const UINT8 bmp_arrow[] = {
-    0x80, 0xC0, 0xE0, 0xF0, 0xD8, 0x0C, 0x06, 0x02
-};
-static const UINT8 bmp_tall[] = {
-    0x00, 0x18, 0x3C, 0x66, 0x66, 0x7E, 0x66, 0x66,
-    0x66, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00
+static const UINT8 bmp8_note[] = {
+    0x08, 0x08, 0x0E, 0x0B, 0x09, 0x09, 0x08, 
+    0x08, 0x08, 0x78, 0xF8, 0xF8, 0xF8, 0x70
 };
 
 static const UINT16 bmp16_solid[] = {
@@ -38,19 +35,14 @@ static const UINT16 bmp16_cross[] = {
     0x1008, 0x2004, 0x4002, 0x8001
 };
 
-static const UINT16 bmp16_arrow[] = {
-    0x8000, 0xC000, 0xE000, 0xF000,
-    0xF800, 0xFC00, 0xFE00, 0xFF00,
-    0xF800, 0xD800, 0x8C00, 0x0C00,
-    0x0600, 0x0600, 0x0300, 0x0300
-};
-static const UINT16 bmp16_tall[] = {
-    0xFFFF, 0x7FFE, 0x3FFC, 0x1FF8,
-    0x0FF0, 0x07E0, 0x03C0, 0x0180,
-    0x0180, 0x03C0, 0x07E0, 0x0FF0,
-    0x1FF8, 0x3FFC, 0x7FFE, 0xFFFF,
-    0x0180, 0x0180, 0x0180, 0x0180,
-    0x03C0, 0x07E0, 0x0FF0, 0x1FF8
+static const UINT16 bmp16_note[] = {
+    0x0040, 0x00C0, 0x00C0, 0x00E0, 
+    0x00E0, 0x00F0, 0x00F8, 0x00CE, 
+    0x00C6, 0x00C3, 0x00C3, 0x00C3, 
+    0x00C3, 0x00C3, 0x00C2, 0x00C2, 
+    0x00C4, 0x00C4, 0x00C0, 0x00C0, 
+    0x00C0, 0x00C0, 0x0FC0, 0x3FC0, 
+    0x7FC0, 0xFF00, 0xFE00, 0x7C00
 };
 
 static const UINT32 bmp32_solid[] = {
@@ -132,7 +124,7 @@ void bmp8_corners_and_center()
     plot_8bit_bitmap(b_fb, 0, COLS - 8, bmp_box, 8);
     plot_8bit_bitmap(b_fb, ROWS - 8, 0, bmp_box, 8);
     plot_8bit_bitmap(b_fb, ROWS - 8, COLS - 8, bmp_box, 8);
-    plot_8bit_bitmap(b_fb, (ROWS - 16) / 2, (COLS - 8) / 2, bmp_tall, 16);
+    plot_8bit_bitmap(b_fb, (ROWS - 16) / 2, (COLS - 8) / 2, bmp8_note, 14);
     sync_wait(70);
 }
 
@@ -149,11 +141,11 @@ void bmp8_grid_tiling()
             toggle = ((r >> 4) + (c >> 4)) % 2;
             if (toggle == 0)
             {
-                plot_8bit_bitmap(b_fb, r, c, bmp_cross, 8);
+                plot_8bit_bitmap(b_fb, r+2, c, bmp_cross, 8);
             }
             else
             {
-                plot_8bit_bitmap(b_fb, r, c, bmp_arrow, 8);
+                plot_8bit_bitmap(b_fb, r, c, bmp8_note, 14);
             }
         }
     }
@@ -170,7 +162,7 @@ void bmp8_animated_sweep()
     for (frame = 0; frame < 200; frame++)
     {
         clear_screen(l_fb);
-        plot_8bit_bitmap(b_fb, r, c, bmp_tall, 16);
+        plot_8bit_bitmap(b_fb, r, c, bmp8_note, 14);
         plot_8bit_bitmap(b_fb, ROWS - 16 - r, COLS - 8 - c, bmp_box, 8);
         r += 1;
         c += 3;
@@ -226,7 +218,7 @@ void bmp16_corners_and_center()
     plot_16bit_bitmap(w_fb, 0, COLS - 16, bmp16_box, 16);
     plot_16bit_bitmap(w_fb, ROWS - 16, 0, bmp16_box, 16);
     plot_16bit_bitmap(w_fb, ROWS - 16, COLS - 16, bmp16_box, 16);
-    plot_16bit_bitmap(w_fb, (ROWS - 24) / 2, (COLS - 16) / 2, bmp16_tall, 24);
+    plot_16bit_bitmap(w_fb, (ROWS - 24) / 2, (COLS - 16) / 2, bmp16_note, 28);
     sync_wait(70);
 }
 
@@ -236,18 +228,18 @@ void bmp16_grid_tiling()
     int c;
     int toggle;
     clear_screen(l_fb);
-    for (r = 0; r <= ROWS - 16; r += 16)
+    for (r = 0; r <= ROWS - 16; r += 32)
     {
-        for (c = 0; c <= COLS - 16; c += 16)
+        for (c = 0; c <= COLS - 16; c += 32)
         {
-            toggle = ((r >> 4) + (c >> 4)) % 2;
+            toggle = ((r >> 5) + (c >> 5)) % 2;
             if (toggle == 0)
             {
-                plot_16bit_bitmap(w_fb, r, c, bmp16_cross, 16);
+                plot_16bit_bitmap(w_fb, r+6, c, bmp16_cross, 16);
             }
             else
             {
-                plot_16bit_bitmap(w_fb, r, c, bmp16_arrow, 16);
+                plot_16bit_bitmap(w_fb, r, c, bmp16_note, 28);
             }
         }
     }
@@ -264,7 +256,7 @@ void bmp16_animated_sweep()
     for (frame = 0; frame < 200; frame++)
     {
         clear_screen(l_fb);
-        plot_16bit_bitmap(w_fb, r, c, bmp16_tall, 24);
+        plot_16bit_bitmap(w_fb, r, c, bmp16_note, 28);
         plot_16bit_bitmap(w_fb, ROWS - 16 - r, COLS - 16 - c, bmp16_box, 16);
         r += 1;
         c += 3;
@@ -335,11 +327,11 @@ void bmp32_grid_tiling()
     int c;
     int toggle;
     clear_screen(l_fb);
-    for (r = 0; r <= ROWS - 32; r += 32)
+    for (r = 0; r <= ROWS - 32; r += 64)
     {
-        for (c = 0; c <= COLS - 32; c += 32)
+        for (c = 0; c <= COLS - 32; c += 64)
         {
-            toggle = ((r >> 5) + (c >> 5)) % 2;
+            toggle = ((r >> 6) + (c >> 6)) % 2;
             if (toggle == 0)
             {
                 plot_32bit_bitmap(l_fb, r, c, bmp32_cross, 32);

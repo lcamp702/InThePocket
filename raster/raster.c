@@ -580,7 +580,7 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 	row_offset *= BYTE_COLS;
 	col_offset >>= 4;
 
-	row_offset += col_offset; /* row_offset = total byte offset. */
+	row_offset += col_offset; /* row_offset = total word offset. */
 
 	start_shift &= 15;
 	
@@ -588,7 +588,7 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 
 	if (start_shift == 0) 
 	{
-		/* Fast loop for byte aligned draws. */
+		/* Fast loop for word aligned draws. */
 		while (height-- > 0) 
 		{
 			start_mask = *(bitmap++);
@@ -629,6 +629,69 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 */
 void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UINT16 height)
 {
+		int row_offset;
+	int col_offset;
+	int start_shift;
+	int end_shift;
+	int max_row;
+	int max_col;
+	UINT16 start_mask;
+	UINT16 end_mask;
+
+	/* Fast Bound Check [1] */
+	max_row = ROWS;
+	max_row -= height;
+	if ((UINT16)row > max_row) return;
+
+	max_col = COLS;
+	max_col -= 32;
+	if ((UINT16)col > max_col) return;
+
+	if (height == 0) return;
+
+	row_offset = row;
+	col_offset = col;
+	start_shift = col_offset;
+	end_shift = start_shift;
+
+	row_offset *= BYTE_COLS;
+	col_offset >>= 5;
+
+	row_offset += col_offset; /* row_offset = total long offset. */
+
+	start_shift &= 31;
+	
+	base += row_offset;
+
+	if (start_shift == 0) 
+	{
+		/* Fast loop for long aligned draws. */
+		while (height-- > 0) 
+		{
+			start_mask = *(bitmap++);
+			*base |= start_mask;
+			base += WORD_COLS;
+		}
+	}
+	else
+	{
+		end_shift &= 31;
+		end_shift = -end_shift;
+		end_shift += 32;
+
+		while (height-- > 0) {
+			start_mask = *(bitmap++);
+			end_mask = start_mask;
+
+			start_mask >>= start_shift;
+			end_mask <<= end_shift;
+
+			*base |= start_mask;
+			*(base + 1) |= end_mask;
+
+			base += WORD_COLS;
+		}
+	}
 }
 
 /*----- Function: plot_character -----

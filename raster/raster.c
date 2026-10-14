@@ -48,7 +48,9 @@
 #define WORD_COLS 40
 #define LONG_COLS 20
 #define ROWS 400
-
+#define BYTE_LEN 8
+#define WORD_LEN 16
+#define LONG_LEN 32
 #define SCREEN_LONGS 8000
 
 #define FONT_HEIGHT 16
@@ -84,9 +86,9 @@ void clear_screen(UINT32 *base)
  OUTPUT: None
 
 */
-
 void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 {
+
 	int base_offset;
 	int start_offset;
 	int end_offset;
@@ -187,6 +189,7 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 
 			base -= LONG_COLS;
 		}
+
 	}
 }
 

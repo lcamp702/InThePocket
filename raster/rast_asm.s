@@ -51,10 +51,17 @@ LONG_COLS	equ		20
 ;	_clear_screen(UINT32 *base)
 cs_base		equ		64	; Offset from SP, not A6
 
+;	_clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
+cr_base		equ		0
+cr_row		equ		4
+cr_col		equ		6
+cr_len		equ		8
+cr_wid		equ		10
+
 ;	_plot_pixel(UINT8 *base, int row, int col)
-px_base		equ		20	; 4 + (4*4) bytes in saved registers
-px_row		equ		24	; 8 + (4*4) bytes in saved registers
-px_col		equ		26	; 10 + (4*4) bytes in saved registers
+px_base		equ		20
+px_row		equ		24
+px_col		equ		26
 
 ;	_plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 vl_base		equ		28
@@ -67,7 +74,7 @@ vl_len		equ		36
 ; INPUT: Address(UINT32*): to the start of the screen
 ; OUTPUT: None
 _clear_screen:	; Quick clear code from Raster Lab on D2L
-		movem.l	d0-7/a0-6,-(sp) ; Store existing register values
+		movem.l		d0-7/a0-6,-(sp) ; Store existing register values
 
 		lea		zeros,a0
 		movem.l		(a0)+,d1-7/a1-6	; Clear registers d1-7 and a1-6
@@ -83,6 +90,16 @@ fill_loop:
 
 		movem.l		(sp)+,d0-7/a0-6 ; Return existing register values
 		rts
+
+; ==== void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width) ====
+; PURPOSE: Clear a region of the screen. The section is specified by the coordinates of the top left corner, and the height and width of the region.
+; INPUT: Address(UINT32*): to the start of the screen
+;	   Position(row,col): the coordinates of the top left pixel of the region
+;	   Length: the length (number of rows) in pixels of the region
+;	   Width: the width (number of columns) in pixels of the region
+; OUTPUT: None
+_clear_region:
+		nop
 
 ; ==== void plot_pixel(UINT8* base, int row, int col) ====
 ; PURPOSE: Plots a single pixel on the screen.

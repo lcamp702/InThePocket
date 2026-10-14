@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 UINT32 *l_fb;
+UINT16 *w_fb;
 UINT8 *b_fb;
 
 void fill_screen(UINT32 *base)
@@ -29,6 +30,7 @@ void disable_cursor()
 int main()
 {
 	l_fb = Physbase();
+	w_fb = Physbase();
 	b_fb = Physbase();
 
 	disable_cursor();
@@ -45,6 +47,10 @@ int main()
 	test_v_line();
 	Cnecin();
 	test_bmp8();
+	Cnecin();
+	test_bmp16();
+	Cnecin();
+	test_bmp32();
 	Cnecin();
 	test_char();
 	Cnecin();

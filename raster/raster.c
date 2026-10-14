@@ -86,6 +86,7 @@ void clear_screen(UINT32 *base)
  OUTPUT: None
 
 */
+/*
 void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 {
 
@@ -99,13 +100,13 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 	UINT32 end_mask;
 	UINT32 *cursor;
 
-	/* Fast bound checking [1] */
+	( Fast bound checking [1] )
 	if ((UINT16)row >= ROWS) return;
 	if ((UINT16)col >= COLS) return;
 	if (length <= 0) return;
 	if (width <= 0) return;
 
-	/* Length Clipping */
+	( Length Clipping )
 	base_offset = row;
 	base_offset += length;
 	if (base_offset > ROWS)
@@ -116,29 +117,34 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 		base_offset = ROWS;
 	}
 	base_offset--;	
-	/* Base offset points to start of the last row to draw */
+	( Base offset points to start of the last row to draw )
 
-	/* Set start offset */
+	( Set start offset )
 	start_offset = col;
 	start_bit = start_offset;
 
 	start_offset >>= 5;
 
-	/* Set end offset*/
-	end_offset = col + width - 1;
+	( Move base pointer )
+	base_offset *= LONG_COLS;
+	base_offset += start_offset;
+	base += base_offset;
 
-	/* Width Clipping */
-	if (end_offset >= COLS)
-	{
+	( Set end offset)
+	end_offset = col + width;
+
+	( Width Clipping )
+	if (end_offset > COLS)
 		end_offset = COLS;
-		end_offset--;
-	}
-	/* Copy to get remainder */
+
+	end_offset--;
+
+	( Copy to get remainder )
 	end_bit = end_offset;
 
 	end_offset >>= 5;
 
-	/* Get shift amounts for LSR / LSL */
+	( Get shift amounts for LSR / LSL )
 	start_bit &= 31;
 	start_bit = -start_bit;
 	start_bit += 32;
@@ -146,7 +152,7 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 	end_bit &= 31;
 	end_bit += 1;
 
-	/* Create masks */
+	( Create masks )
 	if (start_bit == 32)
 		start_mask = 0;
 	else
@@ -157,14 +163,9 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 	else
 		end_mask = 0xFFFFFFFF >> end_bit;
 
-	/* Move base pointer */
-	base_offset *= LONG_COLS;
-	base_offset += start_offset;
-	base += base_offset;
-
 	if (start_offset == end_offset)
 	{
-		/* Mask fits in one long */
+		( Mask fits in one long )
 		start_mask |= end_mask;
 		while (length-- > 0) {
 			*base &= start_mask;
@@ -176,7 +177,7 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 		while (length-- > 0) {
 			cursor = base;
 
-			/* Mask spans multiple longs */
+			( Mask spans multiple longs )
 			*(cursor++) &= start_mask;
 
 			fills = end_offset - start_offset - 1;
@@ -192,7 +193,7 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 
 	}
 }
-
+*/
 /*----- Function: plot_pixel -----
 
  PURPOSE: Plots a single pixel on the screen.
@@ -401,7 +402,7 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 		}
 	}
 	else{
-		/*Insert Bresenham's Algorithm Here*/*/
+		/*Insert Bresenham's Algorithm Here*/
 	}
 }
 

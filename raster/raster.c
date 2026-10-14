@@ -401,7 +401,7 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 		}
 	}
 	else{
-		/*TODO How to plot weird coordinates (like what if it goes 1 unit horizontal and 15 units up? How to plot?*/
+		/*Insert Bresenham's Algorithm Here*/*/
 	}
 }
 

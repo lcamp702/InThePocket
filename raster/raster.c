@@ -416,7 +416,7 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 {	
 	plot_horizontal_line(base, row, col, width);
-	plot vertical line(base, row, col, length);
+	plot_vertical_line(base, row, col, length);
 	plot_horizontal_line(base, row, col+width, width);
 	plot_vertical_line(base, row+length, col, length);
 }
@@ -433,10 +433,10 @@ void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 */
 void plot_square(UINT32 *base, int row, int col, UINT16 side)
 {
-	plot_horizontal_line(base, row, col, length); /*draw top side in square*/
-	plot vertical line(base, row, col, length); /*draw left side of square*/
-	plot_horizontal_line(base, row, col+length, length); /*draw bottom side of square*/
-	plot_vertical_line(base, row+length, col, length); /*draw right side of square*/
+	plot_horizontal_line(base, row, col, side); /*draw top side in square*/
+	plot_vertical_line(base, row, col, side); /*draw left side of square*/
+	plot_horizontal_line(base, row, col+side, side); /*draw bottom side of square*/
+	plot_vertical_line(base, row+side, col, side); /*draw right side of square*/
 }
 
 /*----- Function: plot_triangle -----
@@ -472,6 +472,69 @@ void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 
 */
 void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height)
 {
+	int row_offset;
+	int col_offset;
+	int start_shift;
+	int end_shift;
+	int max_row;
+	int max_col;
+	UINT8 start_mask;
+	UINT8 end_mask;
+
+	/* Fast Bound Check [1] */
+	max_row = ROWS;
+	max_row -= height;
+	if ((UINT16)row > max_row) return;
+
+	max_col = COLS;
+	max_col -= 8;
+	if ((UINT16)col > max_col) return;
+
+	if (height == 0) return;
+
+	row_offset = row;
+	col_offset = col;
+	start_shift = col_offset;
+	end_shift = start_shift;
+
+	row_offset *= BYTE_COLS;
+	col_offset >>= 3;
+
+	row_offset += col_offset; /* row_offset = total byte offset. */
+
+	start_shift &= 7;
+	
+	base += row_offset;
+
+	if (start_shift == 0) 
+	{
+		/* Fast loop for byte aligned draws. */
+		while (height-- > 0) 
+		{
+			start_mask = *(bitmap++);
+			*base |= start_mask;
+			base += BYTE_COLS;
+		}
+	}
+	else
+	{
+		end_shift &= 7;
+		end_shift = -end_shift;
+		end_shift += 8;
+
+		while (height-- > 0) {
+			start_mask = *(bitmap++);
+			end_mask = start_mask;
+
+			start_mask >>= start_shift;
+			end_mask <<= end_shift;
+
+			*base |= start_mask;
+			*(base + 1) |= end_mask;
+
+			base += BYTE_COLS;
+		}
+	}
 }
 
 /*----- Function: plot_16bit_bitmap -----
@@ -486,6 +549,69 @@ void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16
 */
 void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height)
 {
+	int row_offset;
+	int col_offset;
+	int start_shift;
+	int end_shift;
+	int max_row;
+	int max_col;
+	UINT16 start_mask;
+	UINT16 end_mask;
+
+	/* Fast Bound Check [1] */
+	max_row = ROWS;
+	max_row -= height;
+	if ((UINT16)row > max_row) return;
+
+	max_col = COLS;
+	max_col -= 16;
+	if ((UINT16)col > max_col) return;
+
+	if (height == 0) return;
+
+	row_offset = row;
+	col_offset = col;
+	start_shift = col_offset;
+	end_shift = start_shift;
+
+	row_offset *= BYTE_COLS;
+	col_offset >>= 4;
+
+	row_offset += col_offset; /* row_offset = total byte offset. */
+
+	start_shift &= 15;
+	
+	base += row_offset;
+
+	if (start_shift == 0) 
+	{
+		/* Fast loop for byte aligned draws. */
+		while (height-- > 0) 
+		{
+			start_mask = *(bitmap++);
+			*base |= start_mask;
+			base += WORD_COLS;
+		}
+	}
+	else
+	{
+		end_shift &= 15;
+		end_shift = -end_shift;
+		end_shift += 16;
+
+		while (height-- > 0) {
+			start_mask = *(bitmap++);
+			end_mask = start_mask;
+
+			start_mask >>= start_shift;
+			end_mask <<= end_shift;
+
+			*base |= start_mask;
+			*(base + 1) |= end_mask;
+
+			base += WORD_COLS;
+		}
+	}
 }
 
 /*----- Function: plot_32bit_bitmap -----
@@ -523,8 +649,8 @@ void plot_character(UINT8 *base, int row, int col, char ch)
 	/* Fast bound checking [1] */
 	max_row = ROWS - FONT_HEIGHT;
 	max_col = COLS - 8;
-	if ((UINT16)row >= max_row) return;
-	if ((UINT16)col >= max_col) return;
+	if ((UINT16)row > max_row) return;
+	if ((UINT16)col > max_col) return;
 
 	linea0();				 /* Initialize line-a variables */
 	font = (char *)V_FNT_AD; /* Get start address of font table */
@@ -540,7 +666,7 @@ void plot_character(UINT8 *base, int row, int col, char ch)
 		*(base) |= letter >> offset; /* Shift if needed and mask */
 
 		if (offset != 0) /* If the bitmap was shifted, part will be in the next byte. */
-			*(base + 1) |= letter << (7 - offset);
+			*(base + 1) |= letter << (8 - offset);
 
 		base += BYTE_COLS; /* Next row */
 		l++;			   /* Increment row count */

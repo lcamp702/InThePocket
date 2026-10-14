@@ -234,6 +234,7 @@ void plot_pixel(UINT8 *base, int row, int col)
 
  OUTPUT: None
 */
+/*
 void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 {
 	int base_offset;
@@ -245,42 +246,42 @@ void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 	UINT32 start_mask;
 	UINT32 end_mask;
 
-	/* Fast bound checking [1] */
+	( Fast bound checking [1] )
 	if ((UINT16)row >= ROWS) return;
 	if ((UINT16)col >= COLS) return;
 	if (length <= 0) return;
 
-	/* Set start offset */
+	( Set start offset )
 	start_offset = col;
 	start_bit = start_offset;
 
 	start_offset >>= 5;
 
-	/* Set end offset*/
-	end_offset = col + length - 1;
+	( Set end offset)
+	end_offset = col + length ;
 
-	/* Clipping */
+	( Clipping )
 	if (end_offset >= COLS)
-	{
 		end_offset = COLS;
-		end_offset -= 1;
-	}
-	/* Copy to get remainder */
+
+	end_offset -= 1;
+
+	( Copy to get remainder )
 	end_bit = end_offset;
 
 	end_offset >>= 5;
 
-	/* Get shift amounts for LSR / LSL */
+	( Get shift amounts for LSR / LSL )
 	start_bit &= 31;
 	end_bit = ~end_bit;
-	end_bit &= 0x1F; /* end_bit = 31 - (end_col % 32)*/
-					 /* Like [2]. In assembly this is fastest with not and andi */
+	end_bit &= 0x1F; ( end_bit = 31 - (end_col % 32))
+					 ( Like [2]. In assembly this is fastest with not and andi )
 
-	/* Create masks */
+	( Create masks )
 	start_mask = 0xFFFFFFFF >> start_bit;
 	end_mask = 0xFFFFFFFF << end_bit;
 
-	/* Move base pointer */
+	( Move base pointer )
 	base_offset = row;
 	base_offset *= LONG_COLS;
 	base_offset += start_offset;
@@ -288,13 +289,13 @@ void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 
 	if (start_offset == end_offset)
 	{
-		/* Line fits in one long */
+		( Line fits in one long )
 		start_mask &= end_mask;
 		*base |= start_mask;
 	}
 	else
 	{
-		/* Line spans multiple longs */
+		( Line spans multiple longs )
 		*(base++) |= start_mask;
 
 		fills = end_offset - start_offset - 1;
@@ -306,6 +307,7 @@ void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 		*base |= end_mask;
 	}
 }
+*/
 
 /*----- Function: plot_vertical_line -----
 

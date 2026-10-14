@@ -577,7 +577,7 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 	start_shift = col_offset;
 	end_shift = start_shift;
 
-	row_offset *= BYTE_COLS;
+	row_offset *= WORD_COLS;
 	col_offset >>= 4;
 
 	row_offset += col_offset; /* row_offset = total word offset. */
@@ -629,14 +629,14 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 */
 void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UINT16 height)
 {
-		int row_offset;
+	int row_offset;
 	int col_offset;
 	int start_shift;
 	int end_shift;
 	int max_row;
 	int max_col;
-	UINT16 start_mask;
-	UINT16 end_mask;
+	UINT32 start_mask;
+	UINT32 end_mask;
 
 	/* Fast Bound Check [1] */
 	max_row = ROWS;
@@ -654,7 +654,7 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 	start_shift = col_offset;
 	end_shift = start_shift;
 
-	row_offset *= BYTE_COLS;
+	row_offset *= LONG_COLS;
 	col_offset >>= 5;
 
 	row_offset += col_offset; /* row_offset = total long offset. */
@@ -670,7 +670,7 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 		{
 			start_mask = *(bitmap++);
 			*base |= start_mask;
-			base += WORD_COLS;
+			base += LONG_COLS;
 		}
 	}
 	else
@@ -689,7 +689,7 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 			*base |= start_mask;
 			*(base + 1) |= end_mask;
 
-			base += WORD_COLS;
+			base += LONG_COLS;
 		}
 	}
 }

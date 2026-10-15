@@ -476,6 +476,7 @@ void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 
 
  OUTPUT: None
 */
+/*
 void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height)
 {
 	int row_offset;
@@ -487,7 +488,7 @@ void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16
 	UINT8 start_mask;
 	UINT8 end_mask;
 
-	/* Fast Bound Check [1] */
+	( Fast Bound Check [1] )
 	max_row = ROWS;
 	max_row -= height;
 	if ((UINT16)row > max_row) return;
@@ -506,7 +507,7 @@ void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16
 	row_offset *= BYTE_COLS;
 	col_offset >>= 3;
 
-	row_offset += col_offset; /* row_offset = total byte offset. */
+	row_offset += col_offset; ( row_offset = total byte offset. )
 
 	start_shift &= 7;
 	
@@ -514,7 +515,7 @@ void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16
 
 	if (start_shift == 0) 
 	{
-		/* Fast loop for byte aligned draws. */
+		( Fast loop for byte aligned draws. )
 		while (height-- > 0) 
 		{
 			start_mask = *(bitmap++);
@@ -542,7 +543,7 @@ void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16
 		}
 	}
 }
-
+*/
 /*----- Function: plot_16bit_bitmap -----
 
  PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.

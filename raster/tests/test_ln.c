@@ -29,6 +29,86 @@ void test_h_line()
 	sync_wait(35);
 	clear_screen(l_fb);
 
+	/* ==== Bound checking tests ==== */
+
+	/* Invalid rows */
+    plot_horizontal_line(l_fb, -1, 100, 50);
+    plot_horizontal_line(l_fb, -32768, 200, 50);
+    plot_horizontal_line(l_fb, ROWS, 300, 50);
+    plot_horizontal_line(l_fb, ROWS + 100, 400, 50);
+    plot_horizontal_line(l_fb, 32767, 500, 50);
+
+    /* Invalid cols */
+    plot_horizontal_line(l_fb, 10, -1, 50);
+    plot_horizontal_line(l_fb, 20, -32768, 50);
+    plot_horizontal_line(l_fb, 30, COLS, 50);
+    plot_horizontal_line(l_fb, 40, COLS + 100, 50);
+    plot_horizontal_line(l_fb, 50, 32767, 50);
+
+    /* Invalid length */
+    plot_horizontal_line(l_fb, 100, 0, 0);
+    plot_horizontal_line(l_fb, 100, 320, 0);
+    plot_horizontal_line(l_fb, 100, 639, 0);
+
+    sync_wait(35);
+    clear_screen(l_fb);
+
+	/* ==== Clipping tests ==== */
+
+	/* Touching right */
+    plot_horizontal_line(l_fb, 20, 320, 320);
+	/* Multi long clipping right */
+    plot_horizontal_line(l_fb, 30, 320, 321);
+    plot_horizontal_line(l_fb, 40, 320, 500);
+    plot_horizontal_line(l_fb, 50, 320, 2000);
+	/* First long clipping */
+	plot_horizontal_line(l_fb, 60, 608, 100);
+	plot_horizontal_line(l_fb, 70, 620, 50);
+    /* Single long clipping right */
+    plot_horizontal_line(l_fb, 80, 639, 1);   /* Last pixel, exact */
+    plot_horizontal_line(l_fb, 90, 639, 2); /* Last pixel, clipped */
+    /* Large lengths (unsigned) */
+    plot_horizontal_line(l_fb, 110, 320, 0x8000);
+    plot_horizontal_line(l_fb, 120, 320, 0xC000);
+    /* End pixel wraparound (c+length) */
+    plot_horizontal_line(l_fb, 130, 320, 0xFFFF);
+    plot_horizontal_line(l_fb, 140, 639, 0xFFFF);
+
+    sync_wait(70);
+    clear_screen(l_fb);
+
+	/* ==== Valid line tests ==== */
+
+	/* Top and bottom */
+    plot_horizontal_line(l_fb, 0, 0, COLS);
+    plot_horizontal_line(l_fb, ROWS - 1, 0, COLS);
+
+    /* Plot pixels at word edges */
+    plot_horizontal_line(l_fb, 10, 0, 1);
+    plot_horizontal_line(l_fb, 12, 15, 1);
+    plot_horizontal_line(l_fb, 14, 31, 1);
+    plot_horizontal_line(l_fb, 16, 32, 1);
+    plot_horizontal_line(l_fb, 18, 639, 1);
+
+    /* Plot various lengths */
+    for (r = 0; r < 80; r++)
+    {
+        plot_horizontal_line(l_fb, 50 + r, 16, r + 1);
+    }
+
+    /* Full longs */
+    plot_horizontal_line(l_fb, 150, 32, 32);  /* 1 long */
+    plot_horizontal_line(l_fb, 154, 32, 64);  /* 2 longs */
+    plot_horizontal_line(l_fb, 158, 32, 96);  /* 3 longs */
+
+    /* Multi long span */
+    plot_horizontal_line(l_fb, 170, 31, 2); 
+    plot_horizontal_line(l_fb, 174, 31, 34);
+
+    sync_wait(70);
+    clear_screen(l_fb);
+
+	/* ==== Checkerboard ==== */
 	for (t = 0; t < 10; t++)
 	{
 		int size = tile_w[t];
@@ -67,6 +147,85 @@ void test_v_line()
 	sync_wait(35);
 	clear_screen(l_fb);
 
+	/* ==== Bound checking tests ==== */
+
+    /* Invalid rows */
+    plot_vertical_line(l_fb, -1, 100, 50);
+    plot_vertical_line(l_fb, -32768, 200, 50);
+    plot_vertical_line(l_fb, ROWS, 300, 50);
+    plot_vertical_line(l_fb, ROWS + 100, 400, 50);
+    plot_vertical_line(l_fb, 32767, 500, 50);
+
+    /* Invalid cols */
+    plot_vertical_line(l_fb, 10, -1, 50);
+    plot_vertical_line(l_fb, 20, -32768, 50);
+    plot_vertical_line(l_fb, 30, COLS, 50);
+    plot_vertical_line(l_fb, 40, COLS + 100, 50);
+    plot_vertical_line(l_fb, 50, 32767, 50);
+
+    /* Invalid length */
+    plot_vertical_line(l_fb, 0, 100, 0);
+    plot_vertical_line(l_fb, 200, 100, 0);
+    plot_vertical_line(l_fb, 399, 100, 0);
+
+    sync_wait(35);
+    clear_screen(l_fb);
+
+    /* ==== Clipping tests ==== */
+
+    /* Touching bottom */
+    plot_vertical_line(l_fb, 200, 20, 200);
+    /* Clipping past bottom */
+    plot_vertical_line(l_fb, 200, 30, 201);
+    plot_vertical_line(l_fb, 200, 40, 500);
+    plot_vertical_line(l_fb, 200, 50, 2000);
+    /* Near bottom clipping */
+    plot_vertical_line(l_fb, 368, 60, 100);
+    plot_vertical_line(l_fb, 380, 70, 50);
+    /* Single pixel clipping at bottom */
+    plot_vertical_line(l_fb, 399, 80, 1);   /* Last pixel, exact */
+    plot_vertical_line(l_fb, 399, 90, 2);   /* Last pixel, clipped */
+    /* Large lengths (unsigned) */
+    plot_vertical_line(l_fb, 200, 110, 0x8000); /* length = 32768 */
+    plot_vertical_line(l_fb, 200, 120, 0xC000); /* length = 49152 */
+    /* End pixel wraparound (r+length) */
+    plot_vertical_line(l_fb, 200, 130, 0xFFFF);
+    plot_vertical_line(l_fb, 399, 140, 0xFFFF);
+
+    sync_wait(70);
+    clear_screen(l_fb);
+
+    /* ==== Valid line tests ==== */
+
+    /* Left and right side */
+    plot_vertical_line(l_fb, 0, 0, ROWS);
+    plot_vertical_line(l_fb, 0, COLS - 1, ROWS);
+
+    /* Plot single pixels at row word boundaries */
+    plot_vertical_line(l_fb, 0, 10, 1);
+    plot_vertical_line(l_fb, 15, 12, 1);
+    plot_vertical_line(l_fb, 31, 14, 1);
+    plot_vertical_line(l_fb, 32, 16, 1);
+    plot_vertical_line(l_fb, 399, 18, 1);
+
+    /* Plot various lengths */
+    for (c = 0; c < 80; c++)
+    {
+        plot_vertical_line(l_fb, 16, 50 + c, c + 1);
+    }
+
+    /* Lines at byte, word, and long bit boundaries */
+    plot_vertical_line(l_fb, 150, 7, 32);    /* End of byte 0 */
+    plot_vertical_line(l_fb, 150, 8, 32);    /* Start of byte 1 */
+    plot_vertical_line(l_fb, 150, 15, 64);   /* End of word 0 */
+    plot_vertical_line(l_fb, 150, 16, 64);   /* Start of word 1 */
+    plot_vertical_line(l_fb, 150, 31, 96);   /* End of long 0 */
+    plot_vertical_line(l_fb, 150, 32, 96);   /* Start of long 1 */
+
+    sync_wait(70);
+    clear_screen(l_fb);
+
+	/* ==== Checkerboard ==== */
 	for (t = 0; t < 10; t++)
 	{
 		int size = tile_w[t];

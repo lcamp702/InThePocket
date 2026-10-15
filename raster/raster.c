@@ -632,6 +632,7 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 
  OUTPUT: None
 */
+/*
 void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UINT16 height)
 {
 	int row_offset;
@@ -643,7 +644,7 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 	UINT32 start_mask;
 	UINT32 end_mask;
 
-	/* Fast Bound Check [1] */
+	( Fast Bound Check [1] )
 	max_row = ROWS;
 	max_row -= height;
 	if ((UINT16)row > max_row) return;
@@ -662,7 +663,7 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 	row_offset *= LONG_COLS;
 	col_offset >>= 5;
 
-	row_offset += col_offset; /* row_offset = total long offset. */
+	row_offset += col_offset; ( row_offset = total long offset. )
 
 	start_shift &= 31;
 	
@@ -670,7 +671,7 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 
 	if (start_shift == 0) 
 	{
-		/* Fast loop for long aligned draws. */
+		( Fast loop for long aligned draws. )
 		while (height-- > 0) 
 		{
 			start_mask = *(bitmap++);
@@ -698,7 +699,7 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 		}
 	}
 }
-
+*/
 /*----- Function: plot_character -----
 
  PURPOSE: Plots a single character, as a bitmap from a font table, to the screen.

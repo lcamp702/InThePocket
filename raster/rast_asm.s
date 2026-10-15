@@ -44,6 +44,7 @@
 		xdef		_plot_vertical_line
 		xdef		_plot_8bit_bitmap
 		xdef		_plot_16bit_bitmap
+		xdef		_plot_32bit_bitmap
 
 ;       Screen details
 ROWS		equ		400
@@ -51,6 +52,7 @@ ROWS		equ		400
 COLS		equ		640
 BM8_MAX_COLS	equ		632
 BM16_MAX_COLS	equ		624
+BM32_MAX_COLS	equ		608
 BYTE_COLS	equ		80
 LONG_COLS	equ		20
 
@@ -81,19 +83,12 @@ vl_row		equ		32
 vl_col		equ		34
 vl_len		equ		36
 
-;	_plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height)
-bm8_base	equ		32
-bm8_row		equ		36
-bm8_col		equ		38
-bm8_bmp		equ		40
-bm8_hei		equ		44
-
-;	_plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height)
-bm16_base	equ		32
-bm16_row	equ		36
-bm16_col	equ		38
-bm16_bmp	equ		40
-bm16_hei	equ		44
+;	_plot_-bit_bitmap(UINT- *base, int row, int col, const UINT- *bitmap, UINT16 height)
+bm_base		equ		32
+bm_row		equ		36
+bm_col		equ		38
+bm_bmp		equ		40
+bm_hei		equ		44
 
 
 ; ==== void clear_screen(UINT32 *base) ====
@@ -450,24 +445,24 @@ _plot_8bit_bitmap:
 		movem.l		d0-4/a0-1,-(sp)
 
 		; Copy params to registers and bound check
-		move.w		bm8_hei(sp),d0	; d0.w = height
+		move.w		bm_hei(sp),d0	; d0.w = height
 		beq.b		bm8_end		; if (length == 0) return
 
-		move.w		bm8_row(sp),d1	; d1.w = Row #
+		move.w		bm_row(sp),d1	; d1.w = Row #
 		move.w		#ROWS,d2	; d2.w = Total rows
 		sub.w		d0,d2		; d2.w = Max row
 		cmp.w		d2,d1
 		bhs.b		bm8_end		; Fast row bound check [1]
 
-		move.w		bm8_col(sp),d2	; d2.w = Column #
+		move.w		bm_col(sp),d2	; d2.w = Column #
 		cmp.w		#BM8_MAX_COLS,d2
 		bhs.b		bm8_end		; Fast col bound check [1]
 
 		subq.w		#1,d0		; Predecrement height for print loop
-		movea.l		bm8_bmp(sp),a1	; a1.l = Bitmap base pointer
+		movea.l		bm_bmp(sp),a1	; a1.l = Bitmap base pointer
 
 		; Move fb pointer to first byte
-		movea.l		bm8_base(sp),a0	; a0.l = Framebuffer base pointer
+		movea.l		bm_base(sp),a0	; a0.l = Framebuffer base pointer
 
 		move.w		d1,d3
 		lsl.w		#4,d1
@@ -525,24 +520,24 @@ _plot_16bit_bitmap:
 		movem.l		d0-4/a0-1,-(sp)
 
 		; Copy params to registers and bound check
-		move.w		bm16_hei(sp),d0	; d0.w = height
+		move.w		bm_hei(sp),d0	; d0.w = height
 		beq.b		bm16_end	; if (length == 0) return
 
-		move.w		bm16_row(sp),d1	; d1.w = Row #
+		move.w		bm_row(sp),d1	; d1.w = Row #
 		move.w		#ROWS,d2	; d2.w = Total rows
 		sub.w		d0,d2		; d2.w = Max row
 		cmp.w		d2,d1
 		bhs.b		bm16_end	; Fast row bound check [1]
 
-		move.w		bm16_col(sp),d2	; d2.w = Column #
+		move.w		bm_col(sp),d2	; d2.w = Column #
 		cmp.w		#BM16_MAX_COLS,d2
 		bhs.b		bm16_end	; Fast col bound check [1]
 
 		subq.w		#1,d0		; Predecrement height for print loop
-		movea.l		bm16_bmp(sp),a1	; a1.l = Bitmap base pointer
+		movea.l		bm_bmp(sp),a1	; a1.l = Bitmap base pointer
 
 		; Move fb pointer to first word
-		movea.l		bm16_base(sp),a0; a0.l = Framebuffer base pointer
+		movea.l		bm_base(sp),a0; a0.l = Framebuffer base pointer
 
 		move.w		d1,d3
 		lsl.w		#3,d1
@@ -574,6 +569,7 @@ bm16_shifted:	; If start shift != 0, shift bmp across 2 bytes
 		addi.w		#16,d2		; d2.w = End byte shift left
 
 bm16_shift_loop:
+		; Speed optimized shift with swap.w and longs
 		moveq.l		#0,d1		; d1 Cleared
 		move.w		(a1)+,d1	; d1.w = Bitmap row
 		lsl.l		d2,d1		; d1.l = Shifted bitmap
@@ -586,6 +582,82 @@ bm16_shift_loop:
 
 		dbra		d0,bm16_shift_loop
 bm16_end:
+		movem.l		(sp)+,d0-4/a0-1
+		rts
+
+; ==== Function: plot_32bit_bitmap ====
+; PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
+; INPUT: Address(UINT32*): to the start of the screen
+;	 Position(row,col): the coordinates of the top left pixel of the bitmap
+;	 Bitmap(UINT32*): pointer to the bitmap to print
+;	 Height: the length (number of rows) of the height in pixels of the bitmap
+; OUTPUT: None
+_plot_32bit_bitmap:
+		movem.l		d0-4/a0-1,-(sp)
+
+		; Copy params to registers and bound check
+		move.w		bm_hei(sp),d0	; d0.w = height
+		beq.b		bm32_end	; if (length == 0) return
+
+		move.w		bm_row(sp),d1	; d1.w = Row #
+		move.w		#ROWS,d2	; d2.w = Total rows
+		sub.w		d0,d2		; d2.w = Max row
+		cmp.w		d2,d1
+		bhs.b		bm32_end	; Fast row bound check [1]
+
+		move.w		bm_col(sp),d2	; d2.w = Column #
+		cmp.w		#BM32_MAX_COLS,d2
+		bhs.b		bm32_end	; Fast col bound check [1]
+
+		subq.w		#1,d0		; Predecrement height for print loop
+		movea.l		bm_bmp(sp),a1	; a1.l = Bitmap base pointer
+
+		; Move fb pointer to first byte
+		movea.l		bm_base(sp),a0	; a0.l = Framebuffer base pointer
+
+		move.w		d1,d3
+		lsl.w		#2,d1
+		lsl.w		#4,d3
+		add.w		d3,d1		; d1.w = Row long offset
+
+		move.w		d2,d3		; d3.w = Copy of col # for offset calc
+		lsr.w		#5,d3		; d3.w = Col long offset
+
+		add.w		d3,d1		; d1.w = Total long offset
+		lsl.w		#2,d1		; d1.w = Total byte offset
+
+		adda.w		d1,a0		; a0.l = Pointer to first byte to write to
+
+		; Get bit shift
+		andi.w		#31,d2		; d2.w = Start shift right amount (col % 32)
+		bne		bm32_shifted	
+		
+bm32_byte_loop:	; If start shift == 0, print bmp into bytes
+		move.l		(a1)+,d1	; d1.l = Bitmap row
+		or.l		d1,(a0)		; Apply bitmap row mask to framebuffer
+		adda.w		#BYTE_COLS,a0	; Move to next line of the framebuffer
+		dbra		d0,bm32_byte_loop
+
+		bra		bm32_end
+
+bm32_shifted:	; If start shift != 0, shift bmp across 2 bytes
+		move.w		d2,d1		; d1.w = Col % 8
+		neg.w		d1		; d1.w = -(col % 8)
+		addq.w		#8,d1		; d1.w = End byte shift left
+
+bm32_shift_loop:
+		move.l		(a1)+,d3	; d3.b = Bitmap row
+		move.l		d3,d4		; d4.b = Copy of bitmap row
+		lsr.l		d2,d3		; d3.b = Shifted start byte
+		lsl.l		d1,d4		; d4.b = Shifted end byte
+
+		or.l		d3,(a0)+	; Apply bitmap row masks to framebuffer
+		or.l		d4,(a0)
+
+		adda.w		#76,a0		; Move to next row
+
+		dbra		d0,bm32_shift_loop
+bm32_end:
 		movem.l		(sp)+,d0-4/a0-1
 		rts
 

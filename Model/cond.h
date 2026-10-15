@@ -24,5 +24,7 @@
 #define HIT_WINDOW 5
 
 void cond_check_misses(Model *model);
+UINT8 cond_is_game_over(const Model *model);
+UINT8 cond_is_song_over(const Model *model);
 
 #endif

@@ -26,3 +26,28 @@ void cond_check_misses(Model *model){
 		model_advance_head(model);
 	}
 }
+
+UINT8 cond_is_game_over(const Model *model){
+	UINT8 game_over;
+
+	if(model->meter.enjoyment<=0) {
+		game_over = 1;
+	}
+	else{
+		game_over=0;
+	}
+	
+	return game_over;
+}
+
+UINT8 cond_is_song_over(const Model *model){
+	UINT8 song_over;
+	if(model->head>=model->note_count){
+		song_over=1;
+	}
+	else{
+		song_over=0;
+	}
+
+	return song_over;
+}

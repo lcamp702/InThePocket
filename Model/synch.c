@@ -16,7 +16,7 @@
 
 #include "synch.h"
 #include "cond.h"
-
+/*Synch clock should advance clock, move notes, and move head past moved notes. Parameters is the model. Assumes the model has been initialized.*/
 void synch_clock_tick(Model* model){
 	model_move_notes(model);
 	model_tick(model);

@@ -36,13 +36,15 @@ int main(void){
 	
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	print_model(&test_model);
-	
+	/*synch_clock_tick test
+	* Synch clock should advance clock, move notes, and move head past moved notes. 
+	*/
 	for(i = 0; i<4; i++){
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		print_model(&test_model);
 	}
-
+	/*advance head test*/
 	for(i = 0; i<5; i++){
 		model_advance_head(&test_model);
 		printf("--ADVANCE HEAD--\n");
@@ -50,7 +52,7 @@ int main(void){
 	}
 
 	model_init(&test_model, test_song, TEST_SONG_LEN);
-	
+	/*cond_is_game_over test*/
 	for(i = 0; i<145; i++){
 		synch_clock_tick(&test_model);
 	}
@@ -58,9 +60,57 @@ int main(void){
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		print_model(&test_model);
+		printf("game over = %d", cond_is_game_over(&test_model));
+	}
+	
+	model_init(&test_model, test_song, TEST_SONG_LEN);
+	test_model.meter.enjoyment=40;
+	for(i = 0; i<145; i++){
+		synch_clock_tick(&test_model);
+	}
+	for(i = 0; i<12; i++){
+		synch_clock_tick(&test_model);
+		printf("-- TICK -- \n");
+		print_model(&test_model);
+		printf("game over = %d", cond_is_game_over(&test_model));
+	}
+	
+	/*cond_is_song_over test*/
+	model_init(&test_model, test_song, TEST_SONG_LEN);
+	for(i = 0; i<145; i++){
+		synch_clock_tick(&test_model);
+	}
+	for(i = 0; i<100; i++){
+		synch_clock_tick(&test_model);
+		test_model.meter.enjoyment=100;
+		printf("-- TICK -- \n");
+		print_model(&test_model);
+		printf("song over = %d", cond_is_song_over(&test_model));
 	}
 
-    return 0;
+	/*Test that key inputs yield correct pitch values*/
+	printf("inputing a yields pitch value %d \n", asynch_key_to_pitch('a'));
+	printf("inputing s yields pitch value %d \n", asynch_key_to_pitch('s'));
+	printf("inputing d yields pitch value %d \n", asynch_key_to_pitch('d'));
+    printf("inputing f yields pitch value %d \n", asynch_key_to_pitch('f'));
+	printf("inputing A(caps) yields pitch value %d \n", asynch_key_to_pitch('A'));
+	printf("inputing S(caps) yields pitch value %d \n", asynch_key_to_pitch('S'));
+	printf("inputing D(caps) yields pitch value %d \n", asynch_key_to_pitch('D'));
+    printf("inputing F(caps) yields pitch value %d \n", asynch_key_to_pitch('F'));
+	printf("inputing c yields pitch value %d \n", asynch_key_to_pitch('c'));
+	/*testing async_is_hit*/
+	model_init(&test_model, test_song, TEST_SONG_LEN);
+	for(i = 0; i<138; i++){
+		synch_clock_tick(&test_model);
+	}
+	for(i = 0; i<30; i++){
+		test_model.meter.enjoyment=100;
+		synch_clock_tick(&test_model);
+		printf("-- TICK -- \n");
+		printf("hitting a yields %d \n", );
+		print_note(&test_model.notes[test_model.head]);
+	}
+	return 0;
 }
 
 

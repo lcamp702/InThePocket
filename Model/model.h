@@ -18,7 +18,10 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "types.h"
 #include "note.h"
 #include "meter.h"
+
+#define MAX_NOTES 512;
 
 #endif

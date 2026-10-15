@@ -18,4 +18,12 @@
 #ifndef METER_H
 #define METER_H
 
+#include "types.h"
+
+typedef struct Meter{
+	INT8 enjoyment; /*the "health bar" of the game. Falling to 0 */
+	UINT32 score;
+	INT8 multiplier;
+} Meter; 
+
 #endif

@@ -18,3 +18,11 @@
 
 #define MISS_PENALTY 20
 #define HIT_REWARD 2
+
+void cond_check_misses(Model *model){
+	while(model->head<model->note_count && model->notes[model->head].time+TRAVEL_TICKS+HIT_WINDOW<model->game_clock && model->meter.enjoyment > 0 ){
+		meter_update_enjoyment(&model->meter, -MISS_PENALTY);
+		meter_reset_multiplier(&model->meter);
+		model_advance_head(model);
+	}
+}

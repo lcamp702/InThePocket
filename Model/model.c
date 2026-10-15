@@ -16,6 +16,7 @@
 
 #include "model.h"
 
+/*Initializes Model. Takes Model, the song array, and the amount of notes as parameters. Assumes that notes are ordered by spawn time. Songs over 512 notes are truncated.*/
 void model_init(Model * model, const Note* arr, UINT16 notes_amt){
 	
 	UINT32 i;
@@ -30,13 +31,18 @@ void model_init(Model * model, const Note* arr, UINT16 notes_amt){
 	meter_init(&model->meter);
 }
 
+/*Increments the models clock. Note these ticks are 1/70th of a second. Parameters are the model.
+*NOTE : MOVE NOTES FIRST THEN TICK. 
+*/
 void model_tick(Model* model){
 	
 	model->game_clock++;
 
 }
-
-UINT16 model_notes_on_screen(const Model* model){
+/*Calculates the index of the last note on screen. This gives the bounds for the array which is functional. Assumes the array is non empty. Paramaters are the model itself. Does bounds checking.
+*
+*/
+UINT16 model_last_on_screen(const Model* model){
 	
 	UINT16 last_note=model->head;
 	
@@ -46,16 +52,21 @@ UINT16 model_notes_on_screen(const Model* model){
 	
 	return last_note;
 }
+
+/*Moves notes where applicable. Parameters are the model. Does bounds checking. 
+*NOTE : MOVE NOTES FIRST THEN TICK. 
+*/
 void model_move_notes(Model* model){
 	UINT16 last_note, i;
 	
-	last_note = model_notes_on_screen(model);
+	last_note = model_last_on_screen(model);
 	
 	for(i=model->head;i<last_note && i<model->note_count; i++){
 		note_move(&model->notes[i]);
 	}
 
 }
+/*Advances the model head. Parameter is the model itself. Does bounds checking. */
 void model_advance_head(Model* model){
 	if(model->head<model->note_count){
 		model->head++;

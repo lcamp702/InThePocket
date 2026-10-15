@@ -20,4 +20,6 @@
 
 #include "model.h"
 
+void synch_clock_tick(Model* model);
+
 #endif

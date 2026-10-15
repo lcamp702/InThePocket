@@ -23,4 +23,6 @@
 #define TRAVEL_TICKS 140
 #define HIT_WINDOW 5
 
+void cond_check_misses(Model *model);
+
 #endif

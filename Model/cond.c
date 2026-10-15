@@ -15,3 +15,6 @@
     cond.c*/
 
 #include "cond.h"
+
+#define MISS_PENALTY 20
+#define HIT_REWARD 2

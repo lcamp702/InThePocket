@@ -23,7 +23,7 @@ void meter_init(Meter *meter){
 	meter->multiplier=1;
 }
 
-/* update enjoyment meter*/
+/* update enjoyment meter NB POSITIVE DELTA MAX 2 AND WILL NEVER OVERFLOW METER SINCE 100+2=102<127*/
 void meter_update_enjoyment(Meter *meter, INT8 delta){
 	meter->enjoyment+=delta;
 	if(meter->enjoyment>ENJOYMENT_MAX) meter->enjoyment=ENJOYMENT_MAX;

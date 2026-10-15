@@ -20,4 +20,7 @@
 
 #include "model.h"
 
+#define TRAVEL_TICKS 140
+#define HIT_WINDOW 5
+
 #endif

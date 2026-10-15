@@ -18,7 +18,9 @@
 
 /*initializes meter*/
 void meter_init(Meter *meter){
-	
+	meter->enjoyment=ENJOYMENT_START;
+	meter->score=0;
+	meter->multiplier=1;
 }
 
 /* update enjoyment meter*/

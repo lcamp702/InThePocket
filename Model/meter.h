@@ -30,7 +30,7 @@ typedef struct Meter{
 } Meter; 
 
 void meter_init(Meter *meter);							/*initializes meter*/
-void meter_change_enjoyment(Meter *meter, INT8 delta);  /* Updates change enjoyment */
+void meter_update_enjoyment(Meter *meter, INT8 delta);  /* Updates change enjoyment */
 void meter_update_score(Meter *meter, UINT32 points);      /* Add's score to meter */
 void meter_increase_multiplier(Meter *meter);              /* Increases the multiplier */
 void meter_reset_multiplier(Meter *meter);              /* multiplier goes to 1 */

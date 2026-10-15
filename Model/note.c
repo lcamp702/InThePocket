@@ -15,3 +15,15 @@
     note.c*/
 
 #include "note.h"
+
+/* sets x = NOTE_START_X */
+void note_init(Note *note, UINT8 pitch, UINT32 time) {
+	note->pitch=pitch;
+	note->time=time;
+	note->x=NOTE_START_X;
+}
+
+/* Moves note according to note speed */
+void note_move(Note *note){
+	note->x-=NOTE_SPEED;
+}                            

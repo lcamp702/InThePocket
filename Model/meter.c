@@ -26,6 +26,7 @@ void meter_init(Meter *meter){
 /* update enjoyment meter*/
 void meter_update_enjoyment(Meter *meter, INT8 delta){
 	meter->enjoyment+=delta;
+	if(meter->enjoyment>ENJOYMENT_MAX) meter->enjoyment=ENJOYMENT_MAX;
 }
 
 /* Add's score to meter */
@@ -38,8 +39,8 @@ void meter_update_score(Meter *meter, UINT32 points){
 
 /* Increases the multiplier */
 void meter_increase_multiplier(Meter *meter){
-	meter->multiplier=2;
-};              
+	if(meter->multiplier<16) meter->multiplier*=2; /*doubles score multiplier*/
+}              
 
 /* multiplier goes to 1 */
 void meter_reset_multiplier(Meter *meter){

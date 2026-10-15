@@ -554,6 +554,7 @@ void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16
 
  OUTPUT: None
 */
+/*
 void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height)
 {
 	int row_offset;
@@ -565,7 +566,7 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 	UINT16 start_mask;
 	UINT16 end_mask;
 
-	/* Fast Bound Check [1] */
+	( Fast Bound Check [1] )
 	max_row = ROWS;
 	max_row -= height;
 	if ((UINT16)row > max_row) return;
@@ -584,7 +585,7 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 	row_offset *= WORD_COLS;
 	col_offset >>= 4;
 
-	row_offset += col_offset; /* row_offset = total word offset. */
+	row_offset += col_offset; ( row_offset = total word offset. )
 
 	start_shift &= 15;
 	
@@ -592,7 +593,7 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 
 	if (start_shift == 0) 
 	{
-		/* Fast loop for word aligned draws. */
+		( Fast loop for word aligned draws. )
 		while (height-- > 0) 
 		{
 			start_mask = *(bitmap++);
@@ -620,7 +621,7 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 		}
 	}
 }
-
+*/
 /*----- Function: plot_32bit_bitmap -----
 
  PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.

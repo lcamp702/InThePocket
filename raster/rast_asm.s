@@ -43,12 +43,14 @@
 		xdef		_plot_horizontal_line
 		xdef		_plot_vertical_line
 		xdef		_plot_8bit_bitmap
+		xdef		_plot_16bit_bitmap
 
 ;       Screen details
 ROWS		equ		400
 
 COLS		equ		640
 BM8_MAX_COLS	equ		632
+BM16_MAX_COLS	equ		624
 BYTE_COLS	equ		80
 LONG_COLS	equ		20
 
@@ -85,6 +87,13 @@ bm8_row		equ		36
 bm8_col		equ		38
 bm8_bmp		equ		40
 bm8_hei		equ		44
+
+;	_plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height)
+bm16_base	equ		32
+bm16_row	equ		36
+bm16_col	equ		38
+bm16_bmp	equ		40
+bm16_hei	equ		44
 
 
 ; ==== void clear_screen(UINT32 *base) ====
@@ -477,7 +486,7 @@ _plot_8bit_bitmap:
 		bne		bm8_shifted	
 		
 bm8_byte_loop:	; If start shift == 0, print bmp into bytes
-		move.b		(a1)+,d1	; d1.w = Bitmap row
+		move.b		(a1)+,d1	; d1.b = Bitmap row
 		or.b		d1,(a0)		; Apply bitmap row mask to framebuffer
 		adda.w		#BYTE_COLS,a0	; Move to next line of the framebuffer
 		dbra		d0,bm8_byte_loop
@@ -505,5 +514,79 @@ bm8_end:
 		movem.l		(sp)+,d0-4/a0-1
 		rts
 
+; ==== Function: plot_16bit_bitmap ====
+; PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
+; INPUT: Address(UINT16*): to the start of the screen
+;	 Position(row,col): the coordinates of the top left pixel of the bitmap
+;	 Bitmap(UINT16*): pointer to the bitmap to print
+;	 Height: the length (number of rows) of the height in pixels of the bitmap
+; OUTPUT: None
+_plot_16bit_bitmap:
+		movem.l		d0-4/a0-1,-(sp)
+
+		; Copy params to registers and bound check
+		move.w		bm16_hei(sp),d0	; d0.w = height
+		beq.b		bm16_end	; if (length == 0) return
+
+		move.w		bm16_row(sp),d1	; d1.w = Row #
+		move.w		#ROWS,d2	; d2.w = Total rows
+		sub.w		d0,d2		; d2.w = Max row
+		cmp.w		d2,d1
+		bhs.b		bm16_end	; Fast row bound check [1]
+
+		move.w		bm16_col(sp),d2	; d2.w = Column #
+		cmp.w		#BM16_MAX_COLS,d2
+		bhs.b		bm16_end	; Fast col bound check [1]
+
+		subq.w		#1,d0		; Predecrement height for print loop
+		movea.l		bm16_bmp(sp),a1	; a1.l = Bitmap base pointer
+
+		; Move fb pointer to first word
+		movea.l		bm16_base(sp),a0; a0.l = Framebuffer base pointer
+
+		move.w		d1,d3
+		lsl.w		#3,d1
+		lsl.w		#5,d3
+		add.w		d3,d1		; d1.w = Row word offset
+
+		move.w		d2,d3		; d3.w = Copy of col # for offset calc
+		lsr.w		#4,d3		; d3.w = Col word offset
+
+		add.w		d3,d1		; d1.w = Total word offset
+		lsl.w		#1,d1		; d1.w = Total byte offset
+
+		adda.w		d1,a0		; a0.l = Pointer to first byte to write to
+
+		; Get bit shift
+		andi.w		#15,d2		; d2.w = Start shift right amount (col % 16)
+		bne		bm16_shifted	
+		
+bm16_byte_loop:	; If start shift == 0, print bmp into bytes
+		move.w		(a1)+,d1	; d1.w = Bitmap row
+		or.w		d1,(a0)		; Apply bitmap row mask to framebuffer
+		adda.w		#BYTE_COLS,a0	; Move to next line of the framebuffer
+		dbra		d0,bm16_byte_loop
+
+		bra		bm16_end
+
+bm16_shifted:	; If start shift != 0, shift bmp across 2 bytes
+		neg.w		d2		; d2.w = -(col % 16)
+		addi.w		#16,d2		; d2.w = End byte shift left
+
+bm16_shift_loop:
+		moveq.l		#0,d1		; d1 Cleared
+		move.w		(a1)+,d1	; d1.w = Bitmap row
+		lsl.l		d2,d1		; d1.l = Shifted bitmap
+		swap.w		d1		; d1.w = Start word bitmap row
+		or.w		d1,(a0)+	; Apply start word bitmap row to framebuffer
+		swap.w		d1		; d1.w = End word bitmap row
+		or.w		d1,(a0)		; Apply end word bitmap row
+
+		adda.w		#78,a0		; Move to next row
+
+		dbra		d0,bm16_shift_loop
+bm16_end:
+		movem.l		(sp)+,d0-4/a0-1
+		rts
 
 zeros:		ds.l		13

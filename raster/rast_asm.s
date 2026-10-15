@@ -24,7 +24,7 @@
 ;		clear_screen
 ;		clear_region
 ;		plot_pixel
-;		plot_horizontal_line (c)
+;		plot_horizontal_line
 ;		plot_vertical_line
 ;		plot_character (c)
 ;		plot_string (c)
@@ -66,10 +66,10 @@ px_row		equ		24
 px_col		equ		26
 
 ;	_plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
-hl_base		equ		36
-hl_row		equ		40
-hl_col		equ		42
-hl_len		equ		44
+hl_base		equ		24
+hl_row		equ		28
+hl_col		equ		30
+hl_len		equ		32
 
 ;	_plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 vl_base		equ		28
@@ -154,7 +154,7 @@ cr_row_clipped:
 
 		; Move end pointer
 		lsr.w		#3,d1		; d1.w = Start long offset
-		andi.w		#$FFFC,d1	; d1.w = Start byte offset (long aligned)
+		andi.b		#$FC,d1		; d1.w = Start byte offset (long aligned)
 		add.w		d4,d1		
 		adda.w		d1,a1		; End pointer is at the first pixel of the last row to clear
 
@@ -177,7 +177,7 @@ cr_col_clipped:
 		neg.w		d0		; d0.w = -(start col % 32)
 		addi.w		#32,d0		; d0.w = Start mask left shift val
 
-		move.l		#-1,d5		; d5.l = (0xFFFFFFFF)
+		moveq.l		#-1,d5		; d5.l = (0xFFFFFFFF)
 		lsl.l		d0,d5		; d5.l = Shifted start mask
 
 		bra.b		cr_end_mask
@@ -190,7 +190,7 @@ cr_end_mask:
 		; Create shifted end mask
 		addq.w		#1,d4		; d4.w = End mask right shift val
 
-		move.l		#-1,d0		; d0.l = (0xFFFFFFFF)
+		moveq.l		#-1,d0		; d0.l = (0xFFFFFFFF)
 		lsr.l		d4,d0		; d0.l = Shifted end mask
 
 		bra.b		cr_blank
@@ -203,7 +203,7 @@ cr_blank:	; Start blanking the screen
 		subq.w		#1,d3
 
 		cmp.w		d1,d2
-		bne		cr_thick
+		bne.b		cr_thick
 
 		; Clearing mask fits in one long
 		or.l		d5,d0		; d0.l = Full mask
@@ -282,86 +282,86 @@ pp_end:
 ;	 Position(row,col): the coordinates of the leftmost pixel of the horizontal line
 ;	 Length: the length in pixels of the line
 ; OUTPUT: None
-
 _plot_horizontal_line:
-		movem.l		d0-5/a0,-(sp)
+		movem.l		d0-3/a0,-(sp)
 
 		; Copy params to registers and bound check
 		move.w		hl_row(sp),d0	; d0.w = Row #
 		cmp.w		#ROWS,d0
-		bhs.w		cr_end		; Fast row bound check [1]
+		bhs.b		hl_end		; Fast row bound check [1]
 
 		move.w		hl_col(sp),d1	; d1.w = Column #
 		cmp.w		#COLS,d1
-		bhs.w		cr_end		; Fast col bound check [1]
+		bhs.b		hl_end		; Fast col bound check [1]
 
 		move.w		hl_len(sp),d2	; d2.w = Length
-		ble.w		hl_end		; if (length < 0) return
+		beq.b		hl_end		; if (length < 0) return
 
-		add.w		d1,d2		; d2.w = End col + 1
 		; Length clipping
+		add.w		d1,d2		; d2.w = End col + 1
+		blo.b		hl_clip		; On carry (overflow), length must be clipped
 		cmpi.w		#COLS,d2
-		blt.b		hl_clipped
-
-		move.w		#COLS,d2
+		blo.b		hl_clipped
+hl_clip:
+		move.w		#COLS,d2	; Clip end col down to last column
 hl_clipped:
 		subq.w		#1,d2		; d2.w = Clipped end col
-		
-		; Calculate shifts and make masks
-		move.w		d1,d3		; d3.w = Start col
-		andi.w		#31,d3		; d3.w = Start mask right shift amount
 
-		move.l		#-1,d4		; d4.l = 0xFFFFFFFF
-		lsr.l		d3,d4		; d4.l = Shifted start long
-
-		move.w		d2,d3		; d3.w = End col
-		not.w		d3
-		andi.w		#$1F,d3		; d3.w = End mask left shift amount
-
-		move.l		#-1,d5		; d5.l = 0xFFFFFFFF
-		lsl.l		d3,d5		; d5.l = Shifted end long
-
+		; Move fb pointer to first long
 		move.w		d0,d3
-		lsl.w		#4,d3
-		lsl.w		#6,d0
-		add.w		d3,d0		; d0.w = Row byte offset
+		lsl.w		#2,d3		; d3.w = Row * 4
+		lsl.w		#4,d0		; d0.w = Row * 16
+		add.w		d3,d0		; d0.w = Row long offset (row * 20)
 
 		move.w		d1,d3
-		lsr.w		#3,d3		; d3.w = Start long offset
-		andi.w		#$FFFC,d3	; d3.w = Start byte offset (long aligned)
-
-		add.w		d3,d0		; d0.w = Total byte offset
+		lsr.w		#5,d3		; d3.w = Start col long offset
+		add.w		d3,d0		; d0.w = Total start long offset
+		lsl.w		#2,d0		; d0.w = Total start byte offset (long aligned)
 
 		movea.l		hl_base(sp),a0	; a0.l = Framebuffer base
 		adda.w		d0,a0		; a0.l = First long to write to
+		
+		; Calculate start shift and mask
+		andi.w		#31,d1		; d1.w = Start mask right shift amount
+		moveq.l		#-1,d0		; d0.l = 0xFFFFFFFF
+		lsr.l		d1,d0		; d0.l = Shifted start mask
 
-		lsr.w		#5,d1		; d1.w = Start long offset
-		lsr.w		#5,d2		; d2.w = End long offset
+		; Calculate long delta for fill amount
+		move.w		d2,d1		; d1.w = Copy of end col for end mask
+		lsr.w		#5,d2		; d2.w = End col long offset
+		sub.w		d3,d2		; d2.w = end col offset - start col offset
 
-		cmp.w		d1,d2
-		bne		hl_long
+		; Calculate end shift and mask
+		not.w		d1
+		andi.w		#31,d1		; d1.w = End mask left shift amount
+		moveq.l		#-1,d3		; d3.l = 0xFFFFFFFF
+		lsl.l		d1,d3		; d3.l = Shifted end long
 
+		tst.w		d2		
+		bne.b		hl_long
+
+		; If end col offset == start col offset
 		; Line fits within one long
-		and.l		d5,d4		; d4.l = Full mask
-		or.l		d4,(a0)		; Write mask to memory
+		and.l		d3,d0		; d0.l = Full mask
+		or.l		d0,(a0)		; Apply mask to framebuffer
+		bra		hl_end
 hl_long:
+		; If end col offset != start col offset
 		; Line spans multiple longs
+		or.l		d0,(a0)+	; Apply start mask to framebuffer
 
-		sub.w		d2,d1		; Total longs to print
-		subq.w		#2,d1		; Fill loop counter
+		subq.w		#2,d2		; d2.w = Fill loop counter
 		blt.b		hl_long_end
 
-		or.l		d4,(a0)+
-
+		moveq.l		#-1,d0		; d0.l = 0xFFFFFFFF
 hl_fill_loop:
-		move.l		#-1,d4		; d4.l = 0xFFFFFFFF
-		move.l		d4,(a0)+	; Write filled long to memory
-		dbra		d1,hl_fill_loop
+		move.l		d0,(a0)+	; Write filled long to framebuffer
+		dbra		d2,hl_fill_loop
 hl_long_end:
-		or.l		d5,(a0)+
+		or.l		d3,(a0)		; Apply end mask to framebuffer
 
 hl_end:
-		movem.l		(sp)+,d0-5/a0
+		movem.l		(sp)+,d0-3/a0
 		rts
 
 ; ==== void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length) ====
@@ -382,19 +382,20 @@ _plot_vertical_line:
 		bhs.b		vl_end		; Fast col bound check [1]
 
 		move.w		vl_len(sp),d3	; d3.w = length
-		ble.b		vl_end		; Zero / negative length check
+		beq.b		vl_end		; Zero length check
 				
 		; Row clipping check
 		move.w		d0,d2
 		add.w		d3,d2		; d2.w = end row
+		blo.b		vl_clip		; If carry set, value wraps around. Must be clipped.
 		
 		cmp.w		#ROWS,d2
-		bls.b		vl_fits		; If end row < rows, line fits, continue
-
+		bls.b		vl_clipped	; If end row < rows, line fits, continue
+vl_clip:
 		move.w		#ROWS,d3	
 		sub.w		d0,d3		; If end row >= rows, clip line length
 
-vl_fits:	; Line fits on screen
+vl_clipped:	; Line fits on screen
 		move.w		d1,d2		; d2.w = Column #
 
 		move.w		d0,d4		; d4.w = Row #
@@ -419,5 +420,28 @@ vl_loop:	; Loop over all rows
 vl_end:
 		movem.l		(sp)+,d0-4/a0
 		rts
+
+; ==== Function: plot_8bit_bitmap ====
+; PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
+; INPUT: Address(UINT8*): to the start of the screen
+;		Position(row,col): the coordinates of the top left pixel of the bitmap
+;		Height: the length (number of rows) of the height in pixels of the bitmap
+; OUTPUT: None
+_plot_8bit_bitmap:
+		; Copy params to registers and bound check
+		move.w		hl_row(sp),d0	; d0.w = Row #
+		cmp.w		#ROWS,d0
+		bhs.b		bm8_end		; Fast row bound check [1]
+
+		move.w		hl_col(sp),d1	; d1.w = Column #
+		cmp.w		#COLS,d1
+		bhs.b		bm8_end		; Fast col bound check [1]
+
+		move.w		hl_len(sp),d2	; d2.w = Length
+		beq.b		bm8_end		; if (length == 0) return
+		nop
+bm8_end:
+		nop
+
 
 zeros:		ds.l		13

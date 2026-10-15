@@ -15,3 +15,31 @@
     meter.c*/
 
 #include "meter.h"
+
+/*initializes meter*/
+void meter_init(Meter *meter){
+	
+}
+
+/* update enjoyment meter*/
+void meter_update_enjoyment(Meter *meter, INT8 delta){
+	meter->enjoyment+=delta;
+}
+
+/* Add's score to meter */
+void meter_update_score(Meter *meter, UINT32 points){
+	UINT32 delta;
+	delta=points;
+	delta*=meter->multiplier;
+	meter->score+=delta;
+}      
+
+/* Increases the multiplier */
+void meter_increase_multiplier(Meter *meter){
+	meter->multiplier=2;
+};              
+
+/* multiplier goes to 1 */
+void meter_reset_multiplier(Meter *meter){
+	meter->multiplier=1;
+}              

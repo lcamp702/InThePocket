@@ -38,7 +38,7 @@ void meter_update_score(Meter *meter, UINT32 points){
 }      
 
 /* Increases the multiplier */
-void meter_increase_multiplier(Meter *meter){
+void meter_double_multiplier(Meter *meter){
 	if(meter->multiplier<16) meter->multiplier*=2; /*doubles score multiplier*/
 }              
 

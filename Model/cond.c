@@ -17,7 +17,6 @@
 #include "cond.h"
 
 #define MISS_PENALTY 20
-#define HIT_REWARD 2
 
 void cond_check_misses(Model *model){
 	while(model->head<model->note_count && model->notes[model->head].time+TRAVEL_TICKS+HIT_WINDOW<model->game_clock && model->meter.enjoyment > 0 ){

@@ -18,7 +18,7 @@
 #include <stdio.h>
 static const Note test_song[] = {
 	{ 0, 0, 0 },
-	{ 0, 0, 1 },
+	{ 1, 0, 1 },
 	{ 3, 0, 2 },
 	{ 10, 0, 3 }
 };
@@ -107,10 +107,62 @@ int main(void){
 		test_model.meter.enjoyment=100;
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
-		printf("hitting a yields %d \n", );
+		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 0));
 		print_note(&test_model.notes[test_model.head]);
 	}
+	model_init(&test_model, test_song, TEST_SONG_LEN);
+	for(i = 0; i<138; i++){
+		synch_clock_tick(&test_model);
+	}
+	for(i = 0; i<30; i++){
+		test_model.meter.enjoyment=100;
+		synch_clock_tick(&test_model);
+		printf("-- TICK -- \n");
+		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 1));
+		print_note(&test_model.notes[test_model.head]);
+	}
+	model_init(&test_model, test_song, TEST_SONG_LEN);
+	for(i = 0; i<138; i++){
+		synch_clock_tick(&test_model);
+	}
+	for(i = 0; i<30; i++){
+		test_model.meter.enjoyment=100;
+		synch_clock_tick(&test_model);
+		printf("-- TICK -- \n");
+		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 2));
+		print_note(&test_model.notes[test_model.head]);
+	}
+	model_init(&test_model, test_song, TEST_SONG_LEN);
+	for(i = 0; i<138; i++){
+		synch_clock_tick(&test_model);
+	}
+	for(i = 0; i<30; i++){
+		test_model.meter.enjoyment=100;
+		synch_clock_tick(&test_model);
+		printf("-- TICK -- \n");
+		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 3));
+		print_note(&test_model.notes[test_model.head]);
+	}
+	
+	model_init(&test_model, test_song, TEST_SONG_LEN);
+	for(i = 0; i<138; i++){
+		synch_clock_tick(&test_model);
+	}
+	for(i = 0; i<30; i++){
+		synch_clock_tick(&test_model);
+		printf("-- TICK -- \n");
+		if( asynch_is_hit(&test_model, 0) || asynch_is_hit(&test_model, 1) || asynch_is_hit(&test_model, 2) || asynch_is_hit(&test_model, 3) ){
+			asynch_apply_hit(&test_model);
+			printf("hit applied, meter now gives ");
+			print_meter(&test_model.meter);
+		}
+	}
+
+
+
+
 	return 0;
+
 }
 
 

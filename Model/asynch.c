@@ -17,6 +17,8 @@
 #include "asynch.h"
 #include "cond.h"
 
+#define HIT_REWARD_ENJOYMENT 2
+#define HIT_REWARD_SCORE 10
 UINT8 asynch_key_to_pitch(char key){
 	
 	UINT8 pitch=4;
@@ -49,3 +51,11 @@ UINT8 asynch_is_hit(const Model *model, UINT8 pitch){
 
 	return is_hit;
 }
+
+void asynch_apply_hit(Model *model){
+	meter_update_enjoyment(&model->meter, HIT_REWARD_ENJOYMENT);
+	meter_update_score(&model->meter, HIT_REWARD_SCORE);
+	meter_double_multiplier(&model->meter);
+	model_advance_head(model);
+}
+

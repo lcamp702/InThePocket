@@ -148,10 +148,10 @@ _clear_region:
 		; Clip length
 		cmp.w		#ROWS,d4
 		ble.b		cr_row_clipped	; If end row < ROWS continue
-		move.w		#ROWS,d3
+		move.w		#ROWS,d3	; End row is too large, clip it
 		move.w		d3,d4		; d4.w = Clipped end row
 		sub.w		d0,d3		; d3.w = Clipped length
-cr_row_clipped:
+cr_row_clipped:	; End row is on the screen
 		subq.w		#1,d4		; d4.w = End row
 
 		; Calculate row offset in bytes
@@ -273,7 +273,7 @@ _plot_pixel:
 		move.w		d0,d2		; d2.w = Row #
 		lsl.w		#4,d0		; d0.w = row * 16
 		lsl.w		#6,d2		; d2.w = row * 64
-		add.w		d2,d0		; d0.w = row * 80 = row * BYTE_COLS
+		add.w		d2,d0		; d0.w = Row byte offset = row * 80
 		
 		move.w		d1,d2		; d2.w = Column #
 		not.w		d2		; d2 (lowest 3 bits) = Column bit shift (7 - (col % 8))
@@ -366,7 +366,7 @@ hl_long:
 		subq.w		#2,d2		; d2.w = Fill loop counter
 		blt.b		hl_long_end
 
-		moveq.l		#-1,d0		; d0.l = 0xFFFFFFFF
+		moveq.l		#-1,d0		; Fill long with ones
 hl_fill_loop:
 		move.l		d0,(a0)+	; Write filled long to framebuffer
 		dbra		d2,hl_fill_loop
@@ -494,13 +494,12 @@ bm8_shifted:	; If start shift != 0, shift bmp across 2 bytes
 		addq.w		#8,d1		; d1.w = End byte shift left
 
 bm8_shift_loop:
+		clr.w		d3		; Clear word to shift byte within
 		move.b		(a1)+,d3	; d3.b = Bitmap row
-		move.b		d3,d4		; d4.b = Copy of bitmap row
-		lsr.b		d2,d3		; d3.b = Shifted start byte
-		lsl.b		d1,d4		; d4.b = Shifted end byte
-
+		ror.w		d2,d3		; d3.b = Shifted start byte
 		or.b		d3,(a0)+	; Apply bitmap row masks to framebuffer
-		or.b		d4,(a0)
+		ror.w		#8,d3		; d3.b = Shifted end byte
+		or.b		d3,(a0)
 
 		adda.w		#79,a0		; Move to next row
 
@@ -554,7 +553,7 @@ _plot_16bit_bitmap:
 
 		; Get bit shift
 		andi.w		#15,d2		; d2.w = Start shift right amount (col % 16)
-		bne		bm16_shifted	
+		bne		bm16_shift_loop	
 		
 bm16_byte_loop:	; If start shift == 0, print bmp into bytes
 		move.w		(a1)+,d1	; d1.w = Bitmap row
@@ -564,16 +563,11 @@ bm16_byte_loop:	; If start shift == 0, print bmp into bytes
 
 		bra		bm16_end
 
-bm16_shifted:	; If start shift != 0, shift bmp across 2 bytes
-		neg.w		d2		; d2.w = -(col % 16)
-		addi.w		#16,d2		; d2.w = End byte shift left
-
 bm16_shift_loop:
 		; Speed optimized shift with swap.w and longs
-		moveq.l		#0,d1		; d1 Cleared
+		moveq.l		#0,d1		; Clear long to shift word in
 		move.w		(a1)+,d1	; d1.w = Bitmap row
-		lsl.l		d2,d1		; d1.l = Shifted bitmap
-		swap.w		d1		; d1.w = Start word bitmap row
+		ror.l		d2,d1		; d1.l = Shifted bitmap
 		or.w		d1,(a0)+	; Apply start word bitmap row to framebuffer
 		swap.w		d1		; d1.w = End word bitmap row
 		or.w		d1,(a0)		; Apply end word bitmap row

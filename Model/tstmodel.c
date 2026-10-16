@@ -15,6 +15,7 @@
     tst_model.c*/
 
 #include "events.h"
+#include <osbind.h>
 #include <stdio.h>
 static const Note test_song[] = {
 	{ 0, 0, 0 },
@@ -33,18 +34,32 @@ int main(void){
 
 	UINT8 i;
 	static Model test_model;
+	/*test model_init*/
 	
+	printf("Press any key to proceed with model_init test\n");
+	fflush(stdout);
+	Cconin();
+
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	print_model(&test_model);
 	/*synch_clock_tick test
 	* Synch clock should advance clock, move notes, and move head past moved notes. 
 	*/
+	printf("Press any key to proceed with synch_clock_tick test\n");
+	fflush(stdout);
+	Cconin();
 	for(i = 0; i<4; i++){
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		print_model(&test_model);
 	}
+	
 	/*advance head test*/
+	printf("Press any key to proceed with model_advance_head test\n");
+	fflush(stdout);
+	Cconin();
+
+	print_model(&test_model);
 	for(i = 0; i<5; i++){
 		model_advance_head(&test_model);
 		printf("--ADVANCE HEAD--\n");
@@ -52,7 +67,12 @@ int main(void){
 	}
 
 	model_init(&test_model, test_song, TEST_SONG_LEN);
+	
 	/*cond_is_game_over test*/
+	printf("Press any key to proceed with cond_is_game_over test\n");
+	fflush(stdout);
+	Cconin();
+
 	for(i = 0; i<145; i++){
 		synch_clock_tick(&test_model);
 	}
@@ -60,9 +80,11 @@ int main(void){
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		print_model(&test_model);
-		printf("game over = %d", cond_is_game_over(&test_model));
+		printf("game over = %d \n", cond_is_game_over(&test_model));
 	}
-	
+
+	#if 0
+
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	test_model.meter.enjoyment=40;
 	for(i = 0; i<145; i++){
@@ -179,7 +201,7 @@ int main(void){
 			print_meter(&test_model.meter);
 		}
 	}
-
+	#endif
 
 
 

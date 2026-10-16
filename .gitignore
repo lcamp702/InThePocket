@@ -1,0 +1,7 @@
+*.o
+*.obj
+*.a
+*.out
+*.exe
+*.tos
+build/

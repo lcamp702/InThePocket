@@ -10,7 +10,7 @@
 
 	In the Pocket - Checkpoint 2
 	Due: Oct 19, 2026
-	raster.c    
+	raster.c
 
 	Status:
 	  Not Tested:
@@ -32,7 +32,7 @@
 
 	Credits:
 
-	[1] D. Salvato, “Assembly tricks for fast bounds checking,” @dansalvato, https://dansalva.to/assembly-tricks-for-fast-bounds-checking/ (Accessed Oct. 13, 2026). 
+	[1] D. Salvato, “Assembly tricks for fast bounds checking,” @dansalvato, https://dansalva.to/assembly-tricks-for-fast-bounds-checking/ (Accessed Oct. 13, 2026).
 	[2] StingRay, "Plotter / Dot Flag," English Amiga Board, https://eab.abime.net/showthread.php?t=50595 (Accessed Oct. 13 2026)
 
 	Purpose:
@@ -52,6 +52,15 @@
 #define WORD_LEN 16
 #define LONG_LEN 32
 #define SCREEN_LONGS 8000
+
+#define LINE_CLIP_NONE 0   /* 0000 */
+#define LINE_CLIP_TOP 8	   /* 1000 */
+#define LINE_CLIP_BOTTOM 4 /* 0100 */
+#define LINE_CLIP_RIGHT 2  /* 0010 */
+#define LINE_CLIP_LEFT 1   /* 0001 */
+
+#define LINE_CLIP_R 12 /* 1100 */
+#define LINE_CLIP_C 3  /* 0011 */
 
 #define FONT_HEIGHT 16
 
@@ -116,7 +125,7 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 
 		base_offset = ROWS;
 	}
-	base_offset--;	
+	base_offset--;
 	( Base offset points to start of the last row to draw )
 
 	( Set start offset )
@@ -274,8 +283,8 @@ void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
 	( Get shift amounts for LSR / LSL )
 	start_bit &= 31;
 	end_bit = ~end_bit;
-	end_bit &= 0x1F; ( end_bit = 31 - (end_col % 32))
-					 ( Like [2]. In assembly this is fastest with not and andi )
+	end_bit &= 31;	( end_bit = 31 - (end_col % 32))
+					( Like [2]. In assembly this is fastest with not and andi )
 
 	( Create masks )
 	start_mask = 0xFFFFFFFF >> start_bit;
@@ -331,10 +340,10 @@ void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 	   UINT32 mask;
 	   int l;
 
-	   ( Bound checking )
-	   if (row < 0 || row >= ROWS) return;
-	   if (col < 0 || col >= COLS) return;
-	   if (length <= 0) return;
+		( Fast bound checking [1] )
+		if ((UINT16)row >= ROWS) return;
+		if ((UINT16)col >= COLS) return;
+		if (length <= 0) return;
 
 	   ( Clipping )
 	   l = length;
@@ -373,6 +382,75 @@ void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 }
 */
 
+/*
+
+	Calculate the Cohen-Sutherland clipping code and return it.
+
+*/
+char clip_code(int row, int col)
+{
+	/* Calculate clipping code (TBLR) */
+	char code = 0;
+
+	if (row < 0)
+		code |= LINE_CLIP_TOP;
+	if (row >= ROWS)
+		code |= LINE_CLIP_BOTTOM;
+	if (col < 0)
+		code |= LINE_CLIP_LEFT;
+	if (col >= COLS)
+		code |= LINE_CLIP_RIGHT;
+
+	return code;
+}
+
+long clip_row_col(int row, int col, int dr, int dc, char code)
+{
+	long new_axis;
+	long out;
+
+	if (code & LINE_CLIP_R)
+	{
+		new_axis = 0;
+		if (code & LINE_CLIP_BOTTOM)
+		{
+			new_axis = ROWS;
+			new_axis--;
+		}
+		new_axis -= row;
+		row += (int)new_axis;
+
+		new_axis *= dc;
+		new_axis /= dr;
+
+		col += (int)new_axis;
+		code = clip_code(row, col);
+	}
+	if (code & LINE_CLIP_C)
+	{
+		new_axis = 0;
+
+		if (code & LINE_CLIP_RIGHT)
+		{
+			new_axis = COLS;
+			new_axis--;
+		}
+		new_axis -= col;
+		col += (int)new_axis;
+
+		new_axis *= dr;
+		new_axis /= dc;
+
+		row += (int)new_axis;
+	}
+
+	out = row;
+	out <<= 16;
+	out |= col;
+
+	return out;
+}
+
 /*----- Function: plot_line -----
  PURPOSE: Plots a line on the screen between the two given points.
 
@@ -384,27 +462,157 @@ void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 */
 void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col)
 {
-	if(start_col==end_col && start_row == end_row){
-		plot_pixel(base, start_row, start_col); /*if "line" is just one pixel then call plot pixel*/
+	int dr;
+	int dc;
+	int err;
+	int row;
+	UINT16 col;
+	int row_count;
+	int col_count;
+	char start_code;
+	char end_code;
+
+	/* Calculate deltas */
+	dc = end_col;
+	dc -= start_col;
+
+	dr = end_row;
+	dr -= start_row;
+
+	start_code = clip_code(start_row, start_col);
+	end_code = clip_code(end_row, end_col);
+
+	if (start_code & end_code)
+		return; /* Line does not cross screen */
+
+	if (start_code)
+	{
+		long clipped = clip_row_col(start_row, start_col, dr, dc, start_code);
+		start_col = clipped & 0xFFFF;
+		start_row = clipped >> 16;
 	}
-	else if(start_row==end_row){ /* call plot_horizontal_line if line is on one row*/
-		if(end_col>start_col){
-			plot_horizontal_line(base, start_row, start_col, end_col-start_col);
-		}
-		else {
-			plot_horizontal_line(base, end_row, start_col, start_col-end_col);
+	if (end_code)
+	{
+		long clipped = clip_row_col(end_row, end_col, dr, dc, end_code);
+		end_col = clipped & 0xFFFF;
+		end_row = clipped >> 16;
+	}
+
+	dc = end_col;
+	dc -= start_col;
+
+	dr = end_row;
+	dr -= start_row;
+
+	/* Fix start row/col */
+	if (dc < 0)
+	{
+		dr = -dr;
+		dc = -dc;
+		start_col = end_col;
+		start_row = end_row;
+	}
+
+	/* Move pointer to first long */
+	row = start_row;
+	row *= LONG_COLS; /* Row long offset */
+	col = start_col;
+	col >>= 5;	/* Col long offset */
+	row += col; /* Total offset */
+	base += row;
+
+	row = LONG_COLS; /* Row step */
+
+	if (dr < 0)
+	{
+		dr = -dr;
+		row = -row;
+	}
+
+	col = start_col;
+	col = ~col;
+	col &= 31; /* Col shift */
+
+	*base |= (UINT32)1 << col; /* Plot first pixel */
+
+	/* Plotting loops */
+	col_count = dc;
+	col_count--;
+
+	if (dr == dc)
+	{
+		while (col_count-- >= 0)
+		{
+			/* Diagonal */
+			if (--col > 32)
+			{
+				col = 31;
+				base++;
+			}
+
+			base += row;
+
+			*base |= (UINT32)1 << col; /*bset*/
 		}
 	}
-	else if(start_col==end_col){ /*call plot vertical line if the line if start and end col are the same*/
-		if(end_row>start_row){
-			plot_vertical_line(base, start_row, start_col, end_col-start_col);
-		}
-		else {
-			plot_vertical_line(base, start_row, start_col, start_col-end_col);
+	else if (dr < dc)
+	{
+		/* Column major */
+
+		err = 0;
+		err -= dc;
+
+		dr += dr;
+		dc += dc;
+
+		while (col_count-- >= 0)
+		{
+			if (--col > 32)
+			{
+				col = 31;
+				base++;
+			}
+
+			err += dr;
+			if (err >= 0) /* Check carry set */
+			{
+				err -= dc;
+				base += row;
+			}
+
+			*base |= (UINT32)1 << col; /*bset*/
 		}
 	}
-	else{
-		/*Insert Bresenham's Algorithm Here*/
+	else
+	{
+		/* Row major */
+		row_count = dr;
+		row_count--;
+
+		err = 0;
+		err -= dr;
+
+		dr += dr;
+		dc += dc;
+
+		while (row_count-- >= 0)
+		{
+			base += row;
+
+			err += dc;
+
+			if (err >= 0)
+			{
+				err -= dr;
+				if (--col > 32) /* Check carry set */
+				{
+					col = 31;
+					base++;
+				}
+			}
+
+			*base |= (UINT32)1 << col; /*bset*/
+		}
 	}
 }
 
@@ -420,11 +628,11 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
  OUTPUT: None
 */
 void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
-{	
+{
 	plot_horizontal_line(base, row, col, width);
 	plot_vertical_line(base, row, col, length);
-	plot_horizontal_line(base, row, col+width, width);
-	plot_vertical_line(base, row+length, col, length);
+	plot_horizontal_line(base, row, col + width, width);
+	plot_vertical_line(base, row + length, col, length);
 }
 
 /*----- Function: plot_square -----
@@ -439,10 +647,10 @@ void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
 */
 void plot_square(UINT32 *base, int row, int col, UINT16 side)
 {
-	plot_horizontal_line(base, row, col, side); /*draw top side in square*/
-	plot_vertical_line(base, row, col, side); /*draw left side of square*/
-	plot_horizontal_line(base, row, col+side, side); /*draw bottom side of square*/
-	plot_vertical_line(base, row+side, col, side); /*draw right side of square*/
+	plot_horizontal_line(base, row, col, side);		   /*draw top side in square*/
+	plot_vertical_line(base, row, col, side);		   /*draw left side of square*/
+	plot_horizontal_line(base, row, col + side, side); /*draw bottom side of square*/
+	plot_vertical_line(base, row + side, col, side);   /*draw right side of square*/
 }
 
 /*----- Function: plot_triangle -----
@@ -510,13 +718,13 @@ void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16
 	row_offset += col_offset; ( row_offset = total byte offset. )
 
 	start_shift &= 7;
-	
+
 	base += row_offset;
 
-	if (start_shift == 0) 
+	if (start_shift == 0)
 	{
 		( Fast loop for byte aligned draws. )
-		while (height-- > 0) 
+		while (height-- > 0)
 		{
 			start_mask = *(bitmap++);
 			*base |= start_mask;
@@ -588,13 +796,13 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
 	row_offset += col_offset; ( row_offset = total word offset. )
 
 	start_shift &= 15;
-	
+
 	base += row_offset;
 
-	if (start_shift == 0) 
+	if (start_shift == 0)
 	{
 		( Fast loop for word aligned draws. )
-		while (height-- > 0) 
+		while (height-- > 0)
 		{
 			start_mask = *(bitmap++);
 			*base |= start_mask;
@@ -666,13 +874,13 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
 	row_offset += col_offset; ( row_offset = total long offset. )
 
 	start_shift &= 31;
-	
+
 	base += row_offset;
 
-	if (start_shift == 0) 
+	if (start_shift == 0)
 	{
 		( Fast loop for long aligned draws. )
-		while (height-- > 0) 
+		while (height-- > 0)
 		{
 			start_mask = *(bitmap++);
 			*base |= start_mask;
@@ -721,8 +929,10 @@ void plot_character(UINT8 *base, int row, int col, char ch)
 	/* Fast bound checking [1] */
 	max_row = ROWS - FONT_HEIGHT;
 	max_col = COLS - 8;
-	if ((UINT16)row > max_row) return;
-	if ((UINT16)col > max_col) return;
+	if ((UINT16)row > max_row)
+		return;
+	if ((UINT16)col > max_col)
+		return;
 
 	linea0();				 /* Initialize line-a variables */
 	font = (char *)V_FNT_AD; /* Get start address of font table */

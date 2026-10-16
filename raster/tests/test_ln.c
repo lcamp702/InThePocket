@@ -133,6 +133,24 @@ void test_h_line()
 	}
 }
 
+/*
+plot_vertical_line Test Plan:
+
+Screen #1: Invalid values
+	Screen should appear blank for 0.5 sec.
+
+1-5		|	Lines starting outside the valid rows	|	Lines should not appear
+6-10	|	Lines starting outside the valid cols	|	Lines should not appear
+11-13	|	Lines with zero length					| 	Lines should not appear
+
+Screen #2: Clipped lines
+	Lines should appear on the bottom half. Any lines on the top indicate wrap around.
+
+1		| Line from half to the bottom (200-400px)	|	200px line should appear completely on the bottom half of the screen
+2-4		| Line from half clipping past the bottom	|	200px line should appear completely on the bottom half of the screen. Nothing should appear on the top half of the screen.
+
+*/
+
 void test_v_line()
 {
 	int t;
@@ -165,8 +183,8 @@ void test_v_line()
 
     /* Invalid length */
     plot_vertical_line(l_fb, 0, 100, 0);
-    plot_vertical_line(l_fb, 200, 100, 0);
-    plot_vertical_line(l_fb, 399, 100, 0);
+    plot_vertical_line(l_fb, 200, 320, 0);
+    plot_vertical_line(l_fb, 399, 639, 0);
 
     sync_wait(35);
     clear_screen(l_fb);
@@ -177,20 +195,19 @@ void test_v_line()
     plot_vertical_line(l_fb, 200, 20, 200);
     /* Clipping past bottom */
     plot_vertical_line(l_fb, 200, 30, 201);
-    plot_vertical_line(l_fb, 200, 40, 500);
-    plot_vertical_line(l_fb, 200, 50, 2000);
+    plot_vertical_line(l_fb, 200, 40, 1000);
     /* Near bottom clipping */
-    plot_vertical_line(l_fb, 368, 60, 100);
-    plot_vertical_line(l_fb, 380, 70, 50);
+    plot_vertical_line(l_fb, 368, 50, 100);
+    plot_vertical_line(l_fb, 380, 60, 50);
     /* Single pixel clipping at bottom */
-    plot_vertical_line(l_fb, 399, 80, 1);   /* Last pixel, exact */
-    plot_vertical_line(l_fb, 399, 90, 2);   /* Last pixel, clipped */
+    plot_vertical_line(l_fb, 399, 70, 1);   /* Last pixel, exact */
+    plot_vertical_line(l_fb, 399, 80, 2);   /* Last pixel, clipped */
     /* Large lengths (unsigned) */
-    plot_vertical_line(l_fb, 200, 110, 0x8000); /* length = 32768 */
-    plot_vertical_line(l_fb, 200, 120, 0xC000); /* length = 49152 */
+    plot_vertical_line(l_fb, 200, 90, 0x8000); /* length = 32768 */
+    plot_vertical_line(l_fb, 200, 100, 0xC000); /* length = 49152 */
     /* End pixel wraparound (r+length) */
-    plot_vertical_line(l_fb, 200, 130, 0xFFFF);
-    plot_vertical_line(l_fb, 399, 140, 0xFFFF);
+    plot_vertical_line(l_fb, 200, 110, 0xFFFF);
+    plot_vertical_line(l_fb, 399, 120, 0xFFFF);
 
     sync_wait(70);
     clear_screen(l_fb);
@@ -201,7 +218,7 @@ void test_v_line()
     plot_vertical_line(l_fb, 0, 0, ROWS);
     plot_vertical_line(l_fb, 0, COLS - 1, ROWS);
 
-    /* Plot single pixels at row word boundaries */
+    /* Pixels at row word boundaries */
     plot_vertical_line(l_fb, 0, 10, 1);
     plot_vertical_line(l_fb, 15, 12, 1);
     plot_vertical_line(l_fb, 31, 14, 1);
@@ -248,4 +265,83 @@ void test_v_line()
 		sync_wait(35);
 		clear_screen(l_fb);
 	}
+}
+
+void test_line()
+{
+	int i;
+
+	plot_string(b_fb, 0, 0,"Plot line");
+
+	/* Invalid rows */
+    plot_line(l_fb, -1, 100, 200, 320);
+    plot_line(l_fb, -32768, 200, 200, 320);
+    plot_line(l_fb, ROWS, 300, 200, 320);
+    plot_line(l_fb, ROWS + 100, 400, 200, 320);
+    plot_line(l_fb, 32767, 500, 200, 320);
+
+	plot_line(l_fb, 200, 320, -1, 100);
+    plot_line(l_fb, 200, 320, -32768, 200);
+    plot_line(l_fb, 200, 320, ROWS, 300,);
+    plot_line(l_fb, 200, 320, ROWS + 100, 400);
+    plot_line(l_fb, 200, 320, 32767, 500);
+
+    /* Invalid cols */
+    plot_line(l_fb, 10, -1, 200, 320);
+    plot_line(l_fb, 20, -32768, 200, 320);
+    plot_line(l_fb, 30, COLS, 200, 320);
+    plot_line(l_fb, 40, COLS + 100, 200, 320);
+    plot_line(l_fb, 50, 32767, 200, 320);
+
+	plot_line(l_fb, 200, 320, 10, -1);
+    plot_line(l_fb, 200, 320, 20, -32768);
+    plot_line(l_fb, 200, 320, 30, COLS);
+    plot_line(l_fb, 200, 320, 40, COLS + 100);
+    plot_line(l_fb, 200, 320, 50, 32767);
+
+	sync_wait(70);
+	clear_screen(l_fb);
+
+	/* Diagonals */
+	plot_line(l_fb, 0, 0, 100, 100);	/* end > start */
+	plot_line(l_fb, 0, 200, 100, 100);	/* end col < start col */
+	plot_line(l_fb, 100, 200, 0, 300);	/* end row < start row */
+	plot_line(l_fb, 100, 400, 0, 300);	/* end < start */
+
+	/* Straight lines */
+	plot_line(l_fb, 300, 200, 200, 200);
+	plot_line(l_fb, 200, 300, 200, 200);
+	plot_line(l_fb, 300, 300, 200, 300);	/* end row < start row */
+	plot_line(l_fb, 300, 300, 300, 200);	/* end col < start col */
+
+	/* Single pixel */
+	plot_line(l_fb, 300, 500, 300, 500);
+
+	sync_wait(35);
+	clear_screen(l_fb);
+
+    /* Outer edges */
+    plot_line(l_fb, 0,        0,        0,        COLS - 1);
+    plot_line(l_fb, ROWS - 1, 0,        ROWS - 1, COLS - 1);
+    plot_line(l_fb, 0,        0,        ROWS - 1, 0);
+    plot_line(l_fb, 0,        COLS - 1, ROWS - 1, COLS - 1);
+
+    /* Corner-to-corner X */
+    plot_line(l_fb, 0,        0,        ROWS - 1, COLS - 1);
+    plot_line(l_fb, ROWS - 1, 0,        0,        COLS - 1);
+
+	sync_wait(35);
+	clear_screen(l_fb);
+
+    /* Test all octants, including straight and diagonals */
+    for (i = -400; i <= 400; i += 80)
+    {
+        plot_line(l_fb, 200, 320, 200 + i, 720); /* Right lines */
+        plot_line(l_fb, 200, 320, 200 + i, -80); /* Left lines */
+        plot_line(l_fb, 200, 320, 600, 320 + i); /* Bottom lines*/
+        plot_line(l_fb, 200, 320, -200, 320 + i); /* Top lines */
+    }
+
+	sync_wait(70);
+	clear_screen(l_fb);
 }

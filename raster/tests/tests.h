@@ -19,6 +19,7 @@ void test_clear_region();
 void test_pixel();
 void test_h_line();
 void test_v_line();
+void test_line();
 
 /* test_str.c */
 void test_char();

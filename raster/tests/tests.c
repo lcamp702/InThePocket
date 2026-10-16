@@ -36,6 +36,8 @@ int main()
 	disable_cursor();
 	clear_screen(l_fb);
 	Cnecin();
+	test_line();
+	Cnecin();
 	test_clear_screen();
 	Cnecin();
 	test_clear_region();

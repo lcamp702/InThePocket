@@ -158,6 +158,28 @@ int main(void){
 		}
 	}
 
+	model_init(&test_model, test_song, TEST_SONG_LEN);
+	for(i = 0; i<133; i++){
+		synch_clock_tick(&test_model);
+	}
+	for(i = 0; i<5; i++){
+		synch_clock_tick(&test_model);
+		if(!asynch_is_hit(&test_model, 3)){
+			printf("applying miss, meter now gives ");
+			print_meter(&test_model.meter);
+			asynch_apply_miss(&test_model);
+		}
+	}
+	for(i = 0; i<30; i++){
+		synch_clock_tick(&test_model);
+		printf("-- TICK -- \n");
+		if( asynch_is_hit(&test_model, 0) || asynch_is_hit(&test_model, 1) || asynch_is_hit(&test_model, 2) || asynch_is_hit(&test_model, 3) ){
+			asynch_apply_hit(&test_model);
+			printf("hit applied, meter now gives ");
+			print_meter(&test_model.meter);
+		}
+	}
+
 
 
 

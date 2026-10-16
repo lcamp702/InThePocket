@@ -19,6 +19,7 @@
 
 #define HIT_REWARD_ENJOYMENT 2
 #define HIT_REWARD_SCORE 10
+
 UINT8 asynch_key_to_pitch(char key){
 	
 	UINT8 pitch=4;
@@ -53,9 +54,19 @@ UINT8 asynch_is_hit(const Model *model, UINT8 pitch){
 }
 
 void asynch_apply_hit(Model *model){
-	meter_update_enjoyment(&model->meter, HIT_REWARD_ENJOYMENT);
-	meter_update_score(&model->meter, HIT_REWARD_SCORE);
+	if(model->meter.enjoyment>0){
+		meter_update_enjoyment(&model->meter, HIT_REWARD_ENJOYMENT);
+		meter_update_score(&model->meter, HIT_REWARD_SCORE);
+	}
 	meter_double_multiplier(&model->meter);
 	model_advance_head(model);
+}
+
+void asynch_apply_miss(Model *model){
+		if(model->meter.enjoyment>0){
+			meter_update_enjoyment(&model->meter, -MISS_PENALTY);
+		}
+		meter_reset_multiplier(&model->meter);
+		model_advance_head(model);
 }
 

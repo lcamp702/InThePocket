@@ -357,13 +357,43 @@ void test_line()
 	sync_wait(35);
 	clear_screen(l_fb);
 
-    /* Test all octants, including straight and diagonals */
+	/* Test all octants, including straight and diagonals */
+    for (i = -150; i <= 150; i += 30)
+    {
+        plot_line(l_fb, 200, 320, 200 + i, 720); /* Right lines */
+        plot_line(l_fb, 200, 320, 200 + i, -80); /* Left lines */
+        plot_line(l_fb, 200, 320, 600, 320 + i); /* Bottom lines*/
+        plot_line(l_fb, 200, 320, -200, 320 + i); /* Top lines */
+    }
+
+	sync_wait(35);
+	clear_screen(l_fb);	
+
+    /* 
+	End Out of bounds
+	Test all octants, including straight and diagonals 
+	*/
     for (i = -400; i <= 400; i += 80)
     {
         plot_line(l_fb, 200, 320, 200 + i, 720); /* Right lines */
         plot_line(l_fb, 200, 320, 200 + i, -80); /* Left lines */
         plot_line(l_fb, 200, 320, 600, 320 + i); /* Bottom lines*/
         plot_line(l_fb, 200, 320, -200, 320 + i); /* Top lines */
+    }
+
+	sync_wait(35);
+	clear_screen(l_fb);
+	
+	/* 
+	Start Out of bounds
+	Test all octants, including straight and diagonals 
+	*/
+    for (i = -400; i <= 400; i += 80)
+    {
+        plot_line(l_fb, 200 + i, 720, 200, 320); /* Right lines */
+        plot_line(l_fb, 200 + i, -80, 200, 320); /* Left lines */
+        plot_line(l_fb, 600, 320 + i, 200, 320); /* Bottom lines*/
+        plot_line(l_fb, -200, 320 + i, 200, 320); /* Top lines */
     }
 
 	sync_wait(70);

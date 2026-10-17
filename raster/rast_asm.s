@@ -83,6 +83,13 @@ vl_row		equ		32
 vl_col		equ		34
 vl_len		equ		36
 
+;	_plot_16bit_bitmap(UINT- *base, int row, int col, const UINT- *bitmap, UINT16 height)
+bm16_base	equ		24
+bm16_row	equ		28
+bm16_col	equ		30
+bm16_bmp	equ		32
+bm16_hei	equ		36
+
 ;	_plot_-bit_bitmap(UINT- *base, int row, int col, const UINT- *bitmap, UINT16 height)
 bm_base		equ		32
 bm_row		equ		36
@@ -457,54 +464,92 @@ vl_end:
 _plot_8bit_bitmap:
 		movem.l		d0-4/a0-1,-(sp)
 
-		; Copy params to registers and bound check
+		; Height must be > 0
 		move.w		bm_hei(sp),d0	; d0.w = height
-		beq.b		bm8_end		; if (length == 0) return
+		beq.w		bm8_end		; if (height == 0) return
 
-		move.w		bm_row(sp),d1	; d1.w = Row #
-		move.w		#ROWS,d2	; d2.w = Total rows
-		sub.w		d0,d2		; d2.w = Max row
-		cmp.w		d2,d1
-		bhs.b		bm8_end		; Fast row bound check [1]
-
-		move.w		bm_col(sp),d2	; d2.w = Column #
-		cmp.w		#BM8_MAX_COLS,d2
-		bhs.b		bm8_end		; Fast col bound check [1]
-
-		subq.w		#1,d0		; Predecrement height for print loop
+		; Load bitmap pointer
 		movea.l		bm_bmp(sp),a1	; a1.l = Bitmap base pointer
 
-		; Move fb pointer to first byte
+		; Load row
+		move.w		bm_row(sp),d1	; d1.w = Row #
+		bpl.b		bm8_bottom	; Row > 0, no top clipping
+
+		; Top clipping
+		neg.w		d1
+		sub.w		d1,d0		; Subtract from print height
+		bls.w		bm8_end		; If height < negative row count, nothing to draw
+
+		; Top clipped but partially visible
+		adda.w		d1,a1		; Offset bitmap pointer by # of negative rows
+		clr.w		d1		; Zero start row
+		
+bm8_bottom:
+		cmpi.w		#ROWS,d1
+		bhs.w		bm8_end		; If row >= max row, nothing to draw
+
+		; Bottom clipping
+		move.w		#ROWS,d2
+		sub.w		d1,d2		; d2.w = Max visible height
+		cmp.w		d2,d0
+		blo.b		bm8_clipped_row
+
+		; Bottom clipped but bitmap partially appears.
+		move.w		d2,d0		; Clamp height to visible height
+
+bm8_clipped_row:	; Clipped row + height found
+		subq.w		#1,d0		; Predecrement height for print loops
+
+		; Move framebuffer pointer to first byte of the row
 		movea.l		bm_base(sp),a0	; a0.l = Framebuffer base pointer
 
-		move.w		d1,d3
+		move.w		d1,d2
 		lsl.w		#4,d1
-		lsl.w		#6,d3
-		add.w		d3,d1		; d1.w = Row byte offset
+		lsl.w		#6,d2
+		add.w		d2,d1		; d1.w = Row byte offset
 
-		move.w		d2,d3		; d3.w = Copy of col # for offset calc
-		lsr.w		#3,d3		; d3.w = Col byte offset
+		adda.w		d1,a0		; a0 points to start of row to draw on
 
-		add.w		d3,d1		; d1.w = Total byte offset
+		; Load column
+		move.w		bm_col(sp),d1	; d2.w = Column #
+		bpl.b		bm8_right
 
+		; Left clipping
+		neg.w		d1		; d1.w = negative col count
+		cmpi		#8,d1
+		bhs.b		bm8_end		; If negative col count >= 8, nothing to draw
+
+bm8_left_loop:	; No column offset, draw shifted bitmap on the left
+		move.b		(a1)+,d2	; Load next bitmap row into register
+		lsl.b		d1,d2		; Shift bitmap row
+		or.b		d2,(a0)		; Apply mask to framebuffer
+		adda.w		#BYTE_COLS,a0	; Move to next row of framebuffer
+		dbra		d0,bm8_left_loop
+		bra.b		bm8_end		; Done drawing
+
+bm8_right:	; Col > 0, no left clip
+		cmpi.w		#COLS,d1
+		bhs.b		bm8_end		; If col >= max col, nothing to draw
+
+		move.w		d1,d2		; d2.w = Copy of col # for offset calc
+		lsr.w		#3,d1		; d2.w = Col byte offset
 		adda.w		d1,a0		; a0.l = Pointer to first byte to write to
 
 		; Get bit shift
 		andi.w		#7,d2		; d2.w = Start shift right amount (col % 8)
 		bne		bm8_shifted	
 		
-bm8_byte_loop:	; If start shift == 0, print bmp into bytes
+bm8_aligned_loop:	; If start shift == 0, print bmp into bytes
 		move.b		(a1)+,d1	; d1.b = Bitmap row
 		or.b		d1,(a0)		; Apply bitmap row mask to framebuffer
 		adda.w		#BYTE_COLS,a0	; Move to next line of the framebuffer
-		dbra		d0,bm8_byte_loop
+		dbra		d0,bm8_aligned_loop
 
 		bra		bm8_end
 
 bm8_shifted:	; If start shift != 0, shift bmp across 2 bytes
-		move.w		d2,d1		; d1.w = Col % 8
-		neg.w		d1		; d1.w = -(col % 8)
-		addq.w		#8,d1		; d1.w = End byte shift left
+		cmpi.w		#BYTE_COLS-1,d1
+		bhs.b		bm8_right_loop
 
 bm8_shift_loop:
 		clr.w		d3		; Clear word to shift byte within
@@ -514,9 +559,18 @@ bm8_shift_loop:
 		ror.w		#8,d3		; d3.b = Shifted end byte
 		or.b		d3,(a0)
 
-		adda.w		#79,a0		; Move to next row
+		adda.w		#BYTE_COLS-1,a0		; Move to next row
 
 		dbra		d0,bm8_shift_loop
+		bra.b		bm8_end
+
+bm8_right_loop:
+		move.b		(a1)+,d1
+		lsr.b		d2,d1
+		or.b		d1,(a0)
+		adda.w		#BYTE_COLS,a0
+		dbra		d0,bm8_right_loop
+
 bm8_end:
 		movem.l		(sp)+,d0-4/a0-1
 		rts
@@ -529,52 +583,96 @@ bm8_end:
 ;	 Height: the length (number of rows) of the height in pixels of the bitmap
 ; OUTPUT: None
 _plot_16bit_bitmap:
-		movem.l		d0-4/a0-1,-(sp)
+		movem.l		d0-2/a0-1,-(sp)
 
-		; Copy params to registers and bound check
-		move.w		bm_hei(sp),d0	; d0.w = height
-		beq.b		bm16_end	; if (length == 0) return
+		; Height check
+		move.w		bm16_hei(sp),d0	; d0.w = height
+		beq.w		bm16_end	; if (length == 0), nothing to draw
 
-		move.w		bm_row(sp),d1	; d1.w = Row #
-		move.w		#ROWS,d2	; d2.w = Total rows
-		sub.w		d0,d2		; d2.w = Max row
-		cmp.w		d2,d1
-		bhs.b		bm16_end	; Fast row bound check [1]
+		; Load bitmap pointer
+		movea.l		bm16_bmp(sp),a1	; a1.l = Bitmap base pointer
 
-		move.w		bm_col(sp),d2	; d2.w = Column #
-		cmp.w		#BM16_MAX_COLS,d2
-		bhs.b		bm16_end	; Fast col bound check [1]
+		; Load row
+		move.w		bm16_row(sp),d1	; d1.w = Row #
+		bpl.b		bm16_bottom	; Row > 0, no top clipping
 
-		subq.w		#1,d0		; Predecrement height for print loop
-		movea.l		bm_bmp(sp),a1	; a1.l = Bitmap base pointer
+		; Top clipping
+		neg		d1
+		sub.w		d1,d0		; Subtract negative row count from height
+		bls.w		bm16_end	; If height < negative row count, nothing to draw
 
-		; Move fb pointer to first word
-		movea.l		bm_base(sp),a0; a0.l = Framebuffer base pointer
+		; Top clipped but bitmap partially appears
+		add.w		d1,d1		; d1.w = Bitmap row offset (row * 2)
+		adda.w		d1,a1		; Offset bitmap pointer by # of negative rows
+		clr.w		d1		; Start row = 0
 
-		move.w		d1,d3
-		lsl.w		#3,d1
-		lsl.w		#5,d3
-		add.w		d3,d1		; d1.w = Row word offset
+bm16_bottom:
+		cmpi.w		#ROWS,d1
+		bhs.w		bm16_end	; If row >= max row, nothing to draw
 
-		move.w		d2,d3		; d3.w = Copy of col # for offset calc
-		lsr.w		#4,d3		; d3.w = Col word offset
+		; Bottom clip
+		move.w		#ROWS,d2
+		sub.w		d1,d2		; d2.w = Max visible height
+		cmp.w		d2,d0
+		blo.b		bm16_clipped_row	; If height < visible height, no clipping
 
-		add.w		d3,d1		; d1.w = Total word offset
-		lsl.w		#1,d1		; d1.w = Total byte offset
+		; Bottom clipped but bitmap partially appears
+		move.w		d2,d0		; Clamp height to visible height
 
+bm16_clipped_row:	; Clipped row + height found
+		subq.w		#1,d0		; Predecrement height for print loops
+
+		; Move framebuffer pointer to first byte of the row
+		movea.l		bm16_base(sp),a0	; a0.l = Framebuffer base pointer
+
+		move.w		d1,d2
+		lsl.w		#4,d1
+		lsl.w		#6,d2
+		add.w		d2,d1		; d1.w = Row byte offset
+
+		adda.w		d1,a0		; a0 points to the first row to draw on
+
+		; Load column
+		move.w		bm16_col(sp),d1	; d1.w = Column #
+		bpl.b		bm16_right	; If col > 0, no left clip
+
+		; Left clipping
+		neg.w		d1		; d1.w = negative col count
+		cmpi.w		#16,d1
+		bhs.b		bm16_end	; If negative col count >= 32, nothing to draw
+
+bm16_left_loop:	; No column offset needed, draw shifted bitmap on the left
+		move.w		(a1)+,d2	; Load next bitmap row into register
+		lsl.w		d1,d2		; Shift bitmap row
+		or.w		d2,(a0)		; Apply mask to framebuffer
+		adda.w		#BYTE_COLS,a0	; Move to next row of framebuffer
+		dbra		d0,bm16_left_loop
+		bra.b		bm16_end	; Done drawing
+
+bm16_right:	; Col > 0, no left clip
+		cmpi.w		#COLS,d1
+		bhs.b		bm16_end	; If col >= max col, nothing to draw
+
+		move.w		d1,d2
+		lsr.w		#4,d1		; d1.w = Col word offset
+		add.w		d1,d1		; d1.w = Col word aligned byte offset
 		adda.w		d1,a0		; a0.l = Pointer to first byte to write to
 
 		; Get bit shift
 		andi.w		#15,d2		; d2.w = Start shift right amount (col % 16)
-		bne		bm16_shift_loop	
+		bne		bm16_shifted
 		
-bm16_byte_loop:	; If start shift == 0, print bmp into bytes
+bm16_aligned_loop:	; If start shift == 0, print bmp into words
 		move.w		(a1)+,d1	; d1.w = Bitmap row
 		or.w		d1,(a0)		; Apply bitmap row mask to framebuffer
 		adda.w		#BYTE_COLS,a0	; Move to next line of the framebuffer
-		dbra		d0,bm16_byte_loop
+		dbra		d0,bm16_aligned_loop
 
 		bra		bm16_end
+
+bm16_shifted:
+		cmpi.w		#BYTE_COLS-2,d1
+		bhs.b		bm16_right_loop
 
 bm16_shift_loop:
 		; Speed optimized shift with swap.w and longs
@@ -585,11 +683,20 @@ bm16_shift_loop:
 		swap.w		d1		; d1.w = End word bitmap row
 		or.w		d1,(a0)		; Apply end word bitmap row
 
-		adda.w		#78,a0		; Move to next row
+		adda.w		#BYTE_COLS-2,a0		; Move to next row
 
 		dbra		d0,bm16_shift_loop
+		bra.b		bm16_end
+
+bm16_right_loop:
+		move.w		(a1)+,d1
+		lsr.w		d2,d1
+		or.w		d1,(a0)
+		adda.w		#BYTE_COLS,a0
+		dbra		d0,bm16_right_loop
+
 bm16_end:
-		movem.l		(sp)+,d0-4/a0-1
+		movem.l		(sp)+,d0-2/a0-1
 		rts
 
 ; ==== Function: plot_32bit_bitmap ====
@@ -621,7 +728,7 @@ _plot_32bit_bitmap:
 		; Top clipped but bitmap partially appears
 		ext.l		d1
 		lsl.l		#2,d1		; Row * 4 = Bitmap row offset
-		adda.l		d1,a1		; Increment bitmap pointer
+		adda.l		d1,a1		; Offset bitmap pointer by # of negative rows
 		clr.w		d1		; Zero start row
 
 bm32_bottom:
@@ -632,12 +739,12 @@ bm32_bottom:
 		move.w		#ROWS,d2
 		sub.w		d1,d2		; d2.w = Max visible height (ROWS - row)
 		cmp.w		d2,d0
-		blo.b		bm32_row	; If height < visible height, job is done.
+		blo.b		bm32_clipped_row	; If height < visible height, no clipping
 
-		; Bottom clipped but bitmap partially appears.
+		; Bottom clipped but bitmap partially appears
 		move.w		d2,d0		; Clamp height to visible height
 
-bm32_row:	; Clipped row + height are known
+bm32_clipped_row:	; Clipped row + height found
 		subq.w		#1,d0		; Predecrement height for print loop
 
 		; Move fb pointer to first byte of row
@@ -655,10 +762,10 @@ bm32_row:	; Clipped row + height are known
 		; Left clipping
 		neg.w		d1		; d1.w = negative col count
 		cmpi.w		#32,d1
-		bhs.b		bm32_end	; If negative col count >= 32, nothing to draw.
+		bhs.b		bm32_end	; If negative col count >= 32, nothing to draw
 
-bm32_left_loop:	; No column offsets needed, so we can draw
-		move.l		(a1)+,d2	; Load bitmap row into register and move to the next
+bm32_left_loop:	; No column offsets needed, so we can draw on the left side
+		move.l		(a1)+,d2	; Load bitmap row into register
 		lsl.l		d1,d2		; Shift bitmap row
 		or.l		d2,(a0)		; Apply mask to framebuffer
 		adda.w		#BYTE_COLS,a0	; Move to next row of framebuffer
@@ -690,7 +797,7 @@ bm32_shifted:	; If start shift != 0, shift bmp across 2 bytes
 		moveq.l		#32,d1		; d1.w = 32
 		sub.w		d2,d1		; d1.w = 32-(col % 32)
 
-		cmpi.w		#(LONG_COLS-1)*4,d1
+		cmpi.w		#BYTE_COLS-4,d1
 		bhs.b		bm32_right_loop	; Print only one long at the end of the screen
 
 bm32_shift_loop:

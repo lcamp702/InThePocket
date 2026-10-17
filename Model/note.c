@@ -17,6 +17,13 @@
 #include "note.h"
 
 /* sets x = NOTE_START_X */
+/*------ Function: note_init ------
+PURPOSE: Initializes note object
+
+INPUT: Note object pointer, UINT pitch value (from 1-4), and UINT32 time object (time when note will begin on screen)
+
+OUTPUT: N/A
+*/
 void note_init(Note *note, UINT8 pitch, UINT32 time) {
 	note->pitch=pitch;
 	note->time=time;
@@ -24,6 +31,13 @@ void note_init(Note *note, UINT8 pitch, UINT32 time) {
 }
 
 /* Moves note according to note speed */
+/*------ Function: note_move ------
+PURPOSE: Moves the note i.e. updates its value which corresponds to the x position
+
+INPUT: Note address
+
+OUTPUT: N/A
+*/
 void note_move(Note *note){
 	note->x-=NOTE_SPEED;
 }                            

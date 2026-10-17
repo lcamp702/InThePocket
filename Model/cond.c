@@ -17,6 +17,13 @@
 #include "cond.h"
 
 
+/*------ Function: cond_check_misses ------
+PURPOSE: 
+
+INPUT: 
+
+OUTPUT: 
+*/
 void cond_check_misses(Model *model){
 	while(model->head<model->note_count && model->notes[model->head].time+TRAVEL_TICKS+HIT_WINDOW<model->game_clock && model->meter.enjoyment > 0 ){
 		meter_update_enjoyment(&model->meter, -MISS_PENALTY);
@@ -25,6 +32,13 @@ void cond_check_misses(Model *model){
 	}
 }
 
+/*------ Function: cond_is_game_over ------
+PURPOSE: Checks if game is over (enjoyment meter has gone to 0)
+
+INPUT: Model address
+
+OUTPUT: N/A
+*/
 UINT8 cond_is_game_over(const Model *model){
 	UINT8 game_over;
 
@@ -38,6 +52,13 @@ UINT8 cond_is_game_over(const Model *model){
 	return game_over;
 }
 
+/*------ Function: cond_is_song_over ------
+PURPOSE: Checks if song is over
+
+INPUT: Model address
+
+OUTPUT: N/A
+*/
 UINT8 cond_is_song_over(const Model *model){
 	UINT8 song_over;
 	if(model->head>=model->note_count){

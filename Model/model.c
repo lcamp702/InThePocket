@@ -16,7 +16,13 @@
 
 #include "model.h"
 
-/*Initializes Model. Takes Model, the song array, and the amount of notes as parameters. Assumes that notes are ordered by spawn time. Songs over 512 notes are truncated.*/
+/*------ Function: model_init ------
+PURPOSE: Initializes Model.  Assumes that notes are ordered by spawn time. Songs over 512 notes are truncated.
+
+INPUT: Takes Model, the song array, and the amount of notes as parameters.
+
+OUTPUT: N/A
+*/
 void model_init(Model * model, const Note* arr, UINT16 notes_amt){
 	
 	UINT32 i;
@@ -31,16 +37,26 @@ void model_init(Model * model, const Note* arr, UINT16 notes_amt){
 	meter_init(&model->meter);
 }
 
-/*Increments the models clock. Note these ticks are 1/70th of a second. Parameters are the model.
-*NOTE : MOVE NOTES FIRST THEN TICK. 
+/*------ Function: model_tick ------
+PURPOSE: Increments the models clock. Note these ticks are 1/70th of a second. 
+
+INPUT: Model Address
+
+OUTPUT: N/A
+
+NOTE : MOVE NOTES FIRST THEN TICK. 
 */
 void model_tick(Model* model){
 	
 	model->game_clock++;
 
 }
-/*Calculates the index of the last note on screen. This gives the bounds for the array which is functional. Assumes the array is non empty. Paramaters are the model itself. Does bounds checking.
-*
+/*------ Function: model_last_on_screen ------
+PURPOSE: Calculates the index of the last note on screen. This gives the bounds for the array which is functional. Assumes the array is non empty.
+
+INPUT: Model Address
+
+OUTPUT: Returns index of the last note which is on screen (Unsigned Integer, length word).
 */
 UINT16 model_last_on_screen(const Model* model){
 	
@@ -53,8 +69,17 @@ UINT16 model_last_on_screen(const Model* model){
 	return last_note;
 }
 
-/*Moves notes where applicable. Parameters are the model. Does bounds checking. 
-*NOTE : MOVE NOTES FIRST THEN TICK. 
+
+
+/*------ Function: model_move_notes ------
+PURPOSE: Moves notes where applicable
+
+INPUT: Model Address
+
+OUTPUT: N/A
+
+NOTE : MOVE NOTES FIRST THEN TICK. 
+
 */
 void model_move_notes(Model* model){
 	UINT16 last_note, i;
@@ -66,7 +91,14 @@ void model_move_notes(Model* model){
 	}
 
 }
-/*Advances the model head. Parameter is the model itself. Does bounds checking. */
+
+/*------ Function: model_advance_head ------
+PURPOSE: Advances the model head. 
+
+INPUT: Model Adress
+
+OUTPUT: N/A
+*/
 void model_advance_head(Model* model){
 	if(model->head<model->note_count){
 		model->head++;

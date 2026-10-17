@@ -83,7 +83,11 @@ int main(void){
 		printf("game over = %d \n", cond_is_game_over(&test_model));
 	}
 
-	#if 0
+
+	/*cond_is_game_over (enjoyment = 40) test*/
+	printf("Press any key to proceed with cond_is_game_over (enjoyment = 40) test\n");
+	fflush(stdout);
+	Cconin();
 
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	test_model.meter.enjoyment=40;
@@ -94,10 +98,14 @@ int main(void){
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		print_model(&test_model);
-		printf("game over = %d", cond_is_game_over(&test_model));
+		printf("game over = %d \n", cond_is_game_over(&test_model));
 	}
 	
 	/*cond_is_song_over test*/
+	printf("Press any key to proceed with cond_is_song_over test\n");
+	fflush(stdout);
+	Cconin();
+
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	for(i = 0; i<145; i++){
 		synch_clock_tick(&test_model);
@@ -107,10 +115,14 @@ int main(void){
 		test_model.meter.enjoyment=100;
 		printf("-- TICK -- \n");
 		print_model(&test_model);
-		printf("song over = %d", cond_is_song_over(&test_model));
+		printf("song over = %d \n", cond_is_song_over(&test_model));
 	}
 
 	/*Test that key inputs yield correct pitch values*/
+	printf("Press any key to proceed with asynch_key_to_pitch test\n");
+	fflush(stdout);
+	Cconin();
+
 	printf("inputing a yields pitch value %d \n", asynch_key_to_pitch('a'));
 	printf("inputing s yields pitch value %d \n", asynch_key_to_pitch('s'));
 	printf("inputing d yields pitch value %d \n", asynch_key_to_pitch('d'));
@@ -121,6 +133,10 @@ int main(void){
     printf("inputing F(caps) yields pitch value %d \n", asynch_key_to_pitch('F'));
 	printf("inputing c yields pitch value %d \n", asynch_key_to_pitch('c'));
 	/*testing async_is_hit*/
+	printf("Press any key to proceed with asynch_is_hit (pitch 0) test\n");
+	fflush(stdout);
+	Cconin();
+
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	for(i = 0; i<138; i++){
 		synch_clock_tick(&test_model);
@@ -132,6 +148,11 @@ int main(void){
 		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 0));
 		print_note(&test_model.notes[test_model.head]);
 	}
+	/*asynch_is_hit (pitch 1) test*/
+	printf("Press any key to proceed with asynch_is_hit (pitch 1) test\n");
+	fflush(stdout);
+	Cconin();
+
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	for(i = 0; i<138; i++){
 		synch_clock_tick(&test_model);
@@ -140,9 +161,14 @@ int main(void){
 		test_model.meter.enjoyment=100;
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
-		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 1));
+		printf("hitting s yields %d \n", asynch_is_hit(&test_model, 1));
 		print_note(&test_model.notes[test_model.head]);
 	}
+	/*asynch_is_hit (pitch 2) test*/
+	printf("Press any key to proceed with asynch_is_hit (pitch 2) test\n");
+	fflush(stdout);
+	Cconin();
+
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	for(i = 0; i<138; i++){
 		synch_clock_tick(&test_model);
@@ -151,9 +177,14 @@ int main(void){
 		test_model.meter.enjoyment=100;
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
-		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 2));
+		printf("hitting d yields %d \n", asynch_is_hit(&test_model, 2));
 		print_note(&test_model.notes[test_model.head]);
 	}
+	/*asynch_is_hit (pitch 3) test*/
+	printf("Press any key to proceed with asynch_is_hit (pitch 3) test\n");
+	fflush(stdout);
+	Cconin();
+
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	for(i = 0; i<138; i++){
 		synch_clock_tick(&test_model);
@@ -162,10 +193,15 @@ int main(void){
 		test_model.meter.enjoyment=100;
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
-		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 3));
+		printf("hitting f yields %d \n", asynch_is_hit(&test_model, 3));
 		print_note(&test_model.notes[test_model.head]);
 	}
 	
+	/*asynch_apply_hit test*/
+	printf("Press any key to proceed with asynch_apply_hit test\n");
+	fflush(stdout);
+	Cconin();
+
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	for(i = 0; i<138; i++){
 		synch_clock_tick(&test_model);
@@ -179,6 +215,11 @@ int main(void){
 			print_meter(&test_model.meter);
 		}
 	}
+
+	/*asynch_apply_miss test*/
+	printf("Press any key to proceed with asynch_apply_miss test\n");
+	fflush(stdout);
+	Cconin();
 
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	for(i = 0; i<133; i++){
@@ -201,7 +242,6 @@ int main(void){
 			print_meter(&test_model.meter);
 		}
 	}
-	#endif
 
 
 
@@ -210,13 +250,16 @@ int main(void){
 }
 
 
+
 void print_note(const Note * note){
 	printf("time = %lu , x = %d, pitch = %d \n", note->time, note->x, note->pitch);
 }
 
+
 void print_meter(const Meter * meter){
 	printf("enjoyment =  %d, multiplier = %d, score = %lu \n", meter->enjoyment, meter->multiplier, meter->score);
 }
+
 
 void print_model(const Model * model){
 	

@@ -20,6 +20,13 @@
 #define HIT_REWARD_ENJOYMENT 2
 #define HIT_REWARD_SCORE 10
 
+/*------ Function: asynch_key_to_pitch ------
+PURPOSE: Converts char value from input ket to corresponding int value.
+
+INPUT: Char value of keyboard press
+
+OUTPUT: UINT8 of corresponding key press to the "pitch" of the note.
+*/
 UINT8 asynch_key_to_pitch(char key){
 	
 	UINT8 pitch=4;
@@ -39,6 +46,14 @@ UINT8 asynch_key_to_pitch(char key){
 	
 	return pitch;
 }
+
+/*------ Function: asynch_is_hit ------
+PURPOSE: Checks if note has been hit
+
+INPUT: pitch value (UINT8) and model address
+
+OUTPUT: N/A
+*/
 UINT8 asynch_is_hit(const Model *model, UINT8 pitch){
 	
 	UINT8 is_hit;
@@ -53,6 +68,13 @@ UINT8 asynch_is_hit(const Model *model, UINT8 pitch){
 	return is_hit;
 }
 
+/*------ Function: asynch_apply_hit ------
+PURPOSE: Handles hit event.
+
+INPUT: Model address
+
+OUTPUT: N/A
+*/
 void asynch_apply_hit(Model *model){
 	if(model->meter.enjoyment>0){
 		meter_update_enjoyment(&model->meter, HIT_REWARD_ENJOYMENT);
@@ -62,6 +84,13 @@ void asynch_apply_hit(Model *model){
 	model_advance_head(model);
 }
 
+/*------ Function: asynch_apply_miss ------
+PURPOSE: Handles miss event.
+
+INPUT: Model address.
+
+OUTPUT: N/A
+*/
 void asynch_apply_miss(Model *model){
 		if(model->meter.enjoyment>0){
 			meter_update_enjoyment(&model->meter, -MISS_PENALTY);

@@ -387,9 +387,9 @@ void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 	Calculate the Cohen-Sutherland clipping code and return it.
 
 */
-char clip_code(int row, int col)
+UINT8 clip_code(int row, int col)
 {
-	/* Calculate clipping code (TBLR) */
+	/* Calculate clipping code (TBRL) */
 	char code = 0;
 
 	if (row < 0)
@@ -404,7 +404,7 @@ char clip_code(int row, int col)
 	return code;
 }
 
-long clip_row_col(int row, int col, int dr, int dc, char code)
+long clip_row_col(int row, int col, UINT8 code, int dr, int dc)
 {
 	long new_axis;
 	long out;
@@ -469,15 +469,15 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 	UINT16 col;
 	int row_count;
 	int col_count;
-	char start_code;
-	char end_code;
+	UINT8 start_code;
+	UINT8 end_code;
 
 	/* Calculate deltas */
-	dc = end_col;
-	dc -= start_col;
-
 	dr = end_row;
 	dr -= start_row;
+
+	dc = end_col;
+	dc -= start_col;
 
 	start_code = clip_code(start_row, start_col);
 	end_code = clip_code(end_row, end_col);
@@ -498,11 +498,13 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 		end_row = clipped >> 16;
 	}
 
-	dc = end_col;
-	dc -= start_col;
+	if (start_code | end_code) {
+		dc = end_col;
+		dc -= start_col;
 
-	dr = end_row;
-	dr -= start_row;
+		dr = end_row;
+		dr -= start_row;
+	}
 
 	/* Fix start row/col */
 	if (dc < 0)
@@ -536,11 +538,11 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 	*base |= (UINT32)1 << col; /* Plot first pixel */
 
 	/* Plotting loops */
-	col_count = dc;
-	col_count--;
-
 	if (dr == dc)
 	{
+		col_count = dc;
+		col_count--;
+
 		while (col_count-- >= 0)
 		{
 			/* Diagonal */
@@ -555,35 +557,7 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 			*base |= (UINT32)1 << col; /*bset*/
 		}
 	}
-	else if (dr < dc)
-	{
-		/* Column major */
-
-		err = 0;
-		err -= dc;
-
-		dr += dr;
-		dc += dc;
-
-		while (col_count-- >= 0)
-		{
-			if (--col > 32)
-			{
-				col = 31;
-				base++;
-			}
-
-			err += dr;
-			if (err >= 0) /* Check carry set */
-			{
-				err -= dc;
-				base += row;
-			}
-
-			*base |= (UINT32)1 << col; /*bset*/
-		}
-	}
-	else
+	else if (dr > dc)
 	{
 		/* Row major */
 		row_count = dr;
@@ -614,6 +588,37 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 			*base |= (UINT32)1 << col; /*bset*/
 		}
 	}
+	else
+	{
+		/* Column major */
+		col_count = dc;
+		col_count--;
+
+		err = 0;
+		err -= dc;
+
+		dr += dr;
+		dc += dc;
+
+		while (col_count-- >= 0)
+		{
+			if (--col > 32) /* Check carry clear */
+			{
+				col = 31;
+				base++;
+			}
+
+			err += dr;
+			if (err >= 0) 
+			{
+				err -= dc;
+				base += row;
+			}
+
+			*base |= (UINT32)1 << col; /*bset*/
+		}
+	}
+
 }
 
 /*----- Function: plot_rectangle -----

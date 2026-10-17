@@ -13,16 +13,16 @@
 
 ;	Status:
 ;	  Not Tested:
-;		plot_line
 ;		plot_rectangle
 ;		plot_square
 ;		plot_triangle
 ;	  Visual Tests:
 ;		clear_screen
-;		clear_region
+;		clear_region (TO DO: ADD CLIPPING)
 ;		plot_pixel
 ;		plot_horizontal_line
 ;		plot_vertical_line
+;		plot_line (c)
 ;		plot_8bit_bitmap
 ;		plot_16bit_bitmap
 ;		plot_32bit_bitmap
@@ -68,7 +68,7 @@ _clear_screen:	; Quick clear code from Raster Lab on D2L
 fill_loop:
 		movem.l		d1-7/a1-6,-(a0) ; Clear 13 longs at once and decrement
 		dbra		d0,fill_loop
-	; End loop
+		; End loop
 		movem.l		d1-5,-(a0)	; Clear remaining 5 longs
 
 		movem.l		(sp)+,d0-7/a0-6 ; Return existing register values
@@ -291,9 +291,9 @@ hl_valid_col:
 
 		; Length clipping
 		add.w		d1,d2		; d2.w = End col + 1
-		bcs.b		hl_clip		; On carry (overflow), length must be clipped
+		blo.b		hl_clip		; On carry (overflow), length must be clipped
 		cmpi.w		#COLS,d2
-		bcs.b		hl_clipped
+		blo.b		hl_clipped
 hl_clip:
 		move.w		#COLS,d2	; Clip end col down to last column
 hl_clipped:
@@ -390,7 +390,7 @@ vl_valid_row:
 		; Row clipping check
 		move.w		d0,d2
 		add.w		d3,d2		; d2.w = end row
-		bcs.b		vl_clip		; If carry set, value wraps around. Must be clipped.
+		blo.b		vl_clip		; If carry set, value wraps around. Must be clipped.
 		
 		cmp.w		#ROWS,d2
 		bls.b		vl_clipped	; If end row < rows, line fits, continue
@@ -424,12 +424,238 @@ vl_end:
 		movem.l		(sp)+,d0-4/a0
 		rts
 
+; ==== long clip_row_col(int row, int col, int dr, int dc, UINT8 code) ====
+; PURPOSE: Cohen-Sutherland line clipping for one set of coordinates and total line deltas
+; INPUT: Position(int row, int col): A row and column coordinate set that is out of bounds
+;	 Deltas(int dr, int dc): The total row and column deltas for the line being clipped
+;	 TBRL Code(UINT8 code): The Cohen-Sutherland clipping code associated with the coordinates to crop
+; OUTPUT: d0 = row:col (bits 31-16:15-0)
+
+CLIP_NONE	equ	0
+CLIP_TOP	equ	8
+CLIP_BOTTOM	equ	4
+CLIP_RIGHT	equ	2
+CLIP_LEFT	equ	1
+
+CLIP_ROW	equ	12
+CLIP_COL	equ	3
+
+clip_row	equ	
+clip_col	equ		
+clip_code	equ	
+clip_dr		equ	
+clip_dc		equ	
+clip_row_col:
+		movem.l	,-(sp)
+
+		movem.l (sp)+,
+		rts
+
 ; ==== void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col) ====
 ; PURPOSE: Plots a line on the screen between the two given points.
 ; INPUT: Address(UINT32*): to the start of the screen
-;		Position(start_row,start_col): the coordinates of the start of the line
-;		Position(end_row,end_col): the coordinates of the end of the line
+;	 Position(start_row,start_col): the coordinates of the start of the line
+;	 Position(end_row,end_col): the coordinates of the end of the line
 ; OUTPUT: None
+
+pl_base		equ	40
+pl_srow		equ	44
+pl_scol		equ	46
+pl_erow		equ	48
+pl_ecol		equ	50
+_plot_line:
+		movem.l		d0-7/a0,-(sp)
+
+		; Check start row and col clipping
+		clr.b		d0
+		move.w		pl_srow(sp),d1	; Get start row
+		bpl.b		pl_start_top_safe
+		or.b		#CLIP_TOP,d0	; Set top clip code
+		bra.b		pl_start_bottom_safe	; Top and bottom can't clip at once
+pl_start_top_safe:
+		cmpi.w		#ROWS,d1
+		blt.w		pl_start_bottom_safe
+		or.b		#CLIP_BOTTOM,d0	; Set bottom clip code
+pl_start_bottom_safe:	; d1.w = start_row, d0.b = start clip code
+		move.w		pl_scol(sp),d2	; Get end row
+		bpl.b		pl_left_safe
+		or.b		#CLIP_LEFT,d0 ; Set left clip code
+		bra.b		pl_start_right_safe	; Left and right can't clip at once
+pl_start_left_safe:
+		cmpi.w		#COLS,d2
+		blt		pl_start_right_safe
+		or.b		#CLIP_RIGHT,d0	; Set right clip code
+pl_start_right_safe:	; d2.w = start_col, d0.b = start clip code
+
+		; Check end row and col clipping
+		clr.b		d3
+		move.w		pl_erow,d4	; Get end row
+		bpl.b		pl_end_top_safe
+		or.b		#CLIP_TOP,d3	; Set top clip code
+		bra.b		pl_end_bottom_safe	; Top and bottom can't clip at once
+pl_end_top_safe:
+		cmpi.w		#ROWS,d4
+		blt.w		pl_end_bottom_safe
+		or.b		#CLIP_BOTTOM,d3	; Set bottom clip code
+pl_end_bottom_safe:	; d4.w = end_row, d3.b = end clip code
+		move.w		pl_ecol(sp),d5	; Get end row
+		bpl.b		pl_left_safe
+		or.b		#CLIP_LEFT,d3 	; Set left clip code
+		bra.b		pl_end_right_safe	; Left and right can't clip at once
+pl_end_left_safe:
+		cmpi.w		#COLS,d5
+		blt		pl_end_right_safe
+		or.b		#CLIP_RIGHT,d3	; Set right clip code
+pl_end_right_safe:	; d5.w = end_col, d3.b = end clip code
+
+		; Calculate deltas
+		move.w		d4,d6
+		sub.w		d1,d6		; d6.w = Row delta
+		move.w		d5,d7
+		sub.w		d2,d7		; d7.w = Column delta
+
+		move.b		d0,d1
+		and.b		d3,d1		; d1.w = start code & end code
+		bne.b		pl_end		; Line does not cross screen
+
+		move.b		d0,d1
+		or.b		d3,d1
+		beq		both_in_bounds	; Skip checking individual codes if neither code indicates clipping
+
+		; Push dc and dr to stack for clip_row_col call
+
+		tst.b		d0
+		beq		start_in_bounds	; Skip clipping start position
+
+		nop; Call clipping subroutine (push code, then col, then row)
+
+pl_start_safe:
+		tst.b		d3
+		beq		end_in_bounds	; Skip clipping end position
+
+		nop; Call clipping subroutine (push code, then col, then row)
+
+pl_end_safe:	; Both start and end positions are in bounds, one was updated. Fix deltas.
+		move.w		d4,d6
+		sub.w		d1,d6		; d6.w = Row delta
+		move.w		d5,d7
+		sub.w		d2,d7		; d7.w = Column delta
+pl_both_safe:	; Both given start and end positions were in bounds already
+		tst.w		d7
+		bpl.b		pl_dc_positive	; If dc is already positive move on
+		; If dc is negative flip dc, dr, and start at the end coords
+		neg.w		d6		; Flip sign on dr
+		neg.w		d7		; Flip sign on dc
+		move.w		d4,d1		; d4.w (Start row) = end row
+		move.w		d5,d2		; d5.w (Start col) = end col
+pl_dc_positive:	; dc is positive
+		; Calculate byte offset for pointer
+		move.w		d1,d4
+		lsl.w		#4,d4
+		lsl.w		#6,d1
+		add.w		d4,d1		; d1.w = start row * row byte offset
+		
+		move.w		d2,d4		; d4.w = Extra copy of start col
+		lsr.w		#5,d4		; d4.w = Col long offset
+		lsl.w		#2,d4		; d4.w = Col long aligned byte offset
+		add.w		d4,d1		; d1.w = total byte offset
+
+		movea.l		pl_base(sp),a0	; Get framebuffer base
+		adda.w		d1,a0		; Move framebuffer pointer
+
+		move.w		#BYTE_COLS,d1	; d1.w = Row step
+		tst.w		d6
+		bpl.b		pl_dr_positive	; If dr is already positive move on
+		; If dr is negative flip dr and the row step direction
+		neg.w		d6		; Flip sign on dr
+		neg.w		d1		; Flip sign on row step direction
+pl_dr_positive:	; dr is positive
+		; Create mask
+		not.w		d2
+		andi.w		#31,d2		; d2.w = BSET pixel number
+
+		moveq.l		#0,d0		; d0.l = Long mask
+		bset.l		d2,d0		; Set first pixel on mask
+		or.l		d0,(a0)		; Apply first mask
+
+	;d7 is counter
+
+		cmp.w		d7,d6
+		beq.b		pl_diagonal
+		bhi.b		pl_row_maj
+		bra.b		pl_col_maj		
+
+pl_diagonal:	; Diagonal. Increment both row and col each step
+		subq.w		#1,d7		; Predecrement loop counter
+		bmi.b		pl_end		; Nothing to draw
+pl_diag_loop:	
+		adda.l		d1,a0		; Move fb pointer to next row
+		rol.l		#1,d0		; Move bit to the right
+		bhs.b		pl_diag_nowrap
+		addq.l		#4,a0		; Carry flag set, move fb pointer to next long
+pl_diag_nowrap:	; No carry flag, bit still within long
+		or.l		d0,(a0)		; Apply mask to framebuffer
+		dbra		d7,pl_diag_loop
+		bra.b		pl_end		; Done drawing
+
+pl_row_maj:	; Row major. Increment row every step
+		move.w		d6,d4
+		subq.w		#1,d4		; Predecrement loop counter
+		bmi.b		pl_end		; Nothing to draw
+
+		clr.w		d3
+		sub.w		d6,d3		; d3.w = err (-dr)
+
+		add.w		d6,d6		; d6.w = 2 * dr
+		add.w		d7,d7		; d7.w = 2 * dc
+pl_rmaj_loop:
+		adda.l		d1,a0		; Move to next row
+		add.w		d7,d3		; Update error
+		bmi.b		pl_rmaj_plot	; If err < 0 skip col step
+		; Error >= 0. Col step
+		sub.w		d6,d3		; Update error
+		ror.l		#1,d0		; Move bit to the right
+		bhs.b		pl_rmaj_nowrap	; No overflow, don't move to next long
+		addq.l		#4,a0		; Move fb pointer to next long
+pl_rmaj_nowrap:	; No carry flag, bit still within long
+		or.l		d0,(a0)
+		dbra		d4,pl_rmaj_loop
+		bra.b		pl_end		; Done drawing
+
+pl_col_maj:	; Col major. Increment col every step
+		; Optimize through multi bit mask in register
+		move.w		d7,d4
+		subq.w		#1,d4		; Predecrement loop counter
+		bmi.b		pl_end		; Nothing to draw
+
+		clr.w		d3
+		sub.w		d7,d3		; d3.w = err (-dc)
+
+		add.w		d6,d6		; d6.w = 2 * dr
+		add.w		d7,d7		; d7.w = 2 * dc
+pl_cmaj_loop:
+		subq.w		#1,d2
+		bhs.b		pl_cmag_nowrap ; 
+		; Wrap to next long. Apply and clear mask, reset pixel number
+		or.l		d0,(a0)	; Apply mask to framebuffer
+		moveq.l		#0,d0	; Clear mask
+		moveq.l		#31,d2	; Reset pixel number to the end
+		addq.l		#1,a0	; Move fb pointer to next long
+pl_cmaj_nowrap:
+		add.w		d6,d3	; Adjust error
+		bmi.b		pl_cmaj_plot	; if err < 0 skip row step
+		; Error >= 0. Row step. Apply and clear mask. 
+		or.l		d0,(a0) ; Apply mask to framebuffer
+		moveq.l		#0,d0	; Clear mask
+		sub.w		d7,d3	; Adjust error
+		adda.w		d1,a0	; Move fb pointer to next row
+pl_cmaj_plot:
+		bset.l		d2,d0	; Set pixel in the mask
+		bra.b		pl_end
+		
+pl_end:
+		movem.l		+(sp),d0-7/a0
+		rts
 
 ; ==== Function: plot_8bit_bitmap ====
 ; PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
@@ -438,13 +664,13 @@ vl_end:
 ;	 Bitmap(UINT8*): pointer to the bitmap to print
 ;	 Height: the length (number of rows) of the height in pixels of the bitmap
 ; OUTPUT: None
-bm8_base	equ		32
-bm8_row		equ		36
-bm8_col		equ		38
-bm8_bmp		equ		40
-bm8_hei		equ		44
+bm8_base	equ		24
+bm8_row		equ		28
+bm8_col		equ		30
+bm8_bmp		equ		32
+bm8_hei		equ		36
 _plot_8bit_bitmap:
-		movem.l		d0-4/a0-1,-(sp)
+		movem.l		d0-2/a0-1,-(sp)
 
 		; Height must be > 0
 		move.w		bm8_hei(sp),d0	; d0.w = height
@@ -534,14 +760,14 @@ bm8_shifted:	; If start shift != 0, shift bmp across 2 bytes
 		bhs.b		bm8_right_loop
 
 bm8_shift_loop:
-		clr.w		d3		; Clear word to shift byte within
-		move.b		(a1)+,d3	; d3.b = Bitmap row
-		ror.w		d2,d3		; d3.b = Shifted start byte
-		or.b		d3,(a0)+	; Apply bitmap row masks to framebuffer
-		ror.w		#8,d3		; d3.b = Shifted end byte
-		or.b		d3,(a0)
+		clr.w		d1		; Clear word to shift byte within
+		move.b		(a1)+,d1	; d1.b = Bitmap row
+		ror.w		d2,d1		; d1.b = Shifted start byte
+		or.b		d1,(a0)+	; Apply bitmap row masks to framebuffer
+		ror.w		#8,d1		; d1.b = Shifted end byte
+		or.b		d1,(a0)
 
-		adda.w		#BYTE_COLS-1,a0		; Move to next row
+		adda.w		#BYTE_COLS-1,a0	; Move to next row
 
 		dbra		d0,bm8_shift_loop
 		bra.b		bm8_end
@@ -554,7 +780,7 @@ bm8_right_loop:
 		dbra		d0,bm8_right_loop
 
 bm8_end:
-		movem.l		(sp)+,d0-4/a0-1
+		movem.l		(sp)+,d0-2/a0-1
 		rts
 
 ; ==== Function: plot_16bit_bitmap ====

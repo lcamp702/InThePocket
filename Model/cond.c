@@ -18,17 +18,17 @@
 
 
 /*------ Function: cond_check_misses ------
-PURPOSE: 
+PURPOSE: Checks to see if index points at a missed note, and if so updates the meter and repeats until head points at an "alive" note 
 
-INPUT: 
+INPUT: Model addres
 
-OUTPUT: 
+OUTPUT: N/A
 */
 void cond_check_misses(Model *model){
-	while(model->head<model->note_count && model->notes[model->head].time+TRAVEL_TICKS+HIT_WINDOW<model->game_clock && model->meter.enjoyment > 0 ){
-		meter_update_enjoyment(&model->meter, -MISS_PENALTY);
-		meter_reset_multiplier(&model->meter);
-		model_advance_head(model);
+	while(model->head<model->note_count && model->notes[model->head].time+TRAVEL_TICKS+HIT_WINDOW<model->game_clock && model->meter.enjoyment > 0 ){ /*checks that the head is pointed at a note that has passed the hit window*/
+		meter_update_enjoyment(&model->meter, -MISS_PENALTY); /*applies miss penalty*/
+		meter_reset_multiplier(&model->meter); /*sends score multiplier back to 1*/
+		model_advance_head(model); /*advances index*/
 	}
 }
 
@@ -40,13 +40,13 @@ INPUT: Model address
 OUTPUT: N/A
 */
 UINT8 cond_is_game_over(const Model *model){
-	UINT8 game_over;
+	UINT8 game_over; /*true/false value to be returned*/
 
-	if(model->meter.enjoyment<=0) {
-		game_over = 1;
+	if(model->meter.enjoyment<=0) { /*checks if enjoyment meter is below or equal to 0*/
+		game_over = 1; /*sets game over to true*/
 	}
-	else{
-		game_over=0;
+	else{ /*game over meter is greater than 0 (player hasn't lost yet)*/
+		game_over=0; /*sets game over to false*/
 	}
 	
 	return game_over;
@@ -60,13 +60,13 @@ INPUT: Model address
 OUTPUT: N/A
 */
 UINT8 cond_is_song_over(const Model *model){
-	UINT8 song_over;
-	if(model->head>=model->note_count){
-		song_over=1;
+	UINT8 song_over; /*true/false value to be returned*/
+	if(model->head>=model->note_count){ /*checks if head is out of bounds of note count*/
+		song_over=1; /*if it is sets return value to 1*/
 	}
 	else{
-		song_over=0;
+		song_over=0; /*else it sets return value to 0*/
 	}
 
-	return song_over;
+	return song_over; /*return song over*/
 }

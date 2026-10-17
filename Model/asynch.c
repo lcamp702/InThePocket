@@ -29,7 +29,7 @@ OUTPUT: UINT8 of corresponding key press to the "pitch" of the note.
 */
 UINT8 asynch_key_to_pitch(char key){
 	
-	UINT8 pitch=4;
+	UINT8 pitch=4; /*sets pitch default be a value functions as a "no press" value.*/
 	
 	if(key=='a' || key=='A'){
 		pitch=KEY_A;
@@ -58,7 +58,7 @@ UINT8 asynch_is_hit(const Model *model, UINT8 pitch){
 	
 	UINT8 is_hit;
 
-	if(model->head<model->note_count && model->notes[model->head].pitch==pitch && model->game_clock>=(model->notes[model->head].time+TRAVEL_TICKS)){
+	if(model->head<model->note_count && model->notes[model->head].pitch==pitch && model->game_clock>=(model->notes[model->head].time+TRAVEL_TICKS)){ /*checks to see if note is in the timing window for hitting*/
 		is_hit=1;
 	}
 	else{
@@ -76,12 +76,12 @@ INPUT: Model address
 OUTPUT: N/A
 */
 void asynch_apply_hit(Model *model){
-	if(model->meter.enjoyment>0){
-		meter_update_enjoyment(&model->meter, HIT_REWARD_ENJOYMENT);
-		meter_update_score(&model->meter, HIT_REWARD_SCORE);
-	}
-	meter_double_multiplier(&model->meter);
-	model_advance_head(model);
+
+	meter_update_enjoyment(&model->meter, HIT_REWARD_ENJOYMENT); /*adds to enjoyment meter*/
+	meter_update_score(&model->meter, HIT_REWARD_SCORE); /*updates score*/
+	meter_double_multiplier(&model->meter); /*double multiplier*/
+	model_advance_head(model); /*advance head*/
+
 }
 
 /*------ Function: asynch_apply_miss ------
@@ -91,11 +91,11 @@ INPUT: Model address.
 
 OUTPUT: N/A
 */
-void asynch_apply_miss(Model *model){
-		if(model->meter.enjoyment>0){
-			meter_update_enjoyment(&model->meter, -MISS_PENALTY);
-		}
-		meter_reset_multiplier(&model->meter);
-		model_advance_head(model);
-}
+void asynch_apply_miss(Model *model){ 
+
+		meter_update_enjoyment(&model->meter, -MISS_PENALTY); /*applies miss penalty*/	
+		meter_reset_multiplier(&model->meter); /*reset the score multiplier to 1*/
+		model_advance_head(model); /*advance head*/
+
+	}
 

@@ -39,5 +39,5 @@ INPUT: Note address
 OUTPUT: N/A
 */
 void note_move(Note *note){
-	note->x-=NOTE_SPEED;
+	note->x-=NOTE_SPEED; /*moves the note. This calculation is only for the renderer*/
 }                            

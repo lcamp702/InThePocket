@@ -62,7 +62,7 @@ UINT16 model_last_on_screen(const Model* model){
 	
 	UINT16 last_note=model->head;
 	
-	while(last_note<model->note_count && model->notes[last_note].time <= model->game_clock){
+	while(last_note<model->note_count && model->notes[last_note].time <= model->game_clock){ /*loop runs until time from note is strictly LARGER than game_clock*/
 		last_note++;
 	}
 	

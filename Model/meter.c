@@ -39,8 +39,10 @@ INPUT: Meter*, an address to a Meter struct and the amount to change it by in th
 OUTPUT: N/A
 */
 void meter_update_enjoyment(Meter *meter, INT8 delta){
-	meter->enjoyment+=delta;
-	if(meter->enjoyment>ENJOYMENT_MAX) meter->enjoyment=ENJOYMENT_MAX;
+	if(meter->enjoyment>0){ /*this check ensures that enjoyment never changes once it goes non-positive */
+		meter->enjoyment+=delta; /*increases/decreases the enjoyment meter */
+	}	 
+	if(meter->enjoyment>ENJOYMENT_MAX) meter->enjoyment=ENJOYMENT_MAX; /*ensures upper bound of 100 for enjoyment*/
 }
 
 /* */
@@ -52,7 +54,7 @@ INPUT: Meter*, an address to a Meter struct, and points to be added in the form 
 OUTPUT: N/A
 */
 void meter_update_score(Meter *meter, UINT32 points){
-	UINT32 delta;
+	UINT32 delta; /*probably unnecessary*/
 	delta=points;
 	delta*=meter->multiplier;
 	meter->score+=delta;
@@ -79,5 +81,5 @@ INPUT: Meter Address
 OUTPUT: N/A
 */
 void meter_reset_multiplier(Meter *meter){
-	meter->multiplier=1;
+	meter->multiplier=1; /*etc. self documenting.*/
 }              

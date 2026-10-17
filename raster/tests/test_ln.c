@@ -53,7 +53,31 @@ void test_h_line()
     sync_wait(35);
     clear_screen(l_fb);
 
-	/* ==== Clipping tests ==== */
+	/* ==== Start Clipping tests ==== */
+
+	/* Touching left */
+    plot_horizontal_line(l_fb, 20, 0, 320);
+	/* Multi long clipping right */
+    plot_horizontal_line(l_fb, 30, -1, 321);
+    plot_horizontal_line(l_fb, 40, -320, 640);
+    plot_horizontal_line(l_fb, 50, -2002, 2322);
+	/* First long clipping */
+	plot_horizontal_line(l_fb, 60, -16, 18);
+	plot_horizontal_line(l_fb, 70, -30, 32);
+    /* Single long clipping right */
+    plot_horizontal_line(l_fb, 80, -32, 33);   /* Last pixel, exact */
+    plot_horizontal_line(l_fb, 90, -33, 34); /* Last pixel, clipped */
+    /* Large lengths (unsigned) */
+    plot_horizontal_line(l_fb, 110, -320, 0x8000);
+    plot_horizontal_line(l_fb, 120, -320, 0xC000);
+    /* Large negative start */
+    plot_horizontal_line(l_fb, 130, -32768, 0xFFFF);
+	plot_horizontal_line(l_fb, 140, -32768, 0x8001);
+
+    sync_wait(70);
+    clear_screen(l_fb);
+
+	/* ==== End Clipping tests ==== */
 
 	/* Touching right */
     plot_horizontal_line(l_fb, 20, 320, 320);

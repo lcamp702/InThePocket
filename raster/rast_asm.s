@@ -48,60 +48,14 @@
 
 ;       Screen details
 ROWS		equ		400
-
 COLS		equ		640
-BM8_MAX_COLS	equ		632
-BM16_MAX_COLS	equ		624
-BM32_MAX_COLS	equ		608
 BYTE_COLS	equ		80
-LONG_COLS	equ		20
-
-;	_clear_screen(UINT32 *base)
-cs_base		equ		64	; Offset from SP, not A6
-
-;	_clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
-cr_base		equ		44
-cr_row		equ		48
-cr_col		equ		50
-cr_len		equ		52
-cr_wid		equ		54
-
-;	_plot_pixel(UINT8 *base, int row, int col)
-px_base		equ		20
-px_row		equ		24
-px_col		equ		26
-
-;	_plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
-hl_base		equ		24
-hl_row		equ		28
-hl_col		equ		30
-hl_len		equ		32
-
-;	_plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
-vl_base		equ		28
-vl_row		equ		32
-vl_col		equ		34
-vl_len		equ		36
-
-;	_plot_16bit_bitmap(UINT- *base, int row, int col, const UINT- *bitmap, UINT16 height)
-bm16_base	equ		24
-bm16_row	equ		28
-bm16_col	equ		30
-bm16_bmp	equ		32
-bm16_hei	equ		36
-
-;	_plot_-bit_bitmap(UINT- *base, int row, int col, const UINT- *bitmap, UINT16 height)
-bm_base		equ		32
-bm_row		equ		36
-bm_col		equ		38
-bm_bmp		equ		40
-bm_hei		equ		44
-
 
 ; ==== void clear_screen(UINT32 *base) ====
 ; PURPOSE: Clears the entire screen.
 ; INPUT: Address(UINT32*): to the start of the screen
 ; OUTPUT: None
+cs_base		equ		64	; Offset from SP, not A6
 _clear_screen:	; Quick clear code from Raster Lab on D2L
 		movem.l		d0-7/a0-6,-(sp) ; Store existing register values
 
@@ -127,6 +81,11 @@ fill_loop:
 ;	   Length: the length (number of rows) in pixels of the region
 ;	   Width: the width (number of columns) in pixels of the region
 ; OUTPUT: None
+cr_base		equ		44
+cr_row		equ		48
+cr_col		equ		50
+cr_len		equ		52
+cr_wid		equ		54
 _clear_region:
 		movem.l		d0-6/a0-2,-(sp)
 
@@ -265,6 +224,9 @@ cr_end:
 ; INPUT: Address(UINT8*): to the start of the screen
 ;       Position(row,col): the location of the pixel to plot
 ; OUTPUT: None
+px_base		equ		20
+px_row		equ		24
+px_col		equ		26
 _plot_pixel:
 		movem.l		d0-2/a0,-(sp)
 
@@ -302,6 +264,10 @@ pp_end:
 ;	 Position(row,col): the coordinates of the leftmost pixel of the horizontal line
 ;	 Length: the length in pixels of the line
 ; OUTPUT: None
+hl_base		equ		24
+hl_row		equ		28
+hl_col		equ		30
+hl_len		equ		32
 _plot_horizontal_line:
 		movem.l		d0-3/a0,-(sp)
 
@@ -396,6 +362,10 @@ hl_end:
 ;	 Position(row,col): the coordinates of the topmost pixel of the vertical line
 ;	 Length: the length in pixels of the line
 ; OUTPUT: None
+vl_base		equ		28
+vl_row		equ		32
+vl_col		equ		34
+vl_len		equ		36
 _plot_vertical_line:
 		movem.l		d0-4/a0,-(sp)
 
@@ -454,6 +424,13 @@ vl_end:
 		movem.l		(sp)+,d0-4/a0
 		rts
 
+; ==== void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col) ====
+; PURPOSE: Plots a line on the screen between the two given points.
+; INPUT: Address(UINT32*): to the start of the screen
+;		Position(start_row,start_col): the coordinates of the start of the line
+;		Position(end_row,end_col): the coordinates of the end of the line
+; OUTPUT: None
+
 ; ==== Function: plot_8bit_bitmap ====
 ; PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
 ; INPUT: Address(UINT8*): to the start of the screen
@@ -461,18 +438,23 @@ vl_end:
 ;	 Bitmap(UINT8*): pointer to the bitmap to print
 ;	 Height: the length (number of rows) of the height in pixels of the bitmap
 ; OUTPUT: None
+bm8_base	equ		32
+bm8_row		equ		36
+bm8_col		equ		38
+bm8_bmp		equ		40
+bm8_hei		equ		44
 _plot_8bit_bitmap:
 		movem.l		d0-4/a0-1,-(sp)
 
 		; Height must be > 0
-		move.w		bm_hei(sp),d0	; d0.w = height
+		move.w		bm8_hei(sp),d0	; d0.w = height
 		beq.w		bm8_end		; if (height == 0) return
 
 		; Load bitmap pointer
-		movea.l		bm_bmp(sp),a1	; a1.l = Bitmap base pointer
+		movea.l		bm8_bmp(sp),a1	; a1.l = Bitmap base pointer
 
 		; Load row
-		move.w		bm_row(sp),d1	; d1.w = Row #
+		move.w		bm8_row(sp),d1	; d1.w = Row #
 		bpl.b		bm8_bottom	; Row > 0, no top clipping
 
 		; Top clipping
@@ -501,7 +483,7 @@ bm8_clipped_row:	; Clipped row + height found
 		subq.w		#1,d0		; Predecrement height for print loops
 
 		; Move framebuffer pointer to first byte of the row
-		movea.l		bm_base(sp),a0	; a0.l = Framebuffer base pointer
+		movea.l		bm8_base(sp),a0	; a0.l = Framebuffer base pointer
 
 		move.w		d1,d2
 		lsl.w		#4,d1
@@ -511,7 +493,7 @@ bm8_clipped_row:	; Clipped row + height found
 		adda.w		d1,a0		; a0 points to start of row to draw on
 
 		; Load column
-		move.w		bm_col(sp),d1	; d2.w = Column #
+		move.w		bm8_col(sp),d1	; d2.w = Column #
 		bpl.b		bm8_right
 
 		; Left clipping
@@ -582,6 +564,11 @@ bm8_end:
 ;	 Bitmap(UINT16*): pointer to the bitmap to print
 ;	 Height: the length (number of rows) of the height in pixels of the bitmap
 ; OUTPUT: None
+bm16_base	equ		24
+bm16_row	equ		28
+bm16_col	equ		30
+bm16_bmp	equ		32
+bm16_hei	equ		36
 _plot_16bit_bitmap:
 		movem.l		d0-2/a0-1,-(sp)
 
@@ -706,18 +693,23 @@ bm16_end:
 ;	 Bitmap(UINT32*): pointer to the bitmap to print
 ;	 Height: the length (number of rows) of the height in pixels of the bitmap
 ; OUTPUT: None
+bm32_base	equ		32
+bm32_row	equ		36
+bm32_col	equ		38
+bm32_bmp	equ		40
+bm32_hei	equ		44
 _plot_32bit_bitmap:
 		movem.l		d0-4/a0-1,-(sp)
 
 		; Height must be > 0
-		move.w		bm_hei(sp),d0	; d0.w = height
+		move.w		bm32_hei(sp),d0	; d0.w = height
 		beq.w		bm32_end	; if (height == 0) return
 
 		; Load bitmap pointer
-		movea.l		bm_bmp(sp),a1	; a1.l = Bitmap base pointer
+		movea.l		bm32_bmp(sp),a1	; a1.l = Bitmap base pointer
 
 		; Load row
-		move.w		bm_row(sp),d1	; d1.w = Row #
+		move.w		bm32_row(sp),d1	; d1.w = Row #
 		bpl.b		bm32_bottom	; Row > 0, no top clipping.
 
 		; Top clipping
@@ -748,7 +740,7 @@ bm32_clipped_row:	; Clipped row + height found
 		subq.w		#1,d0		; Predecrement height for print loop
 
 		; Move fb pointer to first byte of row
-		movea.l		bm_base(sp),a0	; a0.l = Framebuffer base pointer
+		movea.l		bm32_base(sp),a0	; a0.l = Framebuffer base pointer
 		move.w		d1,d2
 		lsl.w		#4,d1
 		lsl.w		#6,d2
@@ -756,7 +748,7 @@ bm32_clipped_row:	; Clipped row + height found
 		adda.w		d1,a0		; a0 points to the first row to draw on
 
 		; Load column
-		move.w		bm_col(sp),d1	; d1.w = Column #
+		move.w		bm32_col(sp),d1	; d1.w = Column #
 		bpl.b		bm32_right	; If col > 0, no left clip
 
 		; Left clipping

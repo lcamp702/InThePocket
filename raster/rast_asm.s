@@ -42,6 +42,7 @@
 		xdef		_plot_pixel
 		xdef		_plot_horizontal_line
 		xdef		_plot_vertical_line
+		xdef		_plot_line
 		xdef		_plot_8bit_bitmap
 		xdef		_plot_16bit_bitmap
 		xdef		_plot_32bit_bitmap
@@ -424,31 +425,108 @@ vl_end:
 		movem.l		(sp)+,d0-4/a0
 		rts
 
-; ==== long clip_row_col(int row, int col, int dr, int dc, UINT8 code) ====
+; ==== long clip_pos(int row, int col, int dr, int dc, int code) ====
 ; PURPOSE: Cohen-Sutherland line clipping for one set of coordinates and total line deltas
 ; INPUT: Position(int row, int col): A row and column coordinate set that is out of bounds
 ;	 Deltas(int dr, int dc): The total row and column deltas for the line being clipped
-;	 TBRL Code(UINT8 code): The Cohen-Sutherland clipping code associated with the coordinates to crop
+;	 TBRL Code(int code): The Cohen-Sutherland clipping code associated with the coordinates to crop
 ; OUTPUT: d0 = row:col (bits 31-16:15-0)
 
-CLIP_NONE	equ	0
-CLIP_TOP	equ	8
-CLIP_BOTTOM	equ	4
-CLIP_RIGHT	equ	2
-CLIP_LEFT	equ	1
+CLIP_TOP	equ	8	; 1000
+CLIP_BOTTOM	equ	4	; 0100
+CLIP_RIGHT	equ	2	; 0010
+CLIP_LEFT	equ	1	; 0001
 
-CLIP_ROW	equ	12
-CLIP_COL	equ	3
+CLIP_R		equ	12	; 1100
 
-clip_row	equ	
-clip_col	equ		
-clip_code	equ	
-clip_dr		equ	
-clip_dc		equ	
-clip_row_col:
-		movem.l	,-(sp)
+clip_row	equ	28
+clip_col	equ	30	
+clip_code	equ	32
+clip_dr		equ	34
+clip_dc		equ	36
+clip_pos:
+		movem.l		d1-6,-(sp)
 
-		movem.l (sp)+,
+		move.w		clip_row(sp),d3	; d3.w = Row
+		move.w		clip_col(sp),d4	; d4.w = Col
+
+		move.w		clip_code(sp),d0; d0 (bottom nibble) = Cohen-Sutherland clipping code (TBRL)
+		beq.b		clip_accept	; No clip code, nothing to clip
+
+		; Clipping is required
+		move.w		clip_dr(sp),d5	; d5.w = Dr
+		move.w		clip_dc(sp),d6	; d6.w = Dc
+
+		moveq.l		#CLIP_R,d1	; Get row clipping mask to check against
+		and.b		d0,d1		; Test clip code against row clip mask
+		beq.b		clip_rows_done	; Row not clipping, check col
+
+		; Clipping row		
+		moveq.l		#0,d2		; Clear temp register for calculating clip
+		moveq.l		#CLIP_BOTTOM,d1	; Clipping mask for bottom edge clipping
+		and.b		d0,d1		; Check for bottom edge clipping
+		beq.b		clip_off_top	; No bottom edge clipping, skip extra code
+		; Extra code for bottom edge clipping
+		move.w		#ROWS-1,d2
+clip_off_top:	; Shared code for top / bottom edge clipping
+		sub.w		d3,d2		; d2 (temp) = Row clip amount 
+						; (positive for top clip, negative for bottom)
+		add.w		d2,d3		; Clip row
+
+		muls.w		d6,d2		; SLOW!! No other way to do this as far as I know -Peter
+		bvs.b		clip_reject	; Reject on overflow
+		divs.w		d5,d2		; d2 (temp) = Col clip amount
+		bvs.b		clip_reject	; Reject on overflow
+		add.w		d2,d4		; Clip col
+
+clip_rows_done:	; Recalculate column clip codes
+		moveq.l		#0,d0		; Clear clip code
+		tst.w		d4
+		bpl.b		clip_left_safe	; Col > 0, no left clip
+		or.b		#CLIP_LEFT,d0 	; Set left clip code
+		bra.b		clip_right_safe	; Left and right can't clip at once
+clip_left_safe:	; No left clip
+		cmpi.w		#COLS,d4
+		blt		clip_right_safe	; Col < COLS, no right clip
+		or.b		#CLIP_RIGHT,d0	; Set right clip code
+clip_right_safe: ; No right clip
+		tst.b		d0
+		beq.b		clip_accept	; Clip code = 0, No more clipping.
+		
+		; Clip col	
+		moveq.l		#0,d2		; Clear temp register for calculating clip
+		moveq.l		#CLIP_RIGHT,d1	; Clipping mask for right edge clipping
+		and.b		d0,d1		; Check for right edge clipping
+		beq.b		clip_off_left	; No right edge clipping, skip extra code
+		; Extra code for right edge clipping
+		move.w		#COLS-1,d2
+clip_off_left:	; Shared code for right / left edge clipping
+		sub.w		d4,d2		; d2 (temp) = Col axis clip amount 
+						; (positive for left clip, right for trailing)
+		add.w		d2,d4		; Clip col
+
+		muls.w		d5,d2		; SLOW!! No other way to do this as far as I know -Peter
+		bvs.b		clip_reject	; Reject on overflow
+		divs.w		d6,d2		; d2 (temp) = Row clip amount
+		bvs.b		clip_reject	; Reject on overflow
+		add.w		d2,d3		; Clip row
+
+		; If row was pushed out of bounds, line does not appear on screen.
+		tst.w           d3
+                bmi.b           clip_reject     ; Row < 0 -> line missed the screen!
+                cmpi.w          #ROWS,d3
+                bge.b           clip_reject     ; Row >= ROWS -> line missed the screen!
+
+clip_accept:	; Pack valid position into d0 and return
+		move.w		d3,d0
+		swap		d0
+		move.w		d4,d0
+		movem.l 	(sp)+,d1-6
+		rts
+
+clip_reject:	; Pack -1,-1 position into d0 and return
+		moveq.l		#-1,d0		; High and low word = -1 (0xFFFF)
+		movem.l 	(sp)+,d1-6
 		rts
 
 ; ==== void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col) ====
@@ -467,7 +545,7 @@ _plot_line:
 		movem.l		d0-7/a0,-(sp)
 
 		; Check start row and col clipping
-		clr.b		d0
+		clr.w		d0
 		move.w		pl_srow(sp),d1	; Get start row
 		bpl.b		pl_start_top_safe
 		or.b		#CLIP_TOP,d0	; Set top clip code
@@ -477,8 +555,8 @@ pl_start_top_safe:
 		blt.w		pl_start_bottom_safe
 		or.b		#CLIP_BOTTOM,d0	; Set bottom clip code
 pl_start_bottom_safe:	; d1.w = start_row, d0.b = start clip code
-		move.w		pl_scol(sp),d2	; Get end row
-		bpl.b		pl_left_safe
+		move.w		pl_scol(sp),d2	; Get start col
+		bpl.b		pl_start_left_safe
 		or.b		#CLIP_LEFT,d0 ; Set left clip code
 		bra.b		pl_start_right_safe	; Left and right can't clip at once
 pl_start_left_safe:
@@ -488,8 +566,8 @@ pl_start_left_safe:
 pl_start_right_safe:	; d2.w = start_col, d0.b = start clip code
 
 		; Check end row and col clipping
-		clr.b		d3
-		move.w		pl_erow,d4	; Get end row
+		clr.w		d3
+		move.w		pl_erow(sp),d4	; Get end row
 		bpl.b		pl_end_top_safe
 		or.b		#CLIP_TOP,d3	; Set top clip code
 		bra.b		pl_end_bottom_safe	; Top and bottom can't clip at once
@@ -498,8 +576,8 @@ pl_end_top_safe:
 		blt.w		pl_end_bottom_safe
 		or.b		#CLIP_BOTTOM,d3	; Set bottom clip code
 pl_end_bottom_safe:	; d4.w = end_row, d3.b = end clip code
-		move.w		pl_ecol(sp),d5	; Get end row
-		bpl.b		pl_left_safe
+		move.w		pl_ecol(sp),d5	; Get end col
+		bpl.b		pl_end_left_safe
 		or.b		#CLIP_LEFT,d3 	; Set left clip code
 		bra.b		pl_end_right_safe	; Left and right can't clip at once
 pl_end_left_safe:
@@ -514,33 +592,64 @@ pl_end_right_safe:	; d5.w = end_col, d3.b = end clip code
 		move.w		d5,d7
 		sub.w		d2,d7		; d7.w = Column delta
 
-		move.b		d0,d1
-		and.b		d3,d1		; d1.w = start code & end code
-		bne.b		pl_end		; Line does not cross screen
+		movea.w		d0,a0		; Save a copy of the start clip code in a0
+		and.b		d3,d0		; d0.w = start code & end code
+		bne.w		pl_end		; Line does not cross screen
 
-		move.b		d0,d1
-		or.b		d3,d1
-		beq		both_in_bounds	; Skip checking individual codes if neither code indicates clipping
+		move.w		a0,d0
+		or.b		d3,d0
+		beq		pl_both_safe	; Skip checking individual codes if neither code indicates clipping
+		move.w		a0,d0
 
-		; Push dc and dr to stack for clip_row_col call
+		; Push dc and dr to stack for clip_pos call
+		move.w		d7,-(sp)	; Push dc to stack
+		move.w		d6,-(sp)	; Push dr to stack
 
 		tst.b		d0
-		beq		start_in_bounds	; Skip clipping start position
+		beq		pl_start_safe	; Skip clipping start position
 
-		nop; Call clipping subroutine (push code, then col, then row)
+		; Call clipping subroutine (push code, then col, then row)
+		move.w		d0,-(sp)	; Push clipping code to stack
+		move.w		d2,-(sp)	; Push start col to stack
+		move.w		d1,-(sp)	; Push start row to stack
+		jsr		clip_pos
+		addq.w		#6,sp		; Super pop row, col, and code
+		tst.l		d0
+		bmi.b		pl_clip_abort	; If d0 < 0 clip_pos rejected. No line on screen
+		; Get row and col from d0
+		move.w		d0,d2		; Unpack col
+		swap		d0		; Bring row to lower word
+		move.w		d0,d1		; Unpack row
 
 pl_start_safe:
 		tst.b		d3
-		beq		end_in_bounds	; Skip clipping end position
+		beq		pl_end_safe	; Skip clipping end position
 
-		nop; Call clipping subroutine (push code, then col, then row)
+		move.w		d3,-(sp)	; Push clipping code to stack
+		move.w		d5,-(sp)	; Push start col to stack
+		move.w		d4,-(sp)	; Push start row to stack
+		jsr		clip_pos
+		addq.w		#6,sp		; Super pop row, col, and code
+		tst.l		d0
+		bmi.b		pl_clip_abort	; If d0 < 0 clip_pos rejected. No line on screen
+		; Get row and col from d0
+		move.w		d0,d5		; Unpack col
+		swap		d0		; Bring row to lower word
+		move.w		d0,d4		; Unpack row
 
 pl_end_safe:	; Both start and end positions are in bounds, one was updated. Fix deltas.
+		addq.w		#4,sp		; Super pop deltas
 		move.w		d4,d6
 		sub.w		d1,d6		; d6.w = Row delta
 		move.w		d5,d7
 		sub.w		d2,d7		; d7.w = Column delta
-pl_both_safe:	; Both given start and end positions were in bounds already
+		bra.b		pl_both_safe	; Continue to draw line
+
+pl_clip_abort:	; clip_pos rejected coordinate, end early
+		addq.w		#4,sp		; Super pop deltas
+		bra.w		pl_end		; Exit
+
+pl_both_safe:	; Both given start and end positions in bounds already
 		tst.w		d7
 		bpl.b		pl_dc_positive	; If dc is already positive move on
 		; If dc is negative flip dc, dr, and start at the end coords
@@ -550,6 +659,7 @@ pl_both_safe:	; Both given start and end positions were in bounds already
 		move.w		d5,d2		; d5.w (Start col) = end col
 pl_dc_positive:	; dc is positive
 		; Calculate byte offset for pointer
+		ext.l		d1
 		move.w		d1,d4
 		lsl.w		#4,d4
 		lsl.w		#6,d1
@@ -578,8 +688,6 @@ pl_dr_positive:	; dr is positive
 		bset.l		d2,d0		; Set first pixel on mask
 		or.l		d0,(a0)		; Apply first mask
 
-	;d7 is counter
-
 		cmp.w		d7,d6
 		beq.b		pl_diagonal
 		bhi.b		pl_row_maj
@@ -589,8 +697,8 @@ pl_diagonal:	; Diagonal. Increment both row and col each step
 		subq.w		#1,d7		; Predecrement loop counter
 		bmi.b		pl_end		; Nothing to draw
 pl_diag_loop:	
-		adda.l		d1,a0		; Move fb pointer to next row
-		rol.l		#1,d0		; Move bit to the right
+		adda.w		d1,a0		; Move fb pointer to next row
+		ror.l		#1,d0		; Move bit to the right
 		bhs.b		pl_diag_nowrap
 		addq.l		#4,a0		; Carry flag set, move fb pointer to next long
 pl_diag_nowrap:	; No carry flag, bit still within long
@@ -609,9 +717,9 @@ pl_row_maj:	; Row major. Increment row every step
 		add.w		d6,d6		; d6.w = 2 * dr
 		add.w		d7,d7		; d7.w = 2 * dc
 pl_rmaj_loop:
-		adda.l		d1,a0		; Move to next row
+		adda.w		d1,a0		; Move to next row
 		add.w		d7,d3		; Update error
-		bmi.b		pl_rmaj_plot	; If err < 0 skip col step
+		bmi.b		pl_rmaj_nowrap	; If err < 0 skip col step
 		; Error >= 0. Col step
 		sub.w		d6,d3		; Update error
 		ror.l		#1,d0		; Move bit to the right
@@ -621,6 +729,7 @@ pl_rmaj_nowrap:	; No carry flag, bit still within long
 		or.l		d0,(a0)
 		dbra		d4,pl_rmaj_loop
 		bra.b		pl_end		; Done drawing
+
 
 pl_col_maj:	; Col major. Increment col every step
 		; Optimize through multi bit mask in register
@@ -635,12 +744,12 @@ pl_col_maj:	; Col major. Increment col every step
 		add.w		d7,d7		; d7.w = 2 * dc
 pl_cmaj_loop:
 		subq.w		#1,d2
-		bhs.b		pl_cmag_nowrap ; 
+		bhs.b		pl_cmaj_nowrap ; No carry, no wrap.
 		; Wrap to next long. Apply and clear mask, reset pixel number
 		or.l		d0,(a0)	; Apply mask to framebuffer
 		moveq.l		#0,d0	; Clear mask
 		moveq.l		#31,d2	; Reset pixel number to the end
-		addq.l		#1,a0	; Move fb pointer to next long
+		addq.l		#4,a0	; Move fb pointer to next long
 pl_cmaj_nowrap:
 		add.w		d6,d3	; Adjust error
 		bmi.b		pl_cmaj_plot	; if err < 0 skip row step
@@ -651,10 +760,10 @@ pl_cmaj_nowrap:
 		adda.w		d1,a0	; Move fb pointer to next row
 pl_cmaj_plot:
 		bset.l		d2,d0	; Set pixel in the mask
-		bra.b		pl_end
-		
+		dbra		d4,pl_cmaj_loop
+		or.l		d0,(a0) ; Apply last mask to framebuffer
 pl_end:
-		movem.l		+(sp),d0-7/a0
+		movem.l		(sp)+,d0-7/a0
 		rts
 
 ; ==== Function: plot_8bit_bitmap ====

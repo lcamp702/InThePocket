@@ -387,9 +387,10 @@ void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
 	Calculate the Cohen-Sutherland clipping code and return it.
 
 */
+/*
 UINT8 clip_code(int row, int col)
 {
-	/* Calculate clipping code (TBRL) */
+	( Calculate clipping code (TBRL) )
 	char code = 0;
 
 	if (row < 0)
@@ -450,7 +451,7 @@ long clip_row_col(int row, int col, UINT8 code, int dr, int dc)
 
 	return out;
 }
-
+*/
 /*----- Function: plot_line -----
  PURPOSE: Plots a line on the screen between the two given points.
 
@@ -460,6 +461,7 @@ long clip_row_col(int row, int col, UINT8 code, int dr, int dc)
 
  OUTPUT: None
 */
+/*
 void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col)
 {
 	int dr;
@@ -472,7 +474,7 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 	UINT8 start_code;
 	UINT8 end_code;
 
-	/* Calculate deltas */
+	( Calculate deltas )
 	dr = end_row;
 	dr -= start_row;
 
@@ -483,7 +485,7 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 	end_code = clip_code(end_row, end_col);
 
 	if (start_code & end_code)
-		return; /* Line does not cross screen */
+		return; ( Line does not cross screen )
 
 	if (start_code)
 	{
@@ -506,7 +508,7 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 		dr -= start_row;
 	}
 
-	/* Fix start row/col */
+	( Fix start row/col )
 	if (dc < 0)
 	{
 		dr = -dr;
@@ -515,15 +517,15 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 		start_row = end_row;
 	}
 
-	/* Move pointer to first long */
+	( Move pointer to first long )
 	row = start_row;
-	row *= LONG_COLS; /* Row long offset */
+	row *= LONG_COLS; ( Row long offset )
 	col = start_col;
-	col >>= 5;	/* Col long offset */
-	row += col; /* Total offset */
+	col >>= 5;	( Col long offset )
+	row += col; ( Total offset )
 	base += row;
 
-	row = LONG_COLS; /* Row step */
+	row = LONG_COLS; ( Row step )
 
 	if (dr < 0)
 	{
@@ -533,11 +535,11 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 
 	col = start_col;
 	col = ~col;
-	col &= 31; /* Col shift */
+	col &= 31; ( Col shift )
 
-	*base |= (UINT32)1 << col; /* Plot first pixel */
+	*base |= (UINT32)1 << col; ( Plot first pixel )
 
-	/* Plotting loops */
+	( Plotting loops )
 	if (dr == dc)
 	{
 		col_count = dc;
@@ -545,7 +547,7 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 
 		while (col_count-- >= 0)
 		{
-			/* Diagonal */
+			( Diagonal )
 			if (--col > 32)
 			{
 				col = 31;
@@ -554,12 +556,12 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 
 			base += row;
 
-			*base |= (UINT32)1 << col; /*bset*/
+			*base |= (UINT32)1 << col; ( bset )
 		}
 	}
 	else if (dr > dc)
 	{
-		/* Row major */
+		( Row major )
 		row_count = dr;
 		row_count--;
 
@@ -578,19 +580,19 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 			if (err >= 0)
 			{
 				err -= dr;
-				if (--col > 32) /* Check carry set */
+				if (--col > 32) ( Check carry set )
 				{
 					col = 31;
 					base++;
 				}
 			}
 
-			*base |= (UINT32)1 << col; /*bset*/
+			*base |= (UINT32)1 << col; (bset)
 		}
 	}
 	else
 	{
-		/* Column major */
+		( Column major )
 		col_count = dc;
 		col_count--;
 
@@ -602,7 +604,7 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 
 		while (col_count-- >= 0)
 		{
-			if (--col > 32) /* Check carry clear */
+			if (--col > 32) ( Check carry clear )
 			{
 				col = 31;
 				base++;
@@ -615,11 +617,12 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 				base += row;
 			}
 
-			*base |= (UINT32)1 << col; /*bset*/
+			*base |= (UINT32)1 << col; ( bset )
 		}
 	}
 
 }
+*/
 
 /*----- Function: plot_rectangle -----
 

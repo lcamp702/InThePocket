@@ -881,20 +881,19 @@ pt_row		equ		12
 pt_col		equ		14
 pt_wid		equ		16
 pt_hei		equ		18
-pt_dir		equ		20
+pt_dir		equ		21
 
-TRI_ROW_DIR	equ		2	; Mask for the bit determining row direction
-TRI_COL_DIR	equ		1	; Mask for the bit determining column direction
+TRI_ROW_DIR	equ		1	; Bit # determining row direction
+TRI_COL_DIR	equ		0	; Bit # determining column direction
 _plot_triangle:
 		link		a6,#0
-		movem.l		d0-5,-(sp)
+		movem.l		d0-4,-(sp)
 
 		move.w		pt_row(a6),d0	; Get row for position fix
 		move.w		pt_col(a6),d1	; Get col for position fix
 		move.b		pt_dir(a6),d2	; Get direction code for row check
-		move.b		d2,d3		; Copy code for col check
-		move.w		pt_hei(a6),d4	; Get height
-		move.w		pt_wid(a6),d5	; Get triangle_base (width)
+		move.w		pt_hei(a6),d3	; Get height
+		move.w		pt_wid(a6),d4	; Get triangle_base (width)
 
 		; Prepare registers for straight line drawing
 		suba.w		#10,sp
@@ -903,26 +902,28 @@ _plot_triangle:
 		move.w		d1,6(sp)		; 3: col	6(sp)
 		move.w		d4,8(sp)		; 4: length	8(sp)							
 
+		subq.w		#1,d3		; Trim height for row offset
+
 		; Test row direction
-		and.b		#TRI_ROW_DIR,d2
+		btst.l		#TRI_ROW_DIR,d2
 		beq.b		pt_vert
 		; Row goes down, adjust line params
-		sub.w		d4,4(sp)	; New starting row moved to top of line
-		neg.w		d4		; Height = -height
-		bra		pt_vert
+		sub.w		d3,4(sp)	; New starting row moved to top of line
+		neg.w		d3		; Height = -height
 pt_vert:	; Plot vertical line
 		jsr		_plot_vertical_line
 
 		move.w		d0,4(sp)	; Reset row
-		move.w		d5,8(sp)	; Pass width to line drawing subroutine
+		move.w		d4,8(sp)	; Pass width to line drawing subroutine
+
+		subq.w		#1,d4		; Trim width for col offset
 
 		; Test col direction
-		and.b		#TRI_COL_DIR,d3
+		btst.l		#TRI_COL_DIR,d2
 		beq.b		pt_horiz
 		; Col goes down, adjust params
-		sub.w		d5,6(sp)	; Move starting col to end of line
-		neg.w		d5		; Width = -width
-		bra		pt_horiz
+		sub.w		d4,6(sp)	; Move starting col to end of line
+		neg.w		d4		; Width = -width
 pt_horiz:
 		jsr		_plot_horizontal_line
 
@@ -930,12 +931,12 @@ pt_horiz:
 		subq.w		#2,sp		; Move sp back 2 more bytes for general line plot
 		move.l		pt_base(a6),(sp)	; 1: base	0(sp)
 		
-		add.w		d4,d0	; Increment row
+		add.w		d3,d0	; Increment row
 		move.w		d0,4(sp)		; 2: start_row	4(sp)
 		move.w		d1,6(sp)		; 3: end_row	6(sp)
 		
-		sub.w		d4,d0	; Reset row
-		add.w		d5,d1	; Increment col
+		sub.w		d3,d0	; Reset row
+		add.w		d4,d1	; Increment col
 		move.w		d0,8(sp)		; 4: end_row	8(sp)
 		move.w		d1,10(sp)		; 5: end_col	10(sp)
 
@@ -943,7 +944,7 @@ pt_horiz:
 
 		adda.w		#12,sp
 
-		movem.l		(sp)+,d0-5
+		movem.l		(sp)+,d0-4
 		unlk		a6
 		rts
 

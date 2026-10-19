@@ -28,4 +28,5 @@ void synch_clock_tick(Model* model){
 	model_move_notes(model);
 	model_tick(model);
 	cond_check_misses(model);
+	/*disable target*/
 }

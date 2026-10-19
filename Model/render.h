@@ -25,4 +25,5 @@ void render(Model *model, UINT32 *base);
 void render_note(Note *note, UINT32 *base);
 void render_meter(Meter *meter, UINT32 *base);
 void render_staff(UINT32 *base);
+void render_targets(UINT32 *base);
 #endif

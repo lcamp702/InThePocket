@@ -23,9 +23,11 @@
 #include "meter.h"
 
 #define MAX_NOTES 512
+#define TARGET_COUNT 4
 
 typedef struct Model{
 	Note notes[MAX_NOTES];
+	UINT8 targets[TARGET_COUNT];
 	Meter meter;
 	UINT16 note_count;
 	UINT32 game_clock;

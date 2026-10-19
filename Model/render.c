@@ -15,6 +15,12 @@
 	
     render.c*/
 
+    /*TODO: FIX STAFF (SPACING TO NOTE HEAD, WE WANT NOTEHEAD TO BE CENTERED ON LINE) DONE
+            TARGETS TURN ON WHEN BUTTON PRESS
+            DRAW TARGET
+            DISPLAY SCORE
+    */
+
 #include "render.h"
 #include "raster.h"
 #include "bitmaps.h"
@@ -24,8 +30,9 @@
 #define STAFF_HEIGHT       24   /* (STAFF_LINES - 1) * STAFF_LINE_GAP */
 #define STAFF_SPACING      40   /* rows from one staff's top line to the next */
 #define LOWEST_STAFF_TOP   372  /* top line of the bottom staff (pitch 0) */
-#define LANE_COUNT         4    /* one staff per pitch (KEY_A..KEY_F) */
+#define LANE_COUNT         4    
 #define SCREEN_WIDTH       640
+#define NOTEHEAD_OFFSET    25
 
 static int staff_top(UINT8 pitch);
 /*------ Function: render ------
@@ -39,7 +46,7 @@ void render(Model *model, UINT32 *base){
     int i;
     clear_screen(base);
 
-    render_staff(base); /*must render the track first for it to appear in the background*/
+    render_staff(base); /*must render the staff first for it to appear in the background*/
 
     for(i=model->head;i<model_last_on_screen(model); i++){ /*model_last_on_screen returns index of first note off screen. it needs to be renamed probably but it is what it is.*/
         render_note(&model->notes[i], base);
@@ -79,23 +86,22 @@ void render_meter(Meter *meter, UINT32 *base){
     }
 }
 /*------ Function: render_staff ------
-PURPOSE: Renders one five-line staff for each pitch lane, one above the other.
-         Must be drawn before the notes so the notes appear on top of it.
+PURPOSE: Renders one four line staff. 
 
 INPUT: UINT32 pointer to frame buffer
 
 OUTPUT: N/A
 */
 void render_staff(UINT32 *base){
-    UINT8 lane;
-    int line, row;
+   
+    int row,i;
 
-    for(lane=0; lane<LANE_COUNT; lane++){
-        row = staff_top(lane);
-        for(line=0; line<STAFF_LINES; line++){
-            plot_horizontal_line(base, row, 0, SCREEN_WIDTH);
-            row += STAFF_LINE_GAP;
-        }
+    
+    for(i = 0; i <4; i++){
+        row = staff_top(i) + (STAFF_HEIGHT / 2); /* middle line of the note's staff */
+        row -= NOTE16_HEAD_ROW;                  /* centre the notehead on that line */
+        row+=NOTEHEAD_OFFSET;
+        plot_horizontal_line(base, row, 0, SCREEN_WIDTH);
     }
 }
 
@@ -109,4 +115,15 @@ OUTPUT: Returns the row of that staff's top line.
 */
 static int staff_top(UINT8 pitch){
     return LOWEST_STAFF_TOP - (pitch * STAFF_SPACING);
+}
+
+/*------ Function: render_target ------
+PURPOSE: Renders one target. 
+
+INPUT: UINT32 pointer to frame buffer
+
+OUTPUT: N/A
+*/
+void render_targets(UINT32 *base){
+    
 }

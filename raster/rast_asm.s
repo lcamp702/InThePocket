@@ -766,7 +766,94 @@ pl_end:
 		movem.l		(sp)+,d0-7/a0
 		rts
 
-; ==== Function: plot_8bit_bitmap ====
+; ==== void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width) ====
+; PURPOSE: Plots a rectangle on the screen given by the top left pixel, and the length and width of the rectangle.
+; INPUT: Address(UINT32*): to the start of the screen
+;		Position(row,col): the coordinates of the top left pixel of the rectangle
+;		Length: the length (number of rows) in pixels of the rectangle
+;		Width: the width (number of columns) in pixels of the rectangle
+; OUTPUT: None
+pr_base		equ	8
+pr_row		equ	12
+pr_col		equ	14
+pr_len		equ	16
+pr_wid		equ	18
+_plot_rectangle:
+		link		a6,#0
+		movem.l		d0-1,-(sp)
+
+		move.w		pr_len(a6),d0	; d0.w = Length (# of rows tall)
+		move.w		pr_wid(a6),d1	; d1.w = Width (# of cols wide)
+
+		sub.w		#10,sp		; Advance sp to load up parameters backwards
+
+		move.l		pr_base(a6),(sp)+	; Move base pointer to stack
+		move.w		pr_row(a6),(sp)+	; Move row to stack
+		move.w		pr_col(a6),(sp)+	; Move col to stack
+		
+		move.w		d0,(sp)+		; Move length to stack for vertical line
+		jsr		_plot_vertical_line
+
+		subq.w		#2,sp
+		move.w		d1,(sp)+	; Move width to stack for horizontal line
+		jsr		_plot_horizontal_line
+
+		subq.w		#6,sp		; Move to change row on stack
+		add.w		d0,(sp)+	; Row += length 
+		addq.w		#2,sp		; Skip changing col
+		move.w		d0,(sp)+	; Move length to stack for vertical line
+		jsr		_plot_vertical_line
+		subq.w		#6,sp		; Move to reset row
+		sub.w		d0,(sp)+	; Reset row
+		add.w		d1,(sp)+	; Col += width
+		move.w		d1,(sp)+	; Move width to stack for horizontal line
+		jsr		_plot_horizontal_line
+
+		movem.l		(sp)+,d0-1
+		unlk		a6
+		rts
+
+; ==== void plot_square(UINT32 *base, int row, int col, UINT16 side) ====
+; PURPOSE: Plots a square on the screen given by the top left pixel, and the length of the sides of the square.
+; INPUT: Address(UINT32*): to the start of the screen
+;		Position(row,col): the coordinates of the top left pixel of the square
+;		Side: the length of each side, in pixels, of the square
+; OUTPUT: None
+ps_base		equ	8
+ps_row		equ	12
+ps_col		equ	14
+ps_side		equ	16
+_plot_square:
+		link		a6,#0
+		move.l		d0,-(sp)
+
+		move.w		pr_side(a6),d0	; d0.w = Side length
+
+		sub.w		#10,sp		; Advance sp to load up parameters backwards
+
+		move.l		pr_base(a6),(sp)+	; Move base pointer to stack
+		move.w		pr_row(a6),(sp)+	; Move row to stack
+		move.w		pr_col(a6),(sp)+	; Move col to stack
+		move.w		d0,(sp)+		; Move side length to stack
+
+		jsr		_plot_vertical_line
+		jsr		_plot_horizontal_line
+
+		subq.w		#6,sp		; Move to change row on stack
+		add.w		d0,(sp)+	; Row += side 
+		addq.w		#4,sp		; Skip changing col and side
+		jsr		_plot_vertical_line
+		subq.w		#6,sp		; Move to reset row
+		sub.w		d0,(sp)+	; Reset row
+		add.w		d0,(sp)+	; Col += side
+		addq.w		#2,sp		; Fix SP
+		jsr		_plot_horizontal_line
+
+		move.l		(sp)+,d0
+		unlk		a6
+		rts
+
+; ==== void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height) ====
 ; PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
 ; INPUT: Address(UINT8*): to the start of the screen
 ;	 Position(row,col): the coordinates of the top left pixel of the bitmap
@@ -892,7 +979,7 @@ bm8_end:
 		movem.l		(sp)+,d0-2/a0-1
 		rts
 
-; ==== Function: plot_16bit_bitmap ====
+; ==== void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height) ====
 ; PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
 ; INPUT: Address(UINT16*): to the start of the screen
 ;	 Position(row,col): the coordinates of the top left pixel of the bitmap
@@ -1021,7 +1108,7 @@ bm16_end:
 		movem.l		(sp)+,d0-2/a0-1
 		rts
 
-; ==== Function: plot_32bit_bitmap ====
+; ==== void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UINT16 height) ====
 ; PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
 ; INPUT: Address(UINT32*): to the start of the screen
 ;	 Position(row,col): the coordinates of the top left pixel of the bitmap
@@ -1136,7 +1223,7 @@ bm32_shift_loop:
 		or.l		d3,(a0)+	; Apply bitmap row masks to framebuffer
 		or.l		d4,(a0)
 
-		adda.w		#BYTE_COLS-4,a0		; Move to next row
+		adda.w		#BYTE_COLS-4,a0	; Move to next row
 
 		dbra		d0,bm32_shift_loop
 		bra.b		bm32_end
@@ -1153,3 +1240,11 @@ bm32_end:
 		rts
 
 zeros:		ds.l		13
+font:		; Font table	(8x16 Bitmap characters at ASCII * 16 byte offset)
+		; Blank char
+		dc.b		$00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+		; Arrow up
+		dc.b		$00, $00, $00, $18, $3C, $66, $C3, $81, $E7, $24, $24, $24, $3C, $00, $00, $00
+		; Arrow down
+		dc.b		$00, $00, $00, $3C, $24, $24, $24, $E7, $81, $C3, $66, $3C, $18, $00, $00, $00
+		; Arrow right

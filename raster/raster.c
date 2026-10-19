@@ -49,43 +49,6 @@
 
 #define FONT_HEIGHT 16
 
-/*----- Function: plot_rectangle -----
-
- PURPOSE: Plots a rectangle on the screen given by the top left pixel, and the length and width of the rectangle.
-
- INPUT: Address(UINT32*): to the start of the screen
-		Position(row,col): the coordinates of the top left pixel of the rectangle
-		Length: the length (number of rows) in pixels of the rectangle
-		Width: the width (number of columns) in pixels of the rectangle
-
- OUTPUT: None
-*/
-void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
-{
-	plot_horizontal_line(base, row, col, width);
-	plot_vertical_line(base, row, col, length);
-	plot_horizontal_line(base, row, col + width, width);
-	plot_vertical_line(base, row + length, col, length);
-}
-
-/*----- Function: plot_square -----
-
- PURPOSE: Plots a square on the screen given by the top left pixel, and the length of the sides of the square.
-
- INPUT: Address(UINT32*): to the start of the screen
-		Position(row,col): the coordinates of the top left pixel of the square
-		Side: the length of each side, in pixels, of the square
-
- OUTPUT: None
-*/
-void plot_square(UINT32 *base, int row, int col, UINT16 side)
-{
-	plot_horizontal_line(base, row, col, side);		   /*draw top side in square*/
-	plot_vertical_line(base, row, col, side);		   /*draw left side of square*/
-	plot_horizontal_line(base, row, col + side, side); /*draw bottom side of square*/
-	plot_vertical_line(base, row + side, col, side);   /*draw right side of square*/
-}
-
 /*----- Function: plot_triangle -----
 
  PURPOSE: Plots a triangle on the screen given by the coordinate of the 90° angle, the length of the base, the length of the height, and the direction of the triangle.
@@ -116,23 +79,32 @@ void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 
 		Right bit is dc (0 => dc>0, 1 => dc<0)
 	*/
 
-	int end_row;
-	int end_col;
-
+	int tri_height = height;
 	if (direction & TRIANGLE_ROW_DIR)
-		height = -height;				/* Triangle going down */
+		tri_height = -tri_height;	/* Triangle going down */
 
+	int tri_base = triangle_base;
 	if (direction & TRIANGLE_COL_DIR)
-		triangle_base = -triangle_base;	/* Triangle going left */
+		tri_base = -tri_base;		/* Triangle going left */
 
-	/* Draw lines from corner */
-	plot_horizontal_line(base, row, col, triangle_base);
-	plot_vertical_line(base, row, col, height);
+	{
+		UINT32 *fb_base = base;
+		int start_row = row;
+		int start_col = col;
+		/* Draw lines from corner */
+		plot_horizontal_line(fb_base, start_row, start_col, tri_base);
+		plot_vertical_line(fb_base, start_row, start_col, tri_height);
 
-	/* Draw hypotenuse */
-	end_row = row + height;
-	end_col = col + triangle_base;
-	plot_line(base, row, col, end_row, end_col);
+		{
+			/* Draw hypotenuse */
+			int end_row = tri_height; /* Replace base + height registers*/
+			int end_col = tri_base;
+			end_row += start_row;
+			end_col += start_col;
+
+			plot_line(fb_base, start_row, start_col, end_row, end_col);
+		}
+	}
 }
 
 /*----- Function: plot_character -----

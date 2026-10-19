@@ -95,33 +95,3 @@ void plot_character(UINT8 *base, int row, int col, char ch)
 		l++;			   /* Increment row count */
 	}
 }
-
-/*----- Function: plot_string -----
-
- PURPOSE: Plots a string, as a sequence of bitmaps from a font table, to the screen.
-
- INPUT: Address(UINT8*): to the start of the screen
-		Position(row,col): the coordinates of the top left pixel of the string
-		ch(c-string): the string to be written to the screen
-
- OUTPUT: None
-*/
-void plot_string(UINT8 *base, int row, int col, char *ch)
-{
-	/* Bounds are checked in plot_character*/
-	while (*ch != '\0')
-	{ /* Loop over string until null terminator. */
-		plot_character(base, row, col, *ch);
-
-		/* Increment by 8 columns (1 byte in memory)*/
-		col += 8;
-		/* Get next character */
-		ch++;
-
-		if (col > (COLS - 8)) /* Check for the end of the row */
-		{
-			row += FONT_HEIGHT;
-			col = 0;
-		}
-	}
-}

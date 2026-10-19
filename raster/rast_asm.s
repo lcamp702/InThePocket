@@ -13,9 +13,7 @@
 
 ;	Status:
 ;	  Not Tested:
-;		plot_rectangle
-;		plot_square
-;		plot_triangle
+;
 ;	  Visual Tests:
 ;		clear_screen
 ;		clear_region (TO DO: ADD CLIPPING)
@@ -23,11 +21,14 @@
 ;		plot_horizontal_line
 ;		plot_vertical_line
 ;		plot_line
+;		plot_rectangle
+;		plot_square
+;		plot_triangle
 ;		plot_8bit_bitmap
 ;		plot_16bit_bitmap
 ;		plot_32bit_bitmap
 ;		plot_character (c)
-;		plot_string (c)
+;		plot_string
 
 ;	Credits:
 
@@ -49,6 +50,8 @@
 		xdef		_plot_8bit_bitmap
 		xdef		_plot_16bit_bitmap
 		xdef		_plot_32bit_bitmap
+		xref		_plot_character
+		xdef		_plot_string
 
 ;       Screen details
 ROWS		equ		400
@@ -876,15 +879,15 @@ _plot_square:
 ;			  2 - Coordinate is the bottom left point of the triangle	0010
 ;			  3 - Coordinate is the bottom right point of the triangle	0011
 ; OUTPUT: None
+TRI_ROW_DIR	equ		1	; Bit # determining row direction
+TRI_COL_DIR	equ		0	; Bit # determining column direction
+
 pt_base		equ		8
 pt_row		equ		12
 pt_col		equ		14
 pt_wid		equ		16
 pt_hei		equ		18
 pt_dir		equ		21
-
-TRI_ROW_DIR	equ		1	; Bit # determining row direction
-TRI_COL_DIR	equ		0	; Bit # determining column direction
 _plot_triangle:
 		link		a6,#0
 		movem.l		d0-4,-(sp)
@@ -1334,12 +1337,49 @@ bm32_end:
 		movem.l		(sp)+,d0-4/a0-1
 		rts
 
+; ==== void plot_string(UINT8 *base, int row, int col, char *ch) ====
+; PURPOSE: Plots a string, as a sequence of bitmaps from a font table, to the screen.
+; INPUT: Address(UINT8*): to the start of the screen
+;	 Position(row,col): the coordinates of the top left pixel of the string
+;	 ch(c-string): the string to be written to the screen
+; OUTPUT: None
+
+FONT_HEIGHT	equ		8
+
+pst_base	equ		8
+pst_row		equ		12
+pst_col		equ		14
+pst_char	equ		16
+_plot_string:
+		link		a6,#0
+		movem.l		a5,-(sp)
+
+		move.l		pst_char(a6),a5	; a5.l = String char pointer
+
+		suba.w		#10,sp
+
+		move.l		pst_base(a6),(sp)	; 0: base	0(sp)
+		move.w		pst_row(a6),4(sp)	; 1: row	4(sp)
+		move.w		pst_col(a6),6(sp)	; 2: col	6(sp)
+		move.b		#0,8(sp)		; Clear top byte of param 3 for char
+pst_loop:
+		move.b		(a5)+,9(sp)	; 3: char	9(sp)
+		beq		pst_end	; Stop printing on null terminator
+		; More to print
+		jsr		_plot_character
+
+		addq.w		#8,6(sp)
+		cmpi.w		#COLS-8,6(sp)
+		ble.b		pst_loop
+		; Wrap to next line
+		move.w		#0,6(sp)
+		add.w		#FONT_HEIGHT,4(sp)
+		bra		pst_loop
+
+pst_end:
+		adda.w		#10,sp
+		movem.l		(sp)+,a5
+		unlk		a6
+		rts
+
 zeros:		ds.l		13
-font:		; Font table	(8x16 Bitmap characters at ASCII * 16 byte offset)
-		; Blank char
-		dc.b		$00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
-		; Arrow up
-		dc.b		$00, $00, $00, $18, $3C, $66, $C3, $81, $E7, $24, $24, $24, $3C, $00, $00, $00
-		; Arrow down
-		dc.b		$00, $00, $00, $3C, $24, $24, $24, $E7, $81, $C3, $66, $3C, $18, $00, $00, $00
-		; Arrow right

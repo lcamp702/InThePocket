@@ -1,0 +1,43 @@
+CC = cc68x
+
+tstmodel.tos: asynch.o cond.o synch.o meter.o model.o note.o tstmodel.o
+	$(CC) -g asynch.o cond.o synch.o meter.o model.o note.o tstmodel.o -o tstmodel.tos
+
+note.o: note.c note.h types.h
+	$(CC) -g -c note.c 
+
+asynch.o: asynch.c asynch.h cond.h model.h note.h meter.h types.h
+	$(CC) -g -c asynch.c
+
+cond.o: cond.c cond.h model.h note.h meter.h types.h
+	$(CC) -g -c cond.c
+
+meter.o: meter.c meter.h types.h
+	$(CC) -g -c meter.c
+
+model.o: model.c model.h note.h meter.h types.h
+	$(CC) -g -c model.c
+
+synch.o: synch.c synch.h cond.h model.h note.h meter.h types.h
+	$(CC) -g -c synch.c
+
+tstmodel.o: tstmodel.c events.h asynch.h synch.h cond.h model.h note.h meter.h types.h
+	$(CC) -g -c tstmodel.c
+
+tstrend.tos: tstrend.o render.o bitmaps.o asynch.o synch.o cond.o model.o note.o meter.o raster.o rast_asm.o
+	$(CC) -g tstrend.o render.o bitmaps.o asynch.o synch.o cond.o model.o note.o meter.o raster.o rast_asm.o -o tstrend.tos
+
+tstrend.o: tstrend.c events.h asynch.h synch.h cond.h render.h raster.h model.h note.h meter.h types.h
+	$(CC) -g -c tstrend.c
+
+render.o: render.c render.h bitmaps.h raster.h model.h note.h meter.h types.h
+	$(CC) -g -c render.c
+
+bitmaps.o: bitmaps.c bitmaps.h types.h
+	$(CC) -g -c bitmaps.c
+
+raster.o: raster.c raster.h
+	$(CC) -g -c raster.c
+
+rast_asm.o: rast_asm.s
+	gen -D -L2 rast_asm.s

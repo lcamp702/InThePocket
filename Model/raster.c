@@ -1,0 +1,991 @@
+/*
+	Peter Ursem
+	purse327@mtroyal.ca
+
+	Logan Campbell
+	lcamp702@mtroyal.ca
+
+	COMP2659-001
+	Steve Kalmar
+
+	In the Pocket - Checkpoint 2
+	Due: Oct 19, 2026
+	raster.c
+
+	Status:
+	  Not Tested:
+		plot_line
+		plot_rectangle
+		plot_square
+		plot_triangle
+		plot_8bit_bitmap
+		plot_16bit_bitmap
+		plot_32bit_bitmap
+	  Visual Tests:
+		clear_screen
+		clear_region
+		plot_pixel
+		plot_horizontal_line
+		plot_vertical_line
+		plot_character
+		plot_string
+
+	Credits:
+
+	[1] D. Salvato, “Assembly tricks for fast bounds checking,” @dansalvato, https://dansalva.to/assembly-tricks-for-fast-bounds-checking/ (Accessed Oct. 13, 2026).
+	[2] StingRay, "Plotter / Dot Flag," English Amiga Board, https://eab.abime.net/showthread.php?t=50595 (Accessed Oct. 13 2026)
+
+	Purpose:
+	A raster engine for our game, In the Pocket on the Atari ST.
+
+*/
+
+#include <linea.h>
+#include "raster.h"
+
+#define COLS 640
+#define BYTE_COLS 80
+#define WORD_COLS 40
+#define LONG_COLS 20
+#define ROWS 400
+#define BYTE_LEN 8
+#define WORD_LEN 16
+#define LONG_LEN 32
+#define SCREEN_LONGS 8000
+
+#define LINE_CLIP_NONE 0   /* 0000 */
+#define LINE_CLIP_TOP 8	   /* 1000 */
+#define LINE_CLIP_BOTTOM 4 /* 0100 */
+#define LINE_CLIP_RIGHT 2  /* 0010 */
+#define LINE_CLIP_LEFT 1   /* 0001 */
+
+#define LINE_CLIP_R 12 /* 1100 */
+#define LINE_CLIP_C 3  /* 0011 */
+
+#define FONT_HEIGHT 16
+
+/*----- Function: clear_screen -----
+
+ PURPOSE: Clears the entire screen.
+
+ INPUT: Address(UINT32*): to the start of the screen
+
+ OUTPUT: None
+
+*/
+/*
+void clear_screen(UINT32 *base)
+{
+	register int l;
+
+	while (l++ < SCREEN_LONGS)
+		*(base++) = 0;
+}
+*/
+
+/*----- Function: clear_region -----
+
+ PURPOSE: Clear a region of the screen. The section is specified by the coordinates of the top left corner, and the height and width of the region.
+
+ INPUT: Address(UINT32*): to the start of the screen
+	   Position(row,col): the coordinates of the top left pixel of the region
+	   Length: the length (number of rows) in pixels of the region
+	   Width: the width (number of columns) in pixels of the region
+
+ OUTPUT: None
+
+*/
+/*
+void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
+{
+
+	int base_offset;
+	int start_offset;
+	int end_offset;
+	int start_bit;
+	int end_bit;
+	int fills;
+	UINT32 start_mask;
+	UINT32 end_mask;
+	UINT32 *cursor;
+
+	( Fast bound checking [1] )
+	if ((UINT16)row >= ROWS) return;
+	if ((UINT16)col >= COLS) return;
+	if (length <= 0) return;
+	if (width <= 0) return;
+
+	( Length Clipping )
+	base_offset = row;
+	base_offset += length;
+	if (base_offset > ROWS)
+	{
+		length = ROWS;
+		length -= row;
+
+		base_offset = ROWS;
+	}
+	base_offset--;
+	( Base offset points to start of the last row to draw )
+
+	( Set start offset )
+	start_offset = col;
+	start_bit = start_offset;
+
+	start_offset >>= 5;
+
+	( Move base pointer )
+	base_offset *= LONG_COLS;
+	base_offset += start_offset;
+	base += base_offset;
+
+	( Set end offset)
+	end_offset = col + width;
+
+	( Width Clipping )
+	if (end_offset > COLS)
+		end_offset = COLS;
+
+	end_offset--;
+
+	( Copy to get remainder )
+	end_bit = end_offset;
+
+	end_offset >>= 5;
+
+	( Get shift amounts for LSR / LSL )
+	start_bit &= 31;
+	start_bit = -start_bit;
+	start_bit += 32;
+
+	end_bit &= 31;
+	end_bit += 1;
+
+	( Create masks )
+	if (start_bit == 32)
+		start_mask = 0;
+	else
+		start_mask = 0xFFFFFFFF << start_bit;
+
+	if (end_bit == 32)
+		end_mask = 0;
+	else
+		end_mask = 0xFFFFFFFF >> end_bit;
+
+	if (start_offset == end_offset)
+	{
+		( Mask fits in one long )
+		start_mask |= end_mask;
+		while (length-- > 0) {
+			*base &= start_mask;
+			base -= LONG_COLS;
+		}
+	}
+	else
+	{
+		while (length-- > 0) {
+			cursor = base;
+
+			( Mask spans multiple longs )
+			*(cursor++) &= start_mask;
+
+			fills = end_offset - start_offset - 1;
+			while (--fills >= 0)
+			{
+				*(cursor++) = 0;
+			}
+
+			*cursor &= end_mask;
+
+			base -= LONG_COLS;
+		}
+
+	}
+}
+*/
+/*----- Function: plot_pixel -----
+
+ PURPOSE: Plots a single pixel on the screen.
+
+ INPUT: Address(UINT8*): to the start of the screen
+		Position(row,col): the location of the pixel to plot
+
+ OUTPUT: None
+
+*/
+/*
+void plot_pixel(UINT8 *base, int row, int col)
+{
+	   register UINT8 rem;
+	   register UINT8 mask;
+
+	   (Fast bound checking [1])
+	   if ((UINT16)row >= ROWS) return;
+	   if ((UINT16)col >= COLS) return;
+
+	   base += row * BYTE_COLS;
+	   base += col >> 3;
+
+	   rem = col & 7;
+	   mask = 1 << (7-rem);
+
+	   *base |= mask;
+}
+*/
+
+/*----- Function: plot_horizontal_line -----
+
+ PURPOSE: Plot a horizontal line on the screen. The horizontal line is specified by the leftmost pixel of the line and the length of the line.
+
+ INPUT: Address(UINT32*): to the start of the screen
+		Position(row,col): the coordinates of the leftmost pixel of the horizontal line
+		Length: the length in pixels of the line
+
+ OUTPUT: None
+*/
+/*
+void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length)
+{
+	int base_offset;
+	int start_offset;
+	int end_offset;
+	int start_bit;
+	int end_bit;
+	int fills;
+	UINT32 start_mask;
+	UINT32 end_mask;
+
+	( Fast bound checking [1] )
+	if ((UINT16)row >= ROWS) return;
+	if ((UINT16)col >= COLS) return;
+	if (length <= 0) return;
+
+	( Set start offset )
+	start_offset = col;
+	start_bit = start_offset;
+
+	start_offset >>= 5;
+
+	( Set end offset)
+	end_offset = col + length ;
+
+	( Clipping )
+	if (end_offset >= COLS)
+		end_offset = COLS;
+
+	end_offset -= 1;
+
+	( Copy to get remainder )
+	end_bit = end_offset;
+
+	end_offset >>= 5;
+
+	( Get shift amounts for LSR / LSL )
+	start_bit &= 31;
+	end_bit = ~end_bit;
+	end_bit &= 31;	( end_bit = 31 - (end_col % 32))
+					( Like [2]. In assembly this is fastest with not and andi )
+
+	( Create masks )
+	start_mask = 0xFFFFFFFF >> start_bit;
+	end_mask = 0xFFFFFFFF << end_bit;
+
+	( Move base pointer )
+	base_offset = row;
+	base_offset *= LONG_COLS;
+	base_offset += start_offset;
+	base += base_offset;
+
+	if (start_offset == end_offset)
+	{
+		( Line fits in one long )
+		start_mask &= end_mask;
+		*base |= start_mask;
+	}
+	else
+	{
+		( Line spans multiple longs )
+		*(base++) |= start_mask;
+
+		fills = end_offset - start_offset - 1;
+		while (--fills >= 0)
+		{
+			*(base++) = -1;
+		}
+
+		*base |= end_mask;
+	}
+}
+*/
+
+/*----- Function: plot_vertical_line -----
+
+ PURPOSE: Plot a vertical line on the screen. The vertical line is specified by the topmost pixel of the line and the length of the line.
+
+ INPUT: Address(UINT32*): to the start of the screen
+		Position(row,col): the coordinates of the topmost pixel of the vertical line
+		Length: the length in pixels of the line
+
+ OUTPUT: None
+*/
+/*
+void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length)
+{
+	   int end;
+	   ( int lc = LONG_COLS;   In ASM loading this into a register will save clocks for any length >= 1. )
+	   int r_offset;
+	   int c_offset;
+	   int col_bit;
+	   UINT32 *cursor;
+	   UINT32 mask;
+	   int l;
+
+		( Fast bound checking [1] )
+		if ((UINT16)row >= ROWS) return;
+		if ((UINT16)col >= COLS) return;
+		if (length <= 0) return;
+
+	   ( Clipping )
+	   l = length;
+	   end = row;
+	   end += length;
+	   if (end > ROWS) {
+			  l = ROWS;
+			  l -= row;
+	   }
+
+	   ( Calculate offsets )
+	   r_offset = row;
+	   r_offset *= LONG_COLS;
+
+	   c_offset = col;
+	   col_bit = c_offset;
+	   c_offset >>= 5;
+
+	   ( Optimization through not [2] )
+	   col_bit = ~col_bit;
+	   col_bit &= 0x1F;
+
+	   ( Move cursor pointer )
+	   cursor = base;
+	   cursor += r_offset;
+	   cursor += c_offset;
+
+	   ( In assembly this will take as long as subtracting to get bit position from the right )
+	   mask = 1;
+	   mask <<= col_bit;
+
+	   while(--l >= 0) {
+			  *(cursor) |= mask;
+			  cursor += LONG_COLS;
+	   }
+}
+*/
+
+/*
+
+	Calculate the Cohen-Sutherland clipping code and return it.
+
+*/
+UINT8 clip_code(int row, int col)
+{
+	/* Calculate clipping code (TBRL) */
+	char code = 0;
+
+	if (row < 0)
+		code |= LINE_CLIP_TOP;
+	if (row >= ROWS)
+		code |= LINE_CLIP_BOTTOM;
+	if (col < 0)
+		code |= LINE_CLIP_LEFT;
+	if (col >= COLS)
+		code |= LINE_CLIP_RIGHT;
+
+	return code;
+}
+
+long clip_row_col(int row, int col, UINT8 code, int dr, int dc)
+{
+	long new_axis;
+	long out;
+
+	if (code & LINE_CLIP_R)
+	{
+		new_axis = 0;
+		if (code & LINE_CLIP_BOTTOM)
+		{
+			new_axis = ROWS;
+			new_axis--;
+		}
+		new_axis -= row;
+		row += (int)new_axis;
+
+		new_axis *= dc;
+		new_axis /= dr;
+
+		col += (int)new_axis;
+		code = clip_code(row, col);
+	}
+	if (code & LINE_CLIP_C)
+	{
+		new_axis = 0;
+
+		if (code & LINE_CLIP_RIGHT)
+		{
+			new_axis = COLS;
+			new_axis--;
+		}
+		new_axis -= col;
+		col += (int)new_axis;
+
+		new_axis *= dr;
+		new_axis /= dc;
+
+		row += (int)new_axis;
+	}
+
+	out = row;
+	out <<= 16;
+	out |= col;
+
+	return out;
+}
+
+/*----- Function: plot_line -----
+ PURPOSE: Plots a line on the screen between the two given points.
+
+ INPUT: Address(UINT32*): to the start of the screen
+		Position(start_row,start_col): the coordinates of the start of the line
+		Position(end_row,end_col): the coordinates of the end of the line
+
+ OUTPUT: None
+*/
+void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col)
+{
+	int dr;
+	int dc;
+	int err;
+	int row;
+	UINT16 col;
+	int row_count;
+	int col_count;
+	UINT8 start_code;
+	UINT8 end_code;
+
+	/* Calculate deltas */
+	dr = end_row;
+	dr -= start_row;
+
+	dc = end_col;
+	dc -= start_col;
+
+	start_code = clip_code(start_row, start_col);
+	end_code = clip_code(end_row, end_col);
+
+	if (start_code & end_code)
+		return; /* Line does not cross screen */
+
+	if (start_code)
+	{
+		long clipped = clip_row_col(start_row, start_col, dr, dc, start_code);
+		start_col = clipped & 0xFFFF;
+		start_row = clipped >> 16;
+	}
+	if (end_code)
+	{
+		long clipped = clip_row_col(end_row, end_col, dr, dc, end_code);
+		end_col = clipped & 0xFFFF;
+		end_row = clipped >> 16;
+	}
+
+	if (start_code | end_code) {
+		dc = end_col;
+		dc -= start_col;
+
+		dr = end_row;
+		dr -= start_row;
+	}
+
+	/* Fix start row/col */
+	if (dc < 0)
+	{
+		dr = -dr;
+		dc = -dc;
+		start_col = end_col;
+		start_row = end_row;
+	}
+
+	/* Move pointer to first long */
+	row = start_row;
+	row *= LONG_COLS; /* Row long offset */
+	col = start_col;
+	col >>= 5;	/* Col long offset */
+	row += col; /* Total offset */
+	base += row;
+
+	row = LONG_COLS; /* Row step */
+
+	if (dr < 0)
+	{
+		dr = -dr;
+		row = -row;
+	}
+
+	col = start_col;
+	col = ~col;
+	col &= 31; /* Col shift */
+
+	*base |= (UINT32)1 << col; /* Plot first pixel */
+
+	/* Plotting loops */
+	if (dr == dc)
+	{
+		col_count = dc;
+		col_count--;
+
+		while (col_count-- >= 0)
+		{
+			/* Diagonal */
+			if (--col > 32)
+			{
+				col = 31;
+				base++;
+			}
+
+			base += row;
+
+			*base |= (UINT32)1 << col; /*bset*/
+		}
+	}
+	else if (dr > dc)
+	{
+		/* Row major */
+		row_count = dr;
+		row_count--;
+
+		err = 0;
+		err -= dr;
+
+		dr += dr;
+		dc += dc;
+
+		while (row_count-- >= 0)
+		{
+			base += row;
+
+			err += dc;
+
+			if (err >= 0)
+			{
+				err -= dr;
+				if (--col > 32) /* Check carry set */
+				{
+					col = 31;
+					base++;
+				}
+			}
+
+			*base |= (UINT32)1 << col; /*bset*/
+		}
+	}
+	else
+	{
+		/* Column major */
+		col_count = dc;
+		col_count--;
+
+		err = 0;
+		err -= dc;
+
+		dr += dr;
+		dc += dc;
+
+		while (col_count-- >= 0)
+		{
+			if (--col > 32) /* Check carry clear */
+			{
+				col = 31;
+				base++;
+			}
+
+			err += dr;
+			if (err >= 0) 
+			{
+				err -= dc;
+				base += row;
+			}
+
+			*base |= (UINT32)1 << col; /*bset*/
+		}
+	}
+
+}
+
+/*----- Function: plot_rectangle -----
+
+ PURPOSE: Plots a rectangle on the screen given by the top left pixel, and the length and width of the rectangle.
+
+ INPUT: Address(UINT32*): to the start of the screen
+		Position(row,col): the coordinates of the top left pixel of the rectangle
+		Length: the length (number of rows) in pixels of the rectangle
+		Width: the width (number of columns) in pixels of the rectangle
+
+ OUTPUT: None
+*/
+void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
+{
+	plot_horizontal_line(base, row, col, width);
+	plot_vertical_line(base, row, col, length);
+	plot_horizontal_line(base, row + length, col, width);
+	plot_vertical_line(base, row, col + width, length);
+}
+
+/*----- Function: plot_square -----
+
+ PURPOSE: Plots a square on the screen given by the top left pixel, and the length of the sides of the square.
+
+ INPUT: Address(UINT32*): to the start of the screen
+		Position(row,col): the coordinates of the top left pixel of the square
+		Side: the length of each side, in pixels, of the square
+
+ OUTPUT: None
+*/
+void plot_square(UINT32 *base, int row, int col, UINT16 side)
+{
+	plot_horizontal_line(base, row, col, side);		   /*draw top side in square*/
+	plot_vertical_line(base, row, col, side);		   /*draw left side of square*/
+	plot_horizontal_line(base, row + side, col, side); /*draw bottom side of square*/
+	plot_vertical_line(base, row, col + side, side);   /*draw right side of square*/
+}
+
+/*----- Function: plot_triangle -----
+
+ PURPOSE: Plots a triangle on the screen given by the coordinate of the 90° angle, the length of the base, the length of the height, and the direction of the triangle.
+
+ INPUT: Address(UINT32*): to the start of the screen
+		Position(row,col): the coordinates of the pixel of the 90° angle of the triangle
+		Base: the length (number of columns) of the base in pixels of the triangle
+		Height: the length (number of rows) of the height in pixels of the triangle
+		Direction: Describes where the coordinate is relative to the rest of the triangle
+			  0 - Coordinate is the top left point of the triangle
+			  1 - Coordinate is the top right point of the triangle
+			  2 - Coordinate is the bottom left point of the triangle
+			  3 - Coordinate is the bottom right point of the triangle
+
+
+ OUTPUT: None
+*/
+void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 height, UINT8 direction)
+{
+}
+
+/*----- Function: plot_8bit_bitmap -----
+
+ PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
+
+ INPUT: Address(UINT8*): to the start of the screen
+		Position(row,col): the coordinates of the top left pixel of the bitmap
+		Height: the length (number of rows) of the height in pixels of the bitmap
+
+ OUTPUT: None
+*/
+/*
+void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height)
+{
+	int row_offset;
+	int col_offset;
+	int start_shift;
+	int end_shift;
+	int max_row;
+	int max_col;
+	UINT8 start_mask;
+	UINT8 end_mask;
+
+	( Fast Bound Check [1] )
+	max_row = ROWS;
+	max_row -= height;
+	if ((UINT16)row > max_row) return;
+
+	max_col = COLS;
+	max_col -= 8;
+	if ((UINT16)col > max_col) return;
+
+	if (height == 0) return;
+
+	row_offset = row;
+	col_offset = col;
+	start_shift = col_offset;
+	end_shift = start_shift;
+
+	row_offset *= BYTE_COLS;
+	col_offset >>= 3;
+
+	row_offset += col_offset; ( row_offset = total byte offset. )
+
+	start_shift &= 7;
+
+	base += row_offset;
+
+	if (start_shift == 0)
+	{
+		( Fast loop for byte aligned draws. )
+		while (height-- > 0)
+		{
+			start_mask = *(bitmap++);
+			*base |= start_mask;
+			base += BYTE_COLS;
+		}
+	}
+	else
+	{
+		end_shift &= 7;
+		end_shift = -end_shift;
+		end_shift += 8;
+
+		while (height-- > 0) {
+			start_mask = *(bitmap++);
+			end_mask = start_mask;
+
+			start_mask >>= start_shift;
+			end_mask <<= end_shift;
+
+			*base |= start_mask;
+			*(base + 1) |= end_mask;
+
+			base += BYTE_COLS;
+		}
+	}
+}
+*/
+/*----- Function: plot_16bit_bitmap -----
+
+ PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
+
+ INPUT: Address(UINT16*): to the start of the screen
+		Position(row,col): the coordinates of the top left pixel of the bitmap
+		Height: the length (number of rows) of the height in pixels of the bitmap
+
+ OUTPUT: None
+*/
+/*
+void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height)
+{
+	int row_offset;
+	int col_offset;
+	int start_shift;
+	int end_shift;
+	int max_row;
+	int max_col;
+	UINT16 start_mask;
+	UINT16 end_mask;
+
+	( Fast Bound Check [1] )
+	max_row = ROWS;
+	max_row -= height;
+	if ((UINT16)row > max_row) return;
+
+	max_col = COLS;
+	max_col -= 16;
+	if ((UINT16)col > max_col) return;
+
+	if (height == 0) return;
+
+	row_offset = row;
+	col_offset = col;
+	start_shift = col_offset;
+	end_shift = start_shift;
+
+	row_offset *= WORD_COLS;
+	col_offset >>= 4;
+
+	row_offset += col_offset; ( row_offset = total word offset. )
+
+	start_shift &= 15;
+
+	base += row_offset;
+
+	if (start_shift == 0)
+	{
+		( Fast loop for word aligned draws. )
+		while (height-- > 0)
+		{
+			start_mask = *(bitmap++);
+			*base |= start_mask;
+			base += WORD_COLS;
+		}
+	}
+	else
+	{
+		end_shift &= 15;
+		end_shift = -end_shift;
+		end_shift += 16;
+
+		while (height-- > 0) {
+			start_mask = *(bitmap++);
+			end_mask = start_mask;
+
+			start_mask >>= start_shift;
+			end_mask <<= end_shift;
+
+			*base |= start_mask;
+			*(base + 1) |= end_mask;
+
+			base += WORD_COLS;
+		}
+	}
+}
+*/
+/*----- Function: plot_32bit_bitmap -----
+
+ PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
+
+ INPUT: Address(UINT32*): to the start of the screen
+		Position(row,col): the coordinates of the top left pixel of the bitmap
+		Height: the length (number of rows) of the height in pixels of the bitmap
+
+ OUTPUT: None
+*/
+/*
+void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UINT16 height)
+{
+	int row_offset;
+	int col_offset;
+	int start_shift;
+	int end_shift;
+	int max_row;
+	int max_col;
+	UINT32 start_mask;
+	UINT32 end_mask;
+
+	( Fast Bound Check [1] )
+	max_row = ROWS;
+	max_row -= height;
+	if ((UINT16)row > max_row) return;
+
+	max_col = COLS;
+	max_col -= 32;
+	if ((UINT16)col > max_col) return;
+
+	if (height == 0) return;
+
+	row_offset = row;
+	col_offset = col;
+	start_shift = col_offset;
+	end_shift = start_shift;
+
+	row_offset *= LONG_COLS;
+	col_offset >>= 5;
+
+	row_offset += col_offset; ( row_offset = total long offset. )
+
+	start_shift &= 31;
+
+	base += row_offset;
+
+	if (start_shift == 0)
+	{
+		( Fast loop for long aligned draws. )
+		while (height-- > 0)
+		{
+			start_mask = *(bitmap++);
+			*base |= start_mask;
+			base += LONG_COLS;
+		}
+	}
+	else
+	{
+		end_shift &= 31;
+		end_shift = -end_shift;
+		end_shift += 32;
+
+		while (height-- > 0) {
+			start_mask = *(bitmap++);
+			end_mask = start_mask;
+
+			start_mask >>= start_shift;
+			end_mask <<= end_shift;
+
+			*base |= start_mask;
+			*(base + 1) |= end_mask;
+
+			base += LONG_COLS;
+		}
+	}
+}
+*/
+/*----- Function: plot_character -----
+
+ PURPOSE: Plots a single character, as a bitmap from a font table, to the screen.
+
+ INPUT: Address(UINT8*): to the start of the screen
+		Position(row,col): the coordinates of the top left pixel of the character
+		ch(char): the character to be written to the screen
+
+ OUTPUT: None
+*/
+void plot_character(UINT8 *base, int row, int col, char ch)
+{
+	char *font;			/* Base of font table */
+	register int l = 0; /* Loop counter for printing rows */
+	int offset;			/* Column remainder after finding byte*/
+	int max_row;
+	int max_col;
+
+	/* Fast bound checking [1] */
+	max_row = ROWS - FONT_HEIGHT;
+	max_col = COLS - 8;
+	if ((UINT16)row > max_row)
+		return;
+	if ((UINT16)col > max_col)
+		return;
+
+	linea0();				 /* Initialize line-a variables */
+	font = (char *)V_FNT_AD; /* Get start address of font table */
+
+	base += row * BYTE_COLS; /* Move base pointer to the starting row. */
+	base += col >> 3;		 /* Move base pointer to the starting byte. */
+	offset = col & 7;		 /* Column offset amount for the letter bitmap */
+
+	while (l < FONT_HEIGHT)
+	{
+		UINT8 letter = *(font + ch + (l << 8)); /* Current bitmap row of the letter being printed */
+
+		*(base) |= letter >> offset; /* Shift if needed and mask */
+
+		if (offset != 0) /* If the bitmap was shifted, part will be in the next byte. */
+			*(base + 1) |= letter << (8 - offset);
+
+		base += BYTE_COLS; /* Next row */
+		l++;			   /* Increment row count */
+	}
+}
+
+/*----- Function: plot_string -----
+
+ PURPOSE: Plots a string, as a sequence of bitmaps from a font table, to the screen.
+
+ INPUT: Address(UINT8*): to the start of the screen
+		Position(row,col): the coordinates of the top left pixel of the string
+		ch(c-string): the string to be written to the screen
+
+ OUTPUT: None
+*/
+void plot_string(UINT8 *base, int row, int col, char *ch)
+{
+	/* Bounds are checked in plot_character*/
+	while (*ch != '\0')
+	{ /* Loop over string until null terminator. */
+		plot_character(base, row, col, *ch);
+
+		/* Increment by 8 columns (1 byte in memory)*/
+		col += 8;
+		/* Get next character */
+		ch++;
+
+		if (col > (COLS - 8)) /* Check for the end of the row */
+		{
+			row += FONT_HEIGHT;
+			col = 0;
+		}
+	}
+}

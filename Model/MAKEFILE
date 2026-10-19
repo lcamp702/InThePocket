@@ -36,7 +36,7 @@ render.o: render.c render.h bitmaps.h raster.h model.h note.h meter.h types.h
 bitmaps.o: bitmaps.c bitmaps.h types.h
 	$(CC) -g -c bitmaps.c
 
-raster.o: raster.c raster.h
+raster.o: raster.c raster.h types.h
 	$(CC) -g -c raster.c
 
 rast_asm.o: rast_asm.s

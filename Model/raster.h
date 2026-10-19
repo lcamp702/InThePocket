@@ -1,20 +1,7 @@
 #ifndef RASTER_H
 #define RASTER_H
 
-/* Integer types: identical to Model/types.h and guarded by the same
-   TYPES_H macro, so either header can be included first. */
-#ifndef TYPES_H
-#define TYPES_H
-
-typedef unsigned char  UINT8;
-typedef unsigned short UINT16;
-typedef unsigned long  UINT32;
-
-typedef signed char    INT8;
-typedef signed short   INT16;
-typedef signed long    INT32;
-
-#endif
+#include "types.h"
 
 /*----- Function: clear_screen -----
 

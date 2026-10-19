@@ -30,6 +30,11 @@ void test_bmp8();
 void test_bmp16();
 void test_bmp32();
 
+/* test_shape.c */
+void test_rect();
+void test_square();
+void test_triangle();
+
 void fill_screen(UINT32 *fb);
 void sync_wait(int frames);
 

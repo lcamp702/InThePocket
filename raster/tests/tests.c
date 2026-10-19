@@ -29,12 +29,29 @@ void disable_cursor()
 
 int main()
 {
+	int i;
+	int j;
 	l_fb = Physbase();
 	w_fb = Physbase();
 	b_fb = Physbase();
-
 	disable_cursor();
 	clear_screen(l_fb);
+
+	for(i = 0; i < 16; i++)
+	{
+		for (j = 0; j < 16; j++)
+		{
+			plot_character(b_fb, j*16, i*8, i+(j*16));
+		}
+	}
+
+	Cnecin();
+	test_rect();
+	Cnecin();
+	test_square();
+	Cnecin();
+	test_triangle();
+
 	Cnecin();
 	test_clear_screen();
 	Cnecin();

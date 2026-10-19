@@ -49,64 +49,6 @@
 
 #define FONT_HEIGHT 16
 
-/*----- Function: plot_triangle -----
-
- PURPOSE: Plots a triangle on the screen given by the coordinate of the 90° angle, the length of the base, the length of the height, and the direction of the triangle.
-
- INPUT: Address(UINT32*): to the start of the screen
-		Position(row,col): the coordinates of the pixel of the 90° angle of the triangle
-		Base: the length (number of columns) of the base in pixels of the triangle (must be positive)
-		Height: the length (number of rows) of the height in pixels of the triangle (must be positive)
-		Direction: Describes where the coordinate is relative to the rest of the triangle
-			  0 - Coordinate is the top left point of the triangle
-			  1 - Coordinate is the top right point of the triangle
-			  2 - Coordinate is the bottom left point of the triangle
-			  3 - Coordinate is the bottom right point of the triangle
-
-
- OUTPUT: None
-*/
-#define	TRIANGLE_ROW_DIR 1
-#define TRIANGLE_COL_DIR 2
-void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 height, UINT8 direction)
-{
-	/*
-		0 (00) => dr > 0, dc > 0
-		1 (01)=> dr > 0, dc < 0
-		2 (10)=> dr < 0, dc > 0
-		3 (11)=> dr < 0, dc < 0
-		Left bit is dr (0 => base>0, 1 => dr<0)
-		Right bit is dc (0 => dc>0, 1 => dc<0)
-	*/
-
-	int tri_height = height;
-	if (direction & TRIANGLE_ROW_DIR)
-		tri_height = -tri_height;	/* Triangle going down */
-
-	int tri_base = triangle_base;
-	if (direction & TRIANGLE_COL_DIR)
-		tri_base = -tri_base;		/* Triangle going left */
-
-	{
-		UINT32 *fb_base = base;
-		int start_row = row;
-		int start_col = col;
-		/* Draw lines from corner */
-		plot_horizontal_line(fb_base, start_row, start_col, tri_base);
-		plot_vertical_line(fb_base, start_row, start_col, tri_height);
-
-		{
-			/* Draw hypotenuse */
-			int end_row = tri_height; /* Replace base + height registers*/
-			int end_col = tri_base;
-			end_row += start_row;
-			end_col += start_col;
-
-			plot_line(fb_base, start_row, start_col, end_row, end_col);
-		}
-	}
-}
-
 /*----- Function: plot_character -----
 
  PURPOSE: Plots a single character, as a bitmap from a font table, to the screen.

@@ -22,7 +22,7 @@
 ;		plot_pixel
 ;		plot_horizontal_line
 ;		plot_vertical_line
-;		plot_line (c)
+;		plot_line
 ;		plot_8bit_bitmap
 ;		plot_16bit_bitmap
 ;		plot_32bit_bitmap
@@ -43,6 +43,9 @@
 		xdef		_plot_horizontal_line
 		xdef		_plot_vertical_line
 		xdef		_plot_line
+		xdef		_plot_rectangle
+		xdef		_plot_square
+		xdef		_plot_triangle
 		xdef		_plot_8bit_bitmap
 		xdef		_plot_16bit_bitmap
 		xdef		_plot_32bit_bitmap
@@ -785,29 +788,33 @@ _plot_rectangle:
 		move.w		pr_len(a6),d0	; d0.w = Length (# of rows tall)
 		move.w		pr_wid(a6),d1	; d1.w = Width (# of cols wide)
 
+		; Load parameters for line drawing
 		sub.w		#10,sp		; Advance sp to load up parameters backwards
+		move.l		pr_base(a6),(sp)	; 1: base	0(sp)
+		move.w		pr_row(a6),4(sp)	; 2: row	4(sp)
+		move.w		pr_col(a6),6(sp)	; 3: col	6(sp)
+		move.w		d0,8(sp)		; 4: length	8(sp)
 
-		move.l		pr_base(a6),(sp)+	; Move base pointer to stack
-		move.w		pr_row(a6),(sp)+	; Move row to stack
-		move.w		pr_col(a6),(sp)+	; Move col to stack
-		
-		move.w		d0,(sp)+		; Move length to stack for vertical line
+		; Plot vertical in first corner
 		jsr		_plot_vertical_line
 
-		subq.w		#2,sp
-		move.w		d1,(sp)+	; Move width to stack for horizontal line
+		; Plot horizontal in first corner
+		move.w		d1,8(sp)	; Move width to stack for horizontal line
 		jsr		_plot_horizontal_line
 
-		subq.w		#6,sp		; Move to change row on stack
-		add.w		d0,(sp)+	; Row += length 
-		addq.w		#2,sp		; Skip changing col
-		move.w		d0,(sp)+	; Move length to stack for vertical line
-		jsr		_plot_vertical_line
-		subq.w		#6,sp		; Move to reset row
-		sub.w		d0,(sp)+	; Reset row
-		add.w		d1,(sp)+	; Col += width
-		move.w		d1,(sp)+	; Move width to stack for horizontal line
+		; Plot bottom horizontal line
+		subq.w		#1,d0		; Decrement for end line position
+		add.w		d0,4(sp)	; row = row + length - 1
 		jsr		_plot_horizontal_line
+		sub.w		d0,4(sp)	; Reset row
+
+		; Plot right vertical line
+		move.w		d0,8(sp)	; Move length back to stack for vertical line
+		add.w		d1,6(sp)
+		subq.w		#1,6(sp)	; col = col + width - 1
+		jsr		_plot_vertical_line
+
+		adda.w		#10,sp		; Super pop 10 bytes
 
 		movem.l		(sp)+,d0-1
 		unlk		a6
@@ -827,29 +834,116 @@ _plot_square:
 		link		a6,#0
 		move.l		d0,-(sp)
 
-		move.w		pr_side(a6),d0	; d0.w = Side length
+		move.w		ps_side(a6),d0	; d0.w = Side length
 
+		; Load parameters for line drawing
 		sub.w		#10,sp		; Advance sp to load up parameters backwards
+		move.l		ps_base(a6),(sp)	; 1: base	0(sp)
+		move.w		ps_row(a6),4(sp)	; 2: row	4(sp)
+		move.w		ps_col(a6),6(sp)	; 3: col	6(sp)
+		move.w		d0,8(sp)		; 4: length	8(sp)
 
-		move.l		pr_base(a6),(sp)+	; Move base pointer to stack
-		move.w		pr_row(a6),(sp)+	; Move row to stack
-		move.w		pr_col(a6),(sp)+	; Move col to stack
-		move.w		d0,(sp)+		; Move side length to stack
+		subq.w		#1,d0	; Decrement length for end line position
 
+		; Plot horizontal and vertical lines in first corner
 		jsr		_plot_vertical_line
 		jsr		_plot_horizontal_line
 
-		subq.w		#6,sp		; Move to change row on stack
-		add.w		d0,(sp)+	; Row += side 
-		addq.w		#4,sp		; Skip changing col and side
-		jsr		_plot_vertical_line
-		subq.w		#6,sp		; Move to reset row
-		sub.w		d0,(sp)+	; Reset row
-		add.w		d0,(sp)+	; Col += side
-		addq.w		#2,sp		; Fix SP
+		; Plot bottom horizontal line
+		add.w		d0,4(sp)	; Row += side
 		jsr		_plot_horizontal_line
+		sub.w		d0,4(sp)	; Reset row
+
+		; Plot right vertical line
+		add.w		d0,6(sp)	; Col += side 
+		jsr		_plot_vertical_line
+
+		adda.w		#10,sp		; Super pop 10 bytes
 
 		move.l		(sp)+,d0
+		unlk		a6
+		rts
+
+; ==== void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 height, UINT8 direction) ====
+; PURPOSE: Plots a triangle on the screen given by the coordinate of the 90° angle, the length of the base, the length of the height, and the direction of the triangle.
+; INPUT: Address(UINT32*): to the start of the screen
+;		Position(row,col): the coordinates of the pixel of the 90° angle of the triangle
+;		Base: the length (number of columns) of the base in pixels of the triangle (must be positive)
+;		Height: the length (number of rows) of the height in pixels of the triangle (must be positive)
+;		Direction: Describes where the coordinate is relative to the rest of the triangle
+;			  0 - Coordinate is the top left point of the triangle		0000
+;			  1 - Coordinate is the top right point of the triangle		0001
+;			  2 - Coordinate is the bottom left point of the triangle	0010
+;			  3 - Coordinate is the bottom right point of the triangle	0011
+; OUTPUT: None
+pt_base		equ		8
+pt_row		equ		12
+pt_col		equ		14
+pt_wid		equ		16
+pt_hei		equ		18
+pt_dir		equ		20
+
+TRI_ROW_DIR	equ		2	; Mask for the bit determining row direction
+TRI_COL_DIR	equ		1	; Mask for the bit determining column direction
+_plot_triangle:
+		link		a6,#0
+		movem.l		d0-5,-(sp)
+
+		move.w		pt_row(a6),d0	; Get row for position fix
+		move.w		pt_col(a6),d1	; Get col for position fix
+		move.b		pt_dir(a6),d2	; Get direction code for row check
+		move.b		d2,d3		; Copy code for col check
+		move.w		pt_hei(a6),d4	; Get height
+		move.w		pt_wid(a6),d5	; Get triangle_base (width)
+
+		; Prepare registers for straight line drawing
+		suba.w		#10,sp
+		move.l		pt_base(a6),(sp)	; 1: base	0(sp)
+		move.w		d0,4(sp)		; 2: row	4(sp)
+		move.w		d1,6(sp)		; 3: col	6(sp)
+		move.w		d4,8(sp)		; 4: length	8(sp)							
+
+		; Test row direction
+		and.b		#TRI_ROW_DIR,d2
+		beq.b		pt_vert
+		; Row goes down, adjust line params
+		sub.w		d4,4(sp)	; New starting row moved to top of line
+		neg.w		d4		; Height = -height
+		bra		pt_vert
+pt_vert:	; Plot vertical line
+		jsr		_plot_vertical_line
+
+		move.w		d0,4(sp)	; Reset row
+		move.w		d5,8(sp)	; Pass width to line drawing subroutine
+
+		; Test col direction
+		and.b		#TRI_COL_DIR,d3
+		beq.b		pt_horiz
+		; Col goes down, adjust params
+		sub.w		d5,6(sp)	; Move starting col to end of line
+		neg.w		d5		; Width = -width
+		bra		pt_horiz
+pt_horiz:
+		jsr		_plot_horizontal_line
+
+		; Plot hypotenuse
+		subq.w		#2,sp		; Move sp back 2 more bytes for general line plot
+		move.l		pt_base(a6),(sp)	; 1: base	0(sp)
+		
+		add.w		d4,d0	; Increment row
+		move.w		d0,4(sp)		; 2: start_row	4(sp)
+		move.w		d1,6(sp)		; 3: end_row	6(sp)
+		
+		sub.w		d4,d0	; Reset row
+		add.w		d5,d1	; Increment col
+		move.w		d0,8(sp)		; 4: end_row	8(sp)
+		move.w		d1,10(sp)		; 5: end_col	10(sp)
+
+		jsr		_plot_line
+
+		adda.w		#12,sp
+
+		movem.l		(sp)+,d0-5
 		unlk		a6
 		rts
 

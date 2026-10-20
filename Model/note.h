@@ -18,7 +18,7 @@
 #ifndef NOTE_H
 #define NOTE_H
 
-#include "types.h"
+#include "../types.h"
 
 #define KEY_A 0
 #define KEY_S 1

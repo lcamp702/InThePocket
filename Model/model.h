@@ -18,7 +18,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "types.h"
+#include "../types.h"
 #include "note.h"
 #include "meter.h"
 

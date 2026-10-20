@@ -18,9 +18,9 @@
 
     tstrend.c*/
 
-#include "events.h"
 #include "render.h"
-#include "raster.h"
+#include "../events/events.h"
+#include "../raster/raster.h"
 #include <osbind.h>
 #include <stdio.h>
 

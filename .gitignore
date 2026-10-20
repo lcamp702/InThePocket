@@ -13,13 +13,16 @@
 *.LST
 *.map
 *.MAP
-build/
+build/*
 
 # logs and gulam scripts
 ERRORS.TXT
 errors.txt
 *.g
 *.G
+!MAKE.g
+!MAKEALL.G
+!CLEAN.G
 
 # editor / OS junk
 .vscode/

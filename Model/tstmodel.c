@@ -14,7 +14,7 @@
 	Test driver for the game model. Sets up model states, calls the event handlers, and prints every model property after each call.
     tst_model.c*/
 
-#include "events.h"
+#include "../events/events.h"
 #include <osbind.h>
 #include <stdio.h>
 static const Note test_song[] = {

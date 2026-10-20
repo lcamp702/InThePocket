@@ -22,12 +22,15 @@
     */
 
 #include "render.h"
-#include "raster.h"
 #include "bitmaps.h"
- 
-#define NOTE_SPACING       40   
-#define LOWEST_NOTE        384  
-#define LANE_COUNT         4    
+#include "../raster/raster.h"
+
+#define STAFF_LINES        5    /* lines per staff */
+#define STAFF_LINE_GAP     6    /* rows between lines in one staff */
+#define STAFF_HEIGHT       24   /* (STAFF_LINES - 1) * STAFF_LINE_GAP */
+#define STAFF_SPACING      40   /* rows from one staff's top line to the next */
+#define LOWEST_STAFF_TOP   372  /* top line of the bottom staff (pitch 0) */
+#define LANE_COUNT         4    /* one staff per pitch (KEY_A..KEY_F) */
 #define SCREEN_WIDTH       640
 #define NOTEHEAD_OFFSET    25
 #define SCORE_OFFSET       5

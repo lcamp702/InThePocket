@@ -22,6 +22,23 @@ void test_clear_region()
 	plot_string(b_fb, 0, 0, "Clear Region:");
 	sync_wait(35);
 
+	fill_screen(l_fb);
+
+	/* Corner edge clips */
+	clear_region(l_fb, -8,-8,16,16);
+	clear_region(l_fb, -8,632,16,16);
+	clear_region(l_fb, 312,-8,16,16);
+	clear_region(l_fb, 312,632,16,16);
+
+	/* Side edge clips*/
+	clear_region(l_fb, -8,-8,16,16);
+	clear_region(l_fb, -8,312,16,16);
+	clear_region(l_fb, 192,-8,16,16);
+	clear_region(l_fb, 192,312,16,16);
+
+	sync_wait(70);
+	fill_screen(l_fb);
+
 	for (t = 0; t < 10; t++)
 	{
 		int size = tile_w[t];

@@ -1,0 +1,124 @@
+Screen 1: Font table: All characters in given font table are plotted on screen.
+
+
+==========
+Clear
+==========
+
+Clear screen test: Fill and clear screen
+
+Clear region:
+TEST #		| Reason		    | Expected Result
+SCREEN 1    | Edge Clipping     | Cleared areas appear on the corners and middle of the edges (8x16)
+SCREEN 2    | Checkerboard      | Various checkerboard patterns of increasing tile size are cleared
+
+
+==========
+Lines
+==========
+
+plot_horizontal_line Test Plan:
+
+Screen #1: Invalid values
+	Screen should appear for 0.5 sec.
+
+1-5		|	Lines starting outside the valid rows	|	Lines should not appear
+6-10	|	Lines starting outside the valid cols	|	One line should appear 49px long from the left
+11-13	|	Lines with zero length					| 	Lines should not appear
+
+Screen #2: Clipped lines
+	No double wide lines appear
+
+Screen #3: Valid line tests
+    Lines on top and bottom edges.
+    Single pixels at various col bounds from row 10-18
+    Lines of different lengths from 0-80 from rows 50-130
+    Lines at long word and byte bounds
+
+
+plot_vertical_line Test Plan:
+
+Screen #1: Invalid values
+	Screen should appear for 0.5 sec.
+
+1-5		|	Lines starting outside the valid rows	|	One line should appear 49px long from the top
+6-10	|	Lines starting outside the valid cols	|	Lines should not appear
+11-13	|	Lines with zero length					| 	Lines should not appear
+
+Screen #2: Clipped lines
+	Lines should appear on the bottom half. Any lines on the top indicate wrap around.
+
+Screen #3: Valid line tests
+    Lines on left and right edges.
+    Single pixels at various row bounds from col 10-18
+    Lines of different lengths from 0-80 from cols 50-130
+    Lines at long word and byte bounds
+
+
+plot_line Test Plan:
+
+Screen #1: Clipping
+1-5		|	Lines starting outside the valid rows	|	Lines should appear across the screen, clipped
+6-10	|	Lines starting outside the valid cols	|	Lines should appear across the screen, clipped
+
+Screen #2: Diagonals + Lines + single pixel
+4 diagonals appear on screen in different directions forming a \/ /\ pattern
+4 straight lines appear on screen in a squares
+A single pixel appears ar 300,500
+
+Screen #3: Outer edges
+4 straight lines at the outer edges of the screen
+An x connect the opposing corners of the screes
+
+Screen #4: Small starburst
+Lines appear from the center making a square of different spokes.
+
+Screen #5: End out of bounds starburst
+Lines appear from the center extending past the edge of the screen and being clipped.
+
+Screen #6: Start out of bounds starburst
+Lines appear from the center extending past the edge of the screen and being clipped.
+
+
+==========
+Char + String
+==========
+
+Char: Run bitmap tests with characters from the font table
+String: Plot strings diagonally across the screen from top left to bottom right
+
+==========
+Shapes
+==========
+
+Draw rectangles of different sizes. Screenshot to check accuracy. Plot squares clipped in the corners and and center of edges.
+Draw squares of different sizes. Screenshot to check accuracy. Plot squares clipped in the corners and and center of edges.
+Draw triangles of different rotations. Screenshot to check accuracy.
+
+==========
+BITMAPS
+==========
+
+8 Bit Bitmap Test Plan:
+TEST #		| Reason		    | Expected Result
+Screen 1	| Edge Clipping	    | Solid squares 8x8 squares appear at every edge, clipped in half
+Screen 2    | Corner and Center | Hollow boxes appear at the corners and a music note appears in the middle
+Screen 3    | Pixel shifts      | Hollow boxes and crosses appear on screen. Each row is offset one to the left of the one above
+Screen 4    | Grid Tiling       | A pattern of crosses and music notes cover the screen with 8px of padding between them
+Screen 5    | Animated Sweep    | A music note sweeps right and down while a box sweeps up and left smoothly
+
+16 Bit Bitmap Test Plan:
+TEST #		| Reason		    | Expected Result
+Screen 1	| Edge Clipping	    | Solid squares 16x16 squares appear at every edge, clipped in half
+Screen 2    | Corner and Center | Hollow boxes appear at the corners and a music note appears in the middle
+Screen 3    | Pixel shifts      | Hollow boxes and crosses appear on screen. Each row is offset one to the left of the one above
+Screen 4    | Grid Tiling       | A pattern of crosses and music notes cover the screen with 16px of padding between them
+Screen 5    | Animated Sweep    | A music note sweeps right and down while a box sweeps up and left smoothly
+
+32 Bit Bitmap Test Plan:
+TEST #		| Reason		    | Expected Result
+Screen 1	| Edge Clipping	    | Solid squares 32x32 squares appear at every edge, clipped in half
+Screen 2    | Corner and Center | Hollow boxes appear at the corners and a diamond topped figure appears in the middle
+Screen 3    | Pixel shifts      | Hollow boxes and crosses appear on screen. Each row is offset one to the left of the one above
+Screen 4    | Grid Tiling       | A pattern of crosses and mouse cursors cover the screen with 32px of padding between them
+Screen 5    | Animated Sweep    | A diamond topped figure sweeps right and down while a box sweeps up and left smoothly

@@ -157,24 +157,6 @@ void test_h_line()
 	}
 }
 
-/*
-plot_vertical_line Test Plan:
-
-Screen #1: Invalid values
-	Screen should appear blank for 0.5 sec.
-
-1-5		|	Lines starting outside the valid rows	|	Lines should not appear
-6-10	|	Lines starting outside the valid cols	|	Lines should not appear
-11-13	|	Lines with zero length					| 	Lines should not appear
-
-Screen #2: Clipped lines
-	Lines should appear on the bottom half. Any lines on the top indicate wrap around.
-
-1		| Line from half to the bottom (200-400px)	|	200px line should appear completely on the bottom half of the screen
-2-4		| Line from half clipping past the bottom	|	200px line should appear completely on the bottom half of the screen. Nothing should appear on the top half of the screen.
-
-*/
-
 void test_v_line()
 {
 	int t;

@@ -90,17 +90,6 @@ static const UINT32 bmp32_tall[] = {
 	0x003FFC00UL, 0x007FFE00UL, 0x00FFFF00UL, 0x01FFFF80UL,
 	0x03FFFFC0UL, 0x07FFFFE0UL, 0x0FFFFFF0UL, 0x1FFFFFF8UL};
 
-/*
-
-	8 Bit Bitmap Test Plan:
-
-	Test Data: bm8 bitmaps above
-
-	TEST #		| Reason		| Expected Result
-	Screen 1	| Edge Clipping	| Solid squares 8x8 squares appear at every edge, clipped in half
-
-
-*/
 void bmp8_edge_clipping()
 {
 	clear_screen(l_fb);
@@ -126,7 +115,7 @@ void bmp8_corners_and_center()
 	sync_wait(70);
 }
 
-void bmp8_subpixel_shifts()
+void bmp8_pixel_shifts()
 {
 	int shift;
 	int base_col;
@@ -188,13 +177,13 @@ void test_bmp8()
 {
 	bmp8_edge_clipping();
 	bmp8_corners_and_center();
-	bmp8_subpixel_shifts();
+	bmp8_pixel_shifts();
 	bmp8_grid_tiling();
 	bmp8_animated_sweep();
 	clear_screen(l_fb);
 }
 
-void bmp16_subpixel_shifts()
+void bmp16_pixel_shifts()
 {
 	int shift;
 	int base_col;
@@ -281,15 +270,16 @@ void bmp16_edge_clipping()
 
 void test_bmp16()
 {
-	bmp16_subpixel_shifts();
+	bmp16_edge_clipping();
 	bmp16_corners_and_center();
+	bmp16_pixel_shifts();
 	bmp16_grid_tiling();
 	bmp16_animated_sweep();
-	bmp16_edge_clipping();
+	
 	clear_screen(l_fb);
 }
 
-void bmp32_subpixel_shifts()
+void bmp32_pixel_shifts()
 {
 	int shift;
 	int base_col;
@@ -380,10 +370,10 @@ void bmp32_edge_clipping()
 
 void test_bmp32()
 {
-	bmp32_subpixel_shifts();
+	bmp32_edge_clipping();
 	bmp32_corners_and_center();
+	bmp32_pixel_shifts();
 	bmp32_grid_tiling();
 	bmp32_animated_sweep();
-	bmp32_edge_clipping();
 	clear_screen(l_fb);
 }

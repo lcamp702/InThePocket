@@ -36,7 +36,7 @@ int main()
 	b_fb = Physbase();
 	disable_cursor();
 	clear_screen(l_fb);
-
+	/* Font table */
 	for(i = 0; i < 16; i++)
 	{
 		for (j = 0; j < 16; j++)
@@ -44,13 +44,6 @@ int main()
 			plot_character(b_fb, j*16, i*8, i+(j*16));
 		}
 	}
-
-	Cnecin();
-	test_rect();
-	Cnecin();
-	test_square();
-	Cnecin();
-	test_triangle();
 
 	Cnecin();
 	test_clear_screen();
@@ -64,6 +57,12 @@ int main()
 	test_v_line();
 	Cnecin();
 	test_line();
+	Cnecin();
+	test_rect();
+	Cnecin();
+	test_square();
+	Cnecin();
+	test_triangle();
 	Cnecin();
 	test_bmp8();
 	Cnecin();

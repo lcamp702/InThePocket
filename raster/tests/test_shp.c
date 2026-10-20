@@ -6,6 +6,18 @@ void test_rect()
     sync_wait(35);
     clear_screen(l_fb);
 
+    /* Corner edge clips */
+	plot_rectangle(l_fb, -8,-8,16,16);
+	plot_rectangle(l_fb, -8,632,16,16);
+	plot_rectangle(l_fb, 312,-8,16,16);
+	plot_rectangle(l_fb, 312,632,16,16);
+
+	/* Side edge clips*/
+	plot_rectangle(l_fb, -8,-8,16,16);
+	plot_rectangle(l_fb, -8,312,16,16);
+	plot_rectangle(l_fb, 192,-8,16,16);
+	plot_rectangle(l_fb, 192,312,16,16);
+
     plot_rectangle(l_fb, 0, 0, 400, 640); /* Full border */
 
     plot_rectangle(l_fb, 100, 320, 100, 122);
@@ -15,10 +27,9 @@ void test_rect()
     plot_rectangle(l_fb, 200, 199, 99, 121);
 
     plot_rectangle(l_fb, 50, 50, 10, 10);
-    /*
+
     sync_wait(35);
     clear_screen(l_fb);
-    */
 }
 
 void test_square()
@@ -27,15 +38,25 @@ void test_square()
     sync_wait(35);
     clear_screen(l_fb);
 
+    /* Corner edge clips */
+	plot_square(l_fb, -8,-8,16);
+	plot_square(l_fb, -8,632,16);
+	plot_square(l_fb, 312,-8,16);
+	plot_square(l_fb, 312,632,16);
+
+	/* Side edge clips*/
+	plot_square(l_fb, -8,-8,16);
+	plot_square(l_fb, -8,312,16);
+	plot_square(l_fb, 192,-8,16);
+	plot_square(l_fb, 192,312,16);
+
     plot_square(l_fb, 10, 10, 10);
     plot_square(l_fb, 25, 25, 25);
 
     plot_square(l_fb, 64, 64, 64);
 
-    /*
     sync_wait(35);
     clear_screen(l_fb);
-    */
 }
 
 void test_triangle()
@@ -49,8 +70,6 @@ void test_triangle()
     plot_triangle(l_fb, 50, 50, 10, 10, 2);
     plot_triangle(l_fb, 70, 70, 10, 10, 3);
 
-    /*
     sync_wait(35);
     clear_screen(l_fb);
-    */
 }

@@ -22,6 +22,7 @@ errors.txt
 *.G
 !MAKE.g
 !MAKEALL.G
+!CLEAN.G
 
 # editor / OS junk
 .vscode/

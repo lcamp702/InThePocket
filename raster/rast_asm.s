@@ -16,7 +16,7 @@
 ;
 ;	  Visual Tests:
 ;		clear_screen
-;		clear_region (TO DO: ADD CLIPPING)
+;		clear_region
 ;		plot_pixel
 ;		plot_horizontal_line
 ;		plot_vertical_line
@@ -98,19 +98,29 @@ _clear_region:
 
 		; Copy params to registers and bound check
 		move.w		cr_len(sp),d3	; d3.w = Length
-		ble.w		cr_end		; if (length < 0) return
+		beq.w		cr_end		; if (length == 0) return
 
 		move.w		cr_row(sp),d0	; d0.w = Row #
+		bpl.b		cr_valid_row
+		neg.w		d0		
+		sub.w		d0,d3		; Subtract from length	
+		bls.w		cr_end		; Not on screen, exit
+		clr.w		d0		; Reset row to 0
 		cmp.w		#ROWS,d0
-		bhs.w		cr_end		; Fast row bound check [1]
-
+		bge.w		cr_end		; Row upper bound check
+cr_valid_row:
 		move.w		cr_wid(sp),d2	; d2.w = Width
 		ble.w		cr_end		; if (width < 0) return
 
 		move.w		cr_col(sp),d1	; d1.w = Column #
-		cmp.w		#COLS,d1
-		bhs.w		cr_end		; Fast col bound check [1]
-
+		bpl.b		cr_valid_col
+		neg.w		d1		
+		sub.w		d1,d2		; Subtract from width	
+		bls.w		cr_end		; Not on screen, exit
+		clr.w		d1		; Reset start col to 0
+		cmp.w		#COLS,d1	
+		bge.w		cr_end		; Col upper bound check
+cr_valid_col:
 		movea.l		cr_base(sp),a0	; a0.l = framebuffer base
 		movea.l		a0,a1		; a1.l = framebuffer base
 
@@ -381,7 +391,6 @@ _plot_vertical_line:
 
 		move.w		vl_row(sp),d0	; d0.w = Row #
 		bpl.b		vl_valid_row
-
 		neg.w		d0		
 		sub.w		d0,d3		; Subtract from length	
 		bls.b		vl_end

@@ -43,7 +43,12 @@ int main(void){
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	print_model(&test_model);
 	/*synch_clock_tick test
-	* Synch clock should advance clock, move notes, and move head past moved notes. 
+	*  
+	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+	1		Synch clock should		Model w/ test	Clock advances, 		As expected
+			advance clock, move		song			notes position changes
+			notes, and move head					and the head moves
+			past moved notes.						passed other notes
 	*/
 	printf("Press any key to proceed with synch_clock_tick test\n");
 	fflush(stdout);
@@ -54,7 +59,11 @@ int main(void){
 		print_model(&test_model);
 	}
 	
-	/*advance head test*/
+	/*advance head test
+	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+	2		Need to check that		Model w/		Head advances			Head advances
+			advance head works		test song
+	*/
 	printf("Press any key to proceed with model_advance_head test\n");
 	fflush(stdout);
 	Cconin();
@@ -84,7 +93,13 @@ int main(void){
 	}
 
 
-	/*cond_is_game_over (enjoyment = 40) test*/
+	/*cond_is_game_over (enjoyment = 40) test
+	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+	3		Checks that cond		Model w/ test	cond_is_game_over		as expected		
+			is_game_over returns	song			returns 1 when
+			1 when enjoyment						enjoyment goes below
+			goes below 1.							0
+	*/
 	printf("Press any key to proceed with cond_is_game_over (enjoyment = 40) test\n");
 	fflush(stdout);
 	Cconin();
@@ -101,7 +116,14 @@ int main(void){
 		printf("game over = %d \n", cond_is_game_over(&test_model));
 	}
 	
-	/*cond_is_song_over test*/
+	/*cond_is_song_over test
+	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+	4		check is_song_over		see above		is_song_over			is_song_over
+			returns 1 when							returns 1 when			returns 1 when
+			head advances past						head advances past		head advances past
+			or to song length						or to song length		or to song length
+	*/
+	
 	printf("Press any key to proceed with cond_is_song_over test\n");
 	fflush(stdout);
 	Cconin();
@@ -118,7 +140,14 @@ int main(void){
 		printf("song over = %d \n", cond_is_song_over(&test_model));
 	}
 
-	/*Test that key inputs yield correct pitch values*/
+	/*Test that key inputs yield correct pitch values
+	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+	5		check that key value	model w/ test	correct translation		as expected
+			results in correct		_song			from char to int value
+			number being returned 
+			from  
+			asynch_key_to_pitch
+	*/
 	printf("Press any key to proceed with asynch_key_to_pitch test\n");
 	fflush(stdout);
 	Cconin();
@@ -148,7 +177,14 @@ int main(void){
 		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 0));
 		print_note(&test_model.notes[test_model.head]);
 	}
-	/*asynch_is_hit (pitch 1) test*/
+	/*asynch_is_hit (pitch 1) test
+	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+	6		checks that the			as above		asynch_is_hit			asynch_is_hit
+			corresponding							returns 1				returns 1
+			pitch value
+			returns 1 from
+			asynch_is_hit
+	*/
 	printf("Press any key to proceed with asynch_is_hit (pitch 1) test\n");
 	fflush(stdout);
 	Cconin();
@@ -197,7 +233,13 @@ int main(void){
 		print_note(&test_model.notes[test_model.head]);
 	}
 	
-	/*asynch_apply_hit test*/
+	/*asynch_apply_hit test
+	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+	7		checks that				as above		it works				it does 
+			asynch_applies_hit
+			works and increases
+			enjoyment
+	*/
 	printf("Press any key to proceed with asynch_apply_hit test\n");
 	fflush(stdout);
 	Cconin();
@@ -216,7 +258,14 @@ int main(void){
 		}
 	}
 
-	/*asynch_apply_miss test*/
+	/*asynch_apply_miss test
+	
+	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+	8		checks that				as above		enjoyment goes to 0		as expected
+			asynch apply miss
+			drains enjoyment
+	*/
+	
 	printf("Press any key to proceed with asynch_apply_miss test\n");
 	fflush(stdout);
 	Cconin();

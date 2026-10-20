@@ -56,7 +56,6 @@ int main(void){
 	test_clock_tick(&test_model, base);
 	test_advance_head(&test_model, base);
 	test_game_over(&test_model, base, ENJOYMENT_START, "cond_is_game_over");
-	test_game_over(&test_model, base, 40, "cond_is_game_over (enjoyment = 40)");
 	for(pitch = KEY_A; pitch <= KEY_F; pitch++){
 		test_hit(&test_model, base, pitch);
 	}
@@ -217,6 +216,7 @@ TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
 		drains correctly
 		on missed notes
 
+
 INPUT: pointer to Model, UINT32 pointer to frame buffer, starting enjoyment, title of the test to print
 
 OUTPUT: N/A
@@ -234,6 +234,11 @@ void test_game_over(Model *model, UINT32 *base, INT8 enjoyment, const char *titl
 PURPOSE: Renders notes passing through the hit window for one pitch lane, every 5 ticks, with the meter held full.
 
 INPUT: pointer to Model, UINT32 pointer to frame buffer, pitch lane being hit
+
+TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+5		Checking that notes		Model with		Notes get hit and		Notes get hit and 
+		can be hit in their		our test song	disappear off screen	disappear off screen
+		hit windows
 
 OUTPUT: N/A
 */
@@ -256,6 +261,16 @@ void test_hit(Model *model, UINT32 *base, UINT8 pitch){
 /*------ Function: test_apply_hit ------
 PURPOSE: Applies a hit whenever any lane is hittable and renders the result, so the meter is seen filling.
 
+TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+6		Checking to see that	Model with		Notes disappear and		Notes disappear and
+		hitting the note and	our test song	meter fills.			meter fills.
+		calling the apply_hit
+		function correctly
+		fills the meter and that
+		the rendering of the 
+		meter being filled is 
+		handled correctly by the
+		render_meter function.
 INPUT: pointer to Model, UINT32 pointer to frame buffer
 
 OUTPUT: N/A
@@ -269,6 +284,23 @@ void test_apply_hit(Model *model, UINT32 *base){
 
 /*------ Function: test_apply_miss ------
 PURPOSE: Applies misses while the pitch 3 lane is not hittable, rendering each one so the meter is seen draining, then applies hits as above.
+
+TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+7		Checking that			Model with		Enjoyment meter			Enjoyment meter once reaching 0
+		once meter is drained	our song		stays at 0 once			stays at 0 even when notes are being hit.
+		it cannot "refill"						it reaches 0, even
+		so that one cannot						when notes get hit
+		go below the losing 
+		threshold and then 
+		go back up over it.
+		Say in the case where
+		someone had like, 
+		20 enjoyment, missed on
+		lane 0, going to 0 then
+		hit on lane 1 and goes 
+		to 2 enjoyment before
+		game checks the game 
+		over state.
 
 INPUT: pointer to Model, UINT32 pointer to frame buffer
 

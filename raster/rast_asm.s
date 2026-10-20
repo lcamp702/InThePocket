@@ -27,7 +27,7 @@
 ;		plot_8bit_bitmap
 ;		plot_16bit_bitmap
 ;		plot_32bit_bitmap
-;		plot_character (c)
+;		plot_character
 ;		plot_string
 
 ;	Credits:
@@ -50,7 +50,7 @@
 		xdef		_plot_8bit_bitmap
 		xdef		_plot_16bit_bitmap
 		xdef		_plot_32bit_bitmap
-		xref		_plot_character
+		xdef		_plot_character
 		xdef		_plot_string
 
 ;       Screen details
@@ -1337,14 +1337,57 @@ bm32_end:
 		movem.l		(sp)+,d0-4/a0-1
 		rts
 
+; ==== void plot_character(UINT8 *base, int row, int col, char ch) ====
+; PURPOSE: Plots a single character, as a bitmap from a font table, to the screen.
+; INPUT: Address(UINT8*): to the start of the screen
+;		Position(row,col): the coordinates of the top left pixel of the character
+;		ch(char): the character to be written to the screen
+; OUTPUT: None
+
+FONT_HEIGHT	equ		8
+
+pc_base		equ		8
+pc_row		equ		12
+pc_col		equ		14
+pc_char		equ		17
+_plot_character:
+		link	a6,#0
+		movem.l	d0/a0,-(sp)
+
+		; IS_PRINTABLE
+		move.b		pc_char(a6),d0	; Get char #
+		cmpi.b		#' ',d0		; Compare to space (ASCII 32) for printable check
+		blt.b		pc_end		; Below printable range, exit
+		cmpi.b		#'~',d0		; Compare to tilde (ASCII 126) for printable check
+		bgt.b		pc_end		; Above printable range, exit
+
+		; GLYPH_START
+		ext.w		d0
+		subi.w		#' ',d0		; Get font table symbol index
+		lsl.w		#3,d0		; Get font table byte address (x8 for 8px height)
+
+		lea		font,a0		; a0 = font base pointer
+		adda.w		d0,a0		; Offset by # of bytes
+
+		; Push parameters for bitmap subroutine
+		move.w		#FONT_HEIGHT,-(sp)	; Set height
+		move.l		a0,-(sp)		; Pass bitmap char pointer
+		move.w		pc_col(a6),-(sp)	; Pass col
+		move.w		pc_row(a6),-(sp)	; Pass row
+		move.l		pc_base(a6),-(sp)	; Pass framebuffer base pointer
+		jsr		_plot_8bit_bitmap	; Plot bitmap
+pc_end:
+		adda.w		#14,sp		; Super pop
+		movem.l		(sp)+,d0/a0
+		unlk		a6
+		rts
+
 ; ==== void plot_string(UINT8 *base, int row, int col, char *ch) ====
 ; PURPOSE: Plots a string, as a sequence of bitmaps from a font table, to the screen.
 ; INPUT: Address(UINT8*): to the start of the screen
 ;	 Position(row,col): the coordinates of the top left pixel of the string
 ;	 ch(c-string): the string to be written to the screen
 ; OUTPUT: None
-
-FONT_HEIGHT	equ		8
 
 pst_base	equ		8
 pst_row		equ		12
@@ -1383,3 +1426,100 @@ pst_end:
 		rts
 
 zeros:		ds.l		13
+
+; 8x8 Font Bitmap table
+font:		dc.b		$00,$00,$00,$00,$00,$00,$00,$00  ; <space>
+		dc.b		$08,$08,$08,$08,$08,$00,$08,$00  ; !
+		dc.b		$14,$14,$00,$00,$00,$00,$00,$00  ; "
+		dc.b		$00,$24,$7E,$24,$24,$7E,$24,$00  ; #
+		dc.b		$10,$7C,$50,$7C,$14,$7C,$10,$00  ; $
+		dc.b		$00,$62,$64,$08,$10,$26,$46,$00  ; %
+		dc.b		$00,$10,$28,$10,$2A,$44,$3A,$00  ; &
+		dc.b		$00,$08,$10,$00,$00,$00,$00,$00  ; '
+		dc.b		$00,$08,$10,$10,$10,$10,$08,$00  ; (
+		dc.b		$00,$10,$08,$08,$08,$08,$10,$00  ; )
+		dc.b		$00,$00,$28,$10,$7C,$10,$28,$00  ; *
+		dc.b		$00,$00,$10,$10,$7C,$10,$10,$00  ; +
+		dc.b		$00,$00,$00,$00,$00,$08,$08,$10  ; ,
+		dc.b		$00,$00,$00,$00,$7C,$00,$00,$00  ; -
+		dc.b		$00,$00,$00,$00,$00,$18,$18,$00  ; .
+		dc.b		$00,$00,$04,$08,$10,$20,$40,$00  ; /
+		dc.b		$00,$78,$8C,$94,$A4,$C4,$78,$00  ; 0
+		dc.b		$00,$60,$A0,$20,$20,$20,$F8,$00  ; 1
+		dc.b		$00,$78,$84,$04,$78,$80,$FC,$00  ; 2
+		dc.b		$00,$78,$84,$18,$04,$84,$78,$00  ; 3
+		dc.b		$00,$10,$30,$50,$90,$FC,$10,$00  ; 4
+		dc.b		$00,$FC,$80,$F8,$04,$84,$78,$00  ; 5
+		dc.b		$00,$78,$80,$F8,$84,$84,$78,$00  ; 6
+		dc.b		$00,$FC,$04,$08,$10,$20,$20,$00  ; 7
+		dc.b		$00,$78,$84,$78,$84,$84,$78,$00  ; 8
+		dc.b		$00,$78,$84,$84,$7C,$04,$78,$00  ; 9
+		dc.b		$00,$00,$00,$10,$00,$00,$10,$00  ; :
+		dc.b		$00,$00,$10,$00,$00,$10,$10,$20  ; ;
+		dc.b		$00,$00,$08,$10,$20,$10,$08,$00  ; <
+		dc.b		$00,$00,$00,$7C,$00,$7C,$00,$00  ; =
+		dc.b		$00,$00,$20,$10,$08,$10,$20,$00  ; >
+		dc.b		$00,$3C,$42,$04,$08,$00,$08,$00  ; ?
+		dc.b		$00,$3C,$4A,$56,$5E,$40,$3C,$00  ; @
+		dc.b		$00,$78,$84,$84,$FC,$84,$84,$00  ; A
+		dc.b		$00,$F8,$84,$F8,$84,$84,$F8,$00  ; B
+		dc.b		$00,$78,$84,$80,$80,$84,$78,$00  ; C
+		dc.b		$00,$F0,$88,$84,$84,$88,$F0,$00  ; D
+		dc.b		$00,$FC,$80,$F8,$80,$80,$FC,$00  ; E
+		dc.b		$00,$FC,$80,$F8,$80,$80,$80,$00  ; F
+		dc.b		$00,$78,$84,$80,$9C,$84,$78,$00  ; G
+		dc.b		$00,$84,$84,$FC,$84,$84,$84,$00  ; H
+		dc.b		$00,$7C,$10,$10,$10,$10,$7C,$00  ; I
+		dc.b		$00,$04,$04,$04,$84,$84,$78,$00  ; J
+		dc.b		$00,$88,$90,$E0,$90,$88,$84,$00  ; K
+		dc.b		$00,$80,$80,$80,$80,$80,$FC,$00  ; L
+		dc.b		$00,$84,$CC,$B4,$84,$84,$84,$00  ; M
+		dc.b		$00,$84,$C4,$A4,$94,$8C,$84,$00  ; N
+		dc.b		$00,$78,$84,$84,$84,$84,$78,$00  ; O
+		dc.b		$00,$F8,$84,$84,$F8,$80,$80,$00  ; P
+		dc.b		$00,$78,$84,$84,$A4,$94,$78,$00  ; Q
+		dc.b		$00,$F8,$84,$84,$F8,$88,$84,$00  ; R
+		dc.b		$00,$78,$80,$78,$04,$84,$78,$00  ; S
+		dc.b		$00,$FE,$10,$10,$10,$10,$10,$00  ; T
+		dc.b		$00,$84,$84,$84,$84,$84,$78,$00  ; U
+		dc.b		$00,$84,$84,$84,$84,$48,$30,$00  ; V
+		dc.b		$00,$84,$84,$84,$84,$B4,$48,$00  ; W
+		dc.b		$00,$84,$48,$30,$30,$48,$84,$00  ; X
+		dc.b		$00,$82,$44,$28,$10,$10,$10,$00  ; Y
+		dc.b		$00,$FC,$08,$10,$20,$40,$FC,$00  ; Z
+		dc.b		$00,$38,$20,$20,$20,$20,$38,$00  ; [
+		dc.b		$00,$00,$40,$20,$10,$08,$04,$00  ; <backslash>
+		dc.b		$00,$38,$08,$08,$08,$08,$38,$00  ; ]
+		dc.b		$00,$10,$28,$44,$00,$00,$00,$00  ; ^
+		dc.b		$00,$00,$00,$00,$00,$00,$00,$FE  ; _
+		dc.b		$3C,$42,$99,$A1,$A1,$99,$42,$3C  ; `
+		dc.b		$00,$00,$38,$04,$3C,$44,$3C,$00  ; a
+		dc.b		$00,$40,$40,$78,$44,$44,$78,$00  ; b
+		dc.b		$00,$00,$1C,$20,$20,$20,$1C,$00  ; c
+		dc.b		$00,$04,$04,$3C,$44,$44,$3C,$00  ; d
+		dc.b		$00,$00,$38,$44,$78,$40,$3C,$00  ; e
+		dc.b		$00,$0C,$10,$18,$10,$10,$10,$00  ; f
+		dc.b		$00,$00,$3E,$42,$42,$3E,$02,$3C  ; g
+		dc.b		$00,$40,$40,$78,$44,$44,$44,$00  ; h
+		dc.b		$00,$08,$00,$18,$08,$08,$1C,$00  ; i
+		dc.b		$00,$04,$00,$04,$04,$04,$24,$18  ; j
+		dc.b		$00,$40,$50,$60,$60,$50,$48,$00  ; k
+		dc.b		$00,$10,$10,$10,$10,$10,$0C,$00  ; l
+		dc.b		$00,$00,$68,$54,$54,$54,$54,$00  ; m
+		dc.b		$00,$00,$78,$44,$44,$44,$44,$00  ; n
+		dc.b		$00,$00,$38,$44,$44,$44,$38,$00  ; o
+		dc.b		$00,$00,$78,$44,$44,$78,$40,$40  ; p
+		dc.b		$00,$00,$3C,$44,$44,$3C,$04,$06  ; q
+		dc.b		$00,$00,$1C,$20,$20,$20,$20,$00  ; r
+		dc.b		$00,$00,$38,$40,$38,$04,$78,$00  ; s
+		dc.b		$00,$10,$38,$10,$10,$10,$0C,$00  ; t
+		dc.b		$00,$00,$44,$44,$44,$44,$38,$00  ; u
+		dc.b		$00,$00,$44,$44,$28,$28,$10,$00  ; v
+		dc.b		$00,$00,$44,$54,$54,$54,$28,$00  ; w
+		dc.b		$00,$00,$44,$28,$10,$28,$44,$00  ; x
+		dc.b		$00,$00,$44,$44,$44,$3C,$04,$38  ; y
+		dc.b		$00,$00,$7C,$08,$10,$20,$7C,$00  ; z
+		dc.b		$00,$1C,$10,$60,$10,$10,$1C,$00  ; {
+		dc.b		$00,$10,$10,$10,$10,$10,$10,$00  ; |
+		dc.b		$00,$70,$10,$0C,$10,$10,$70,$00  ; }
+		dc.b		$00,$14,$28,$00,$00,$00,$00,$00  ; ~

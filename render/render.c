@@ -36,7 +36,8 @@
 /*------ Function: render ------
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
 
-INPUT: pointer to Model, UINT32 pointer to frame buffer
+INPUT: model(Model *): Pointer to Model, 
+       base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
 */
@@ -54,10 +55,13 @@ void render(Model *model, UINT32 *base){
     render_meter(&model->meter, base);
 
 }
+
 /*------ Function: render_note ------
 PURPOSE: Renders a single note to screen. It's place in the staff is determined by its pitch.
 
-INPUT: pointer to Note, UINT32 pointer to frame buffer
+INPUT: base(UINT32 *): Pointer to frame buffer
+       note(Note *): Pointer to note
+       
 
 OUTPUT: N/A
 */
@@ -69,10 +73,12 @@ void render_note(Note *note, UINT32 *base){
     row -= NOTE16_HEAD_ROW;                             /* centre the notehead on that line */
     plot_16bit_bitmap((UINT16 *)base, row, note->x, note16_bmp, NOTE16_HEIGHT);
 }
+
 /*------ Function: render_meter ------
 PURPOSE: Renders meter. Fills it up based on enjoyment.
 
-INPUT: pointer to Meter, UINT32 pointer to frame buffer
+INPUT: base(UINT32 *): Pointer to frame buffer
+       meter(Meter *): pointer to meter
 
 OUTPUT: N/A
 */
@@ -85,13 +91,13 @@ void render_meter(Meter *meter, UINT32 *base){
     }
     render_score(base, 140, 520, meter->score);
 }
+
 /*------ Function: render_staff ------
 PURPOSE: Renders one four line staff. 
 
-INPUT: UINT32 pointer to frame buffer
+INPUT: base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
-
 */
 void render_staff(UINT32 *base){
    
@@ -105,10 +111,11 @@ void render_staff(UINT32 *base){
     }
 }
 
-/*------ Function: render_target ------
+/*------ Function: render_targets ------
 PURPOSE: Renders one target. 
 
-INPUT: UINT32 pointer to frame buffer
+INPUT: base(UINT32 *): Pointer to frame buffer
+       targets(UINT8 *): Pointer to targets struct
 
 OUTPUT: N/A
 */
@@ -132,11 +139,12 @@ void render_targets(UINT32 *base, UINT8 * targets){
 /*------ Function: render_score ------
 PURPOSE: Renders the score. 
 
-INPUT: UINT32 pointer to frame buffer, int for row, int for col, UINT32 score value (which is to be printed)
+INPUT: base(UINT32 *): Pointer to frame buffer
+       position(row,col): Integer row and column pixel position 
+       score(UINT32): Score value (to be printed)
 
 OUTPUT: N/A
 */
-
 void render_score(UINT32 *base, int row, int col, UINT32 score){
     char s[SCORE_MAX_LEN];
     char temp;

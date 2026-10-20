@@ -21,7 +21,7 @@
 #include "model.h"
 
 UINT8 asynch_key_to_pitch(char key);
-UINT8 asynch_is_hit(const Model *model, UINT8 pitch);
+UINT8 asynch_is_hit(Model *model, UINT8 pitch);
 void asynch_apply_hit(Model *model);
 void asynch_apply_miss(Model *model);
 

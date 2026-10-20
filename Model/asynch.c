@@ -54,10 +54,10 @@ INPUT: pitch value (UINT8) and pointer to model
 
 OUTPUT: N/A
 */
-UINT8 asynch_is_hit(const Model *model, UINT8 pitch){
+UINT8 asynch_is_hit(Model *model, UINT8 pitch){
 	
 	UINT8 is_hit;
-
+	model->targets[pitch]=1;
 	if(model->head<model->note_count && model->notes[model->head].pitch==pitch && model->game_clock>=(model->notes[model->head].time+TRAVEL_TICKS)){ /*checks to see if note is in the timing window for hitting*/
 		is_hit=1;
 	}

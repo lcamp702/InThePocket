@@ -49,6 +49,7 @@ void render(Model *model, UINT32 *base){
     for(i=model->head;i<model_last_on_screen(model); i++){ /*model_last_on_screen returns index of first note off screen. it needs to be renamed probably but it is what it is.*/
         render_note(&model->notes[i], base);
     }
+    render_targets(base, model->targets);
 
     render_meter(&model->meter, base);
 
@@ -111,8 +112,21 @@ INPUT: UINT32 pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_targets(UINT32 *base){
-    
+void render_targets(UINT32 *base, UINT8 * targets){
+    int row,i;
+    for(i=0;i<4;i++){
+        row = LOWEST_NOTE - (i * NOTE_SPACING); 
+        row -= NOTE16_HEAD_ROW;           
+        row+=NOTEHEAD_OFFSET;
+        row-=TARGET_HEIGHT/2;                  
+        if(targets[i]){
+            plot_16bit_bitmap((UINT16 *)base, row, 40, target_on_bmp, TARGET_HEIGHT);
+        }
+        else{
+            plot_16bit_bitmap((UINT16 *)base, row, 40, target_off_bmp, TARGET_HEIGHT);
+        }
+        
+    }
 }
 
 /*------ Function: render_score ------

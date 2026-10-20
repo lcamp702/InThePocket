@@ -13,7 +13,7 @@
 *.LST
 *.map
 *.MAP
-build/
+build/*
 
 # logs and gulam scripts
 ERRORS.TXT

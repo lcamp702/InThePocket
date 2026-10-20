@@ -1,80 +1,78 @@
-CC = cc68x
-
 # === Keywords ====
 
-all: model render test
+all: model render raster
 model: tstmodel.tos
 render: tstrend.tos
 raster: tstrast.tos
 
 # ==== MODEL OBJECTS ====
 
-model\model.o: model\model.c model\model.h model\note.h model\meter.h types.h
-	$(CC) -g -c model\model.c
+build\model.o: model\model.c model\model.h model\note.h model\meter.h types.h
+	cc68x -g -c model\model.c -o build\model.o
 
-model\meter.o: model\meter.c model\meter.h types.h
-	$(CC) -g -c model\meter.c
+build\meter.o: model\meter.c model\meter.h types.h
+	cc68x -g -c model\meter.c -o build\meter.o
 
-model\note.o: model\note.c model\note.h types.h
-	$(CC) -g -c model\note.c 
+build\note.o: model\note.c model\note.h types.h
+	cc68x -g -c model\note.c -o build\note.o
 
 # ==== EVENT OBJECTS ====
 
-events\asynch.o: events\asynch.c events\asynch.h events\cond.h model\model.h model\note.h model\meter.h types.h
-	$(CC) -g -c events\asynch.c
+build\asynch.o: events\asynch.c events\asynch.h events\cond.h model\model.h model\note.h model\meter.h types.h
+	cc68x -g -c events\asynch.c -o build\asynch.o
 
-events\cond.o: events\cond.c events\cond.h model\model.h model\note.h model\meter.h types.h
-	$(CC) -g -c events\cond.c
+build\cond.o: events\cond.c events\cond.h model\model.h model\note.h model\meter.h types.h
+	cc68x -g -c events\cond.c -o build\cond.o
 
-events\synch.o: events\synch.c events\synch.h events\cond.h model\model.h model\note.h model\meter.h types.h
-	$(CC) -g -c events\synch.c
+build\synch.o: events\synch.c events\synch.h events\cond.h model\model.h model\note.h model\meter.h types.h
+	cc68x -g -c events\synch.c -o build\synch.o
 
 # ==== RENDER OBJECTS ====
 
-render\render.o: render\render.c render\render.h render\bitmaps.h raster\raster.h model\model.h model\note.h model\meter.h types.h
-	$(CC) -g -c render\render.c
+build\render.o: render\render.c render\render.h render\bitmaps.h raster\raster.h model\model.h model\note.h model\meter.h types.h
+	cc68x -g -c render\render.c -o build\render.o
 
-render\bitmaps.o: render\bitmaps.c render\bitmaps.h types.h
-	$(CC) -g -c render\bitmaps.c
+build\bitmaps.o: render\bitmaps.c render\bitmaps.h types.h
+	cc68x -g -c render\bitmaps.c -o build\bitmaps.o
 
 # ==== RASTER OBJECTS ====
 
-rast\rast_asm.o: rast\rast_asm.s
-	gen -D -L2 rast\rast_asm.s
+raster\rast_asm.o: raster\rast_asm.s
+	gen -D -L2 raster\rast_asm.s
 
 # ==== MODEL/EVENT TESTS ====
-tstmodel.tos: events\asynch.o events\cond.o events\synch.o model\meter.o model\model.o model\note.o model\tstmodel.o
-	$(CC) -g events\asynch.o events\cond.o events\synch.o model\meter.o model\model.o model\note.o model\tstmodel.o -o tstmodel.tos
+tstmodel.tos: build\asynch.o build\cond.o build\synch.o build\meter.o build\model.o build\note.o build\tstmodel.o
+	cc68x -g build\asynch.o build\cond.o build\synch.o build\meter.o build\model.o build\note.o build\tstmodel.o -o tstmodel.tos
 
-model\tstmodel.o: model\tstmodel.c events\events.h events\asynch.h events\synch.h events\cond.h model\model.h model\note.h model\meter.h types.h
-	$(CC) -g -c model\tstmodel.c
+build\tstmodel.o: model\tstmodel.c events\events.h events\asynch.h events\synch.h events\cond.h model\model.h model\note.h model\meter.h types.h
+	cc68x -g -c model\tstmodel.c -o build\tstmodel.o
 
 # ==== RENDER TESTS ====
-tstrend.tos: render\tstrend.o render\render.o render\bitmaps.o events\asynch.o events\synch.o events\cond.o model\model.o model\note.o model\meter.o raster\rast_asm.o
-	$(CC) -g render\tstrend.o render\render.o render\bitmaps.o events\asynch.o events\synch.o events\cond.o model\model.o model\note.o model\meter.o raster\rast_asm.o -o tstrend.tos
+tstrend.tos: build\tstrend.o build\render.o build\bitmaps.o build\asynch.o build\synch.o build\cond.o build\model.o build\note.o build\meter.o raster\rast_asm.o
+	cc68x -g build\tstrend.o build\render.o build\bitmaps.o build\asynch.o build\synch.o build\cond.o build\model.o build\note.o build\meter.o raster\rast_asm.o -o tstrend.tos
 
-render\tstrend.o: render\tstrend.c events\events.h events\asynch.h events\synch.h events\cond.h render\render.h raster\raster.h model\model.h model\note.h model\meter.h types.h
-	$(CC) -g -c render\tstrend.c
+build\tstrend.o: render\tstrend.c events\events.h events\asynch.h events\synch.h events\cond.h render\render.h raster\raster.h model\model.h model\note.h model\meter.h types.h
+	cc68x -g -c render\tstrend.c -o build\tstrend.o
 
 # ==== RASTER TESTS ====
 
-tstrast.tos: rast_asm.o raster\tests\tests.o raster\tests\test_clr.o raster\tests\test_ln.o raster\tests\test_shp.o raster\tests\test_bmp.o raster\tests\test_str.o
-	$(CC) -g rast_asm.o raster\tests\tests.o raster\tests\test_clr.o raster\tests\test_ln.o raster\tests\test_shp.o raster\tests\test_bmp.o raster\tests\test_str.o -o tstrast.tos
+tstrast.tos: raster\rast_asm.o build\tstrast.o build\test_clr.o build\test_ln.o build\test_shp.o build\test_bmp.o build\test_str.o
+	cc68x -g raster\rast_asm.o build\tstrast.o build\test_clr.o build\test_ln.o build\test_shp.o build\test_bmp.o build\test_str.o -o tstrast.tos
 
-raster\tests\tests.o: raster\tests\tests.c raster\tests\tests.h raster\raster.h
-	$(CC) -g -c raster\tests\tests.c
+build\tstrast.o: raster\tests\tests.c raster\tests\tests.h raster\raster.h
+	cc68x -g -c raster\tests\tests.c -o build\tstrast.o
 
-raster\tests\test_clr.o: raster\tests\test_clr.c raster\tests\tests.h raster\raster.h
-	$(CC) -g -c raster\tests\test_clr.c
+build\test_clr.o: raster\tests\test_clr.c raster\tests\tests.h raster\raster.h
+	cc68x -g -c raster\tests\test_clr.c -o build\test_clr.o
 
-raster\tests\test_ln.o: raster\tests\test_ln.c raster\tests\tests.h raster\raster.h
-	$(CC) -g -c raster\tests\test_ln.c
+build\test_ln.o: raster\tests\test_ln.c raster\tests\tests.h raster\raster.h
+	cc68x -g -c raster\tests\test_ln.c -o build\test_ln.o
 
-raster\tests\test_shape.o: raster\tests\test_shp.c raster\tests\tests.h raster\raster.h
-	$(CC) -g -c raster\tests\test_shp.c
+build\test_shp.o: raster\tests\test_shp.c raster\tests\tests.h raster\raster.h
+	cc68x -g -c raster\tests\test_shp.c -o build\test_shp.o
 
-raster\tests\test_bmp.o: raster\tests\test_bmp.c raster\tests\tests.h raster\raster.h
-	$(CC) -g -c raster\tests\test_bmp.c
+build\test_bmp.o: raster\tests\test_bmp.c raster\tests\tests.h raster\raster.h
+	cc68x -g -c raster\tests\test_bmp.c -o build\test_bmp.o
 
-raster\tests\test_str.o: raster\tests\test_str.c raster\tests\tests.h raster\raster.h
-	$(CC) -g -c raster\tests\test_str.c
+build\test_str.o: raster\tests\test_str.c raster\tests\tests.h raster\raster.h
+	cc68x -g -c raster\tests\test_str.c -o build\test_str.o

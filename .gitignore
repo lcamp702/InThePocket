@@ -20,6 +20,8 @@ ERRORS.TXT
 errors.txt
 *.g
 *.G
+!MAKE.g
+!MAKEALL.G
 
 # editor / OS junk
 .vscode/

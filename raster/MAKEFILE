@@ -1,10 +1,7 @@
 CC = cc68x
 
-test.tos: raster.o rast_asm.o tests\tests.o tests\test_clr.o tests\test_ln.o tests\test_shp.o tests\test_bmp.o tests\test_str.o
-	$(CC) -g raster.o rast_asm.o tests\tests.o tests\test_clr.o tests\test_ln.o tests\test_shp.o tests\test_bmp.o tests\test_str.o -o test.tos
-
-raster.o: raster.c
-	$(CC) -g -c raster.c
+test.tos: rast_asm.o tests\tests.o tests\test_clr.o tests\test_ln.o tests\test_shp.o tests\test_bmp.o tests\test_str.o
+	$(CC) -g rast_asm.o tests\tests.o tests\test_clr.o tests\test_ln.o tests\test_shp.o tests\test_bmp.o tests\test_str.o -o test.tos
 
 rast_asm.o: rast_asm.s
 	gen -D -L2 rast_asm.s
@@ -27,4 +24,4 @@ tests\test_bmp.o: tests\test_bmp.c tests\tests.h raster.h
 tests\test_str.o: tests\test_str.c tests\tests.h raster.h
 	$(CC) -g -c tests\test_str.c
 
-build: raster.o rast_asm.o
+build: rast_asm.o

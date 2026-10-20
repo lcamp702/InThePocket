@@ -32,6 +32,10 @@ void model_init(Model * model, const Note* arr, UINT16 notes_amt){
 	for(i=0;i<model->note_count; i++){
 		note_init(&model->notes[i], arr[i].pitch, arr[i].time);
 	}
+	
+	for(i=0;i<TARGET_COUNT;i++){
+		model->targets[i]=0;
+	}
 
 	model->head=model->game_clock=0;
 	meter_init(&model->meter);

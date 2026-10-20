@@ -25,7 +25,12 @@ INPUT: pointer to Model
 OUTPUT: N/A
 */
 void synch_clock_tick(Model* model){
+	int i;
 	model_move_notes(model);
 	model_tick(model);
 	cond_check_misses(model);
+	for(i=0; i<TARGET_COUNT; i++){
+		model->targets[i]=0;
+	}
+	/*disable target*/
 }

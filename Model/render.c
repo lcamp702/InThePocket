@@ -15,19 +15,24 @@
 	
     render.c*/
 
+    /*TODO: FIX STAFF (SPACING TO NOTE HEAD, WE WANT NOTEHEAD TO BE CENTERED ON LINE) DONE
+            TARGETS TURN ON WHEN BUTTON PRESS
+            DRAW TARGET
+            DISPLAY SCORE (DONE)
+    */
+
 #include "render.h"
 #include "raster.h"
 #include "bitmaps.h"
-
-#define STAFF_LINES        5    /* lines per staff */
-#define STAFF_LINE_GAP     6    /* rows between lines in one staff */
-#define STAFF_HEIGHT       24   /* (STAFF_LINES - 1) * STAFF_LINE_GAP */
-#define STAFF_SPACING      40   /* rows from one staff's top line to the next */
-#define LOWEST_STAFF_TOP   372  /* top line of the bottom staff (pitch 0) */
-#define LANE_COUNT         4    /* one staff per pitch (KEY_A..KEY_F) */
+ 
+#define NOTE_SPACING       40   
+#define LOWEST_NOTE        384  
+#define LANE_COUNT         4    
 #define SCREEN_WIDTH       640
+#define NOTEHEAD_OFFSET    25
+#define SCORE_OFFSET       5
+#define SCORE_MAX_LEN      20   /*this is almost certainly far too large but we can change it if needed*/
 
-static int staff_top(UINT8 pitch);
 /*------ Function: render ------
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
 
@@ -39,11 +44,12 @@ void render(Model *model, UINT32 *base){
     int i;
     clear_screen(base);
 
-    render_staff(base); /*must render the track first for it to appear in the background*/
+    render_staff(base); /*must render the staff first for it to appear in the background*/
 
     for(i=model->head;i<model_last_on_screen(model); i++){ /*model_last_on_screen returns index of first note off screen. it needs to be renamed probably but it is what it is.*/
         render_note(&model->notes[i], base);
     }
+    render_targets(base, model->targets);
 
     render_meter(&model->meter, base);
 
@@ -59,7 +65,7 @@ void render_note(Note *note, UINT32 *base){
 
     int row;
 
-    row = staff_top(note->pitch) + (STAFF_HEIGHT / 2); /* middle line of the note's staff */
+    row = LOWEST_NOTE - (note->pitch * NOTE_SPACING); 
     row -= NOTE16_HEAD_ROW;                             /* centre the notehead on that line */
     plot_16bit_bitmap((UINT16 *)base, row, note->x, note16_bmp, NOTE16_HEIGHT);
 }
@@ -77,36 +83,74 @@ void render_meter(Meter *meter, UINT32 *base){
     for(i=0; i<meter->enjoyment; i++){ /*rn this function is linear time. There has to be a faster way.*/
         plot_horizontal_line(base, 140-i, 520, 80);
     }
+    render_score(base, 140, 520, meter->score);
 }
 /*------ Function: render_staff ------
-PURPOSE: Renders one five-line staff for each pitch lane, one above the other.
-         Must be drawn before the notes so the notes appear on top of it.
+PURPOSE: Renders one four line staff. 
+
+INPUT: UINT32 pointer to frame buffer
+
+OUTPUT: N/A
+
+*/
+void render_staff(UINT32 *base){
+   
+    int row,i;
+    
+    for(i = 0; i <4; i++){
+        row = LOWEST_NOTE - (i * NOTE_SPACING); 
+        row -= NOTE16_HEAD_ROW;                  /* centre the notehead on that line */
+        row+=NOTEHEAD_OFFSET;
+        plot_horizontal_line(base, row, 0, SCREEN_WIDTH);
+    }
+}
+
+/*------ Function: render_target ------
+PURPOSE: Renders one target. 
 
 INPUT: UINT32 pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_staff(UINT32 *base){
-    UINT8 lane;
-    int line, row;
-
-    for(lane=0; lane<LANE_COUNT; lane++){
-        row = staff_top(lane);
-        for(line=0; line<STAFF_LINES; line++){
-            plot_horizontal_line(base, row, 0, SCREEN_WIDTH);
-            row += STAFF_LINE_GAP;
+void render_targets(UINT32 *base, UINT8 * targets){
+    int row,i;
+    for(i=0;i<4;i++){
+        row = LOWEST_NOTE - (i * NOTE_SPACING); 
+        row -= NOTE16_HEAD_ROW;           
+        row+=NOTEHEAD_OFFSET;
+        row-=TARGET_HEIGHT/2;                  
+        if(targets[i]){
+            plot_16bit_bitmap((UINT16 *)base, row, 40, target_on_bmp, TARGET_HEIGHT);
         }
+        else{
+            plot_16bit_bitmap((UINT16 *)base, row, 40, target_off_bmp, TARGET_HEIGHT);
+        }
+        
     }
 }
 
-/*------ Function: staff_top ------
-PURPOSE: Gives the screen row of the top line of the staff for a pitch lane.
-         Pitch 0 is the bottom staff; each higher pitch is one staff higher.
+/*------ Function: render_score ------
+PURPOSE: Renders the score. 
 
-INPUT: pitch (lane number, 0 to LANE_COUNT - 1)
+INPUT: UINT32 pointer to frame buffer, int for row, int for col, UINT32 score value (which is to be printed)
 
-OUTPUT: Returns the row of that staff's top line.
+OUTPUT: N/A
 */
-static int staff_top(UINT8 pitch){
-    return LOWEST_STAFF_TOP - (pitch * STAFF_SPACING);
+
+void render_score(UINT32 *base, int row, int col, UINT32 score){
+    char s[SCORE_MAX_LEN];
+    char temp;
+    int i,j;
+    i=0;
+    do{
+        s[i++]= score % 10 + '0';
+        score/=10;
+    }while(score>0);
+    s[i]='\0';
+    for(j=i-1, i=0; i<j; i++, j--){
+        temp = s[i];
+        s[i]=s[j];
+        s[j]=temp;
+    }
+    plot_string((UINT8 *)base, row+SCORE_OFFSET, col, s);
 }

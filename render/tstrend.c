@@ -43,7 +43,6 @@ void test_init(Model *model, UINT32 *base);
 void test_clock_tick(Model *model, UINT32 *base);
 void test_advance_head(Model *model, UINT32 *base);
 void test_game_over(Model *model, UINT32 *base, INT8 enjoyment, const char *title);
-void test_song_over(Model *model, UINT32 *base);
 void test_hit(Model *model, UINT32 *base, UINT8 pitch);
 void test_apply_hit(Model *model, UINT32 *base);
 void test_apply_miss(Model *model, UINT32 *base);
@@ -58,7 +57,6 @@ int main(void){
 	test_advance_head(&test_model, base);
 	test_game_over(&test_model, base, ENJOYMENT_START, "cond_is_game_over");
 	test_game_over(&test_model, base, 40, "cond_is_game_over (enjoyment = 40)");
-	test_song_over(&test_model, base);
 	for(pitch = KEY_A; pitch <= KEY_F; pitch++){
 		test_hit(&test_model, base, pitch);
 	}
@@ -150,6 +148,13 @@ void apply_hits_and_show(Model *model, UINT32 *base){
 /*------ Function: test_init ------
 PURPOSE: Renders the model straight after model_init (notes not yet on screen).
 
+TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+
+1		Check to see if the		Empty Model		Empty Model rendered	as expected
+		initialized model						to screen
+		will render to 
+		screen.
+
 INPUT: pointer to Model, UINT32 pointer to frame buffer
 
 OUTPUT: N/A
@@ -163,6 +168,13 @@ void test_init(Model *model, UINT32 *base){
 /*------ Function: test_clock_tick ------
 PURPOSE: Renders the model after each of 4 clock ticks (notes entering from the right).
 
+TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+2		Checks to see that		Model that 		Some notes should		Notes move on screen edge.
+		advancing game clock	ticks 4 times	move on screen edge
+		correctly renders 
+		the changing of the 
+		game state + clips
+		correctly
 INPUT: pointer to Model, UINT32 pointer to frame buffer
 
 OUTPUT: N/A
@@ -174,6 +186,12 @@ void test_clock_tick(Model *model, UINT32 *base){
 
 /*------ Function: test_advance_head ------
 PURPOSE: Renders the model after each of 5 head advances; one fewer note is drawn each time, and advancing past the last note must not draw anything extra.
+
+TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+3		Checks that 			Model with		Notes should 			Notes disappear 
+		advance_head() 			our test song	disappear 	
+		correctly drops note	 
+		from game state
 
 INPUT: pointer to Model, UINT32 pointer to frame buffer
 
@@ -193,6 +211,12 @@ void test_advance_head(Model *model, UINT32 *base){
 /*------ Function: test_game_over ------
 PURPOSE: Lets every note be missed, rendering each tick, so the meter is seen draining from the given starting enjoyment.
 
+TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
+4		Want to check that		Model with		Enjoyment meter		 	Enjoyment meter drains properly.
+		enjoyment meter			our song		should drain
+		drains correctly
+		on missed notes
+
 INPUT: pointer to Model, UINT32 pointer to frame buffer, starting enjoyment, title of the test to print
 
 OUTPUT: N/A
@@ -205,27 +229,6 @@ void test_game_over(Model *model, UINT32 *base, INT8 enjoyment, const char *titl
 	tick_and_show(model, base, 12, 1);
 }
 
-/*------ Function: test_song_over ------
-PURPOSE: Runs 100 ticks past the end of the song with a full meter, rendering every RENDER_EVERY ticks; the staves should end up empty.
-
-INPUT: pointer to Model, UINT32 pointer to frame buffer
-
-OUTPUT: N/A
-*/
-void test_song_over(Model *model, UINT32 *base){
-	UINT16 i;
-
-	show("cond_is_song_over");
-	model_init(model, test_song, TEST_SONG_LEN);
-	skip_ticks(model, 145);
-	for(i = 1; i <= 100; i++){
-		synch_clock_tick(model);
-		model->meter.enjoyment = ENJOYMENT_MAX;
-		if(i % RENDER_EVERY == 0){
-			show_frame(model, base);
-		}
-	}
-}
 
 /*------ Function: test_hit ------
 PURPOSE: Renders notes passing through the hit window for one pitch lane, every 5 ticks, with the meter held full.

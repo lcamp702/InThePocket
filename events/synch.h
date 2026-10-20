@@ -18,7 +18,7 @@
 #ifndef SYNCH_H
 #define SYNCH_H
 
-#include "model.h"
+#include "../model/model.h"
 
 void synch_clock_tick(Model* model);
 

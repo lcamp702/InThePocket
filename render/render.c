@@ -16,8 +16,8 @@
     render.c*/
 
 #include "render.h"
-#include "raster.h"
 #include "bitmaps.h"
+#include "../raster/raster.h"
 
 #define STAFF_LINES        5    /* lines per staff */
 #define STAFF_LINE_GAP     6    /* rows between lines in one staff */

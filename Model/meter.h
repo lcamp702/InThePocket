@@ -18,7 +18,7 @@
 #ifndef METER_H
 #define METER_H
 
-#include "types.h"
+#include "../types.h"
 
 #define ENJOYMENT_MAX    100
 #define ENJOYMENT_START   50   /* open spec value */

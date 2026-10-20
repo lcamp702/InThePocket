@@ -1,0 +1,80 @@
+CC = cc68x
+
+# === Keywords ====
+
+all: model render test
+model: tstmodel.tos
+render: tstrend.tos
+raster: tstrast.tos
+
+# ==== MODEL OBJECTS ====
+
+model\model.o: model\model.c model\model.h model\note.h model\meter.h types.h
+	$(CC) -g -c model\model.c
+
+model\meter.o: model\meter.c model\meter.h types.h
+	$(CC) -g -c model\meter.c
+
+model\note.o: model\note.c model\note.h types.h
+	$(CC) -g -c model\note.c 
+
+# ==== EVENT OBJECTS ====
+
+events\asynch.o: events\asynch.c events\asynch.h events\cond.h model\model.h model\note.h model\meter.h types.h
+	$(CC) -g -c events\asynch.c
+
+events\cond.o: events\cond.c events\cond.h model\model.h model\note.h model\meter.h types.h
+	$(CC) -g -c events\cond.c
+
+events\synch.o: events\synch.c events\synch.h events\cond.h model\model.h model\note.h model\meter.h types.h
+	$(CC) -g -c events\synch.c
+
+# ==== RENDER OBJECTS ====
+
+render\render.o: render\render.c render\render.h render\bitmaps.h raster\raster.h model\model.h model\note.h model\meter.h types.h
+	$(CC) -g -c render\render.c
+
+render\bitmaps.o: render\bitmaps.c render\bitmaps.h types.h
+	$(CC) -g -c render\bitmaps.c
+
+# ==== RASTER OBJECTS ====
+
+rast\rast_asm.o: rast\rast_asm.s
+	gen -D -L2 rast\rast_asm.s
+
+# ==== MODEL/EVENT TESTS ====
+tstmodel.tos: events\asynch.o events\cond.o events\synch.o model\meter.o model\model.o model\note.o model\tstmodel.o
+	$(CC) -g events\asynch.o events\cond.o events\synch.o model\meter.o model\model.o model\note.o model\tstmodel.o -o tstmodel.tos
+
+model\tstmodel.o: model\tstmodel.c events\events.h events\asynch.h events\synch.h events\cond.h model\model.h model\note.h model\meter.h types.h
+	$(CC) -g -c model\tstmodel.c
+
+# ==== RENDER TESTS ====
+tstrend.tos: render\tstrend.o render\render.o render\bitmaps.o events\asynch.o events\synch.o events\cond.o model\model.o model\note.o model\meter.o raster\rast_asm.o
+	$(CC) -g render\tstrend.o render\render.o render\bitmaps.o events\asynch.o events\synch.o events\cond.o model\model.o model\note.o model\meter.o raster\rast_asm.o -o tstrend.tos
+
+render\tstrend.o: render\tstrend.c events\events.h events\asynch.h events\synch.h events\cond.h render\render.h raster\raster.h model\model.h model\note.h model\meter.h types.h
+	$(CC) -g -c render\tstrend.c
+
+# ==== RASTER TESTS ====
+
+tstrast.tos: rast_asm.o raster\tests\tests.o raster\tests\test_clr.o raster\tests\test_ln.o raster\tests\test_shp.o raster\tests\test_bmp.o raster\tests\test_str.o
+	$(CC) -g rast_asm.o raster\tests\tests.o raster\tests\test_clr.o raster\tests\test_ln.o raster\tests\test_shp.o raster\tests\test_bmp.o raster\tests\test_str.o -o tstrast.tos
+
+raster\tests\tests.o: raster\tests\tests.c raster\tests\tests.h raster\raster.h
+	$(CC) -g -c raster\tests\tests.c
+
+raster\tests\test_clr.o: raster\tests\test_clr.c raster\tests\tests.h raster\raster.h
+	$(CC) -g -c raster\tests\test_clr.c
+
+raster\tests\test_ln.o: raster\tests\test_ln.c raster\tests\tests.h raster\raster.h
+	$(CC) -g -c raster\tests\test_ln.c
+
+raster\tests\test_shape.o: raster\tests\test_shp.c raster\tests\tests.h raster\raster.h
+	$(CC) -g -c raster\tests\test_shp.c
+
+raster\tests\test_bmp.o: raster\tests\test_bmp.c raster\tests\tests.h raster\raster.h
+	$(CC) -g -c raster\tests\test_bmp.c
+
+raster\tests\test_str.o: raster\tests\test_str.c raster\tests\tests.h raster\raster.h
+	$(CC) -g -c raster\tests\test_str.c

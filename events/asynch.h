@@ -18,7 +18,7 @@
 #ifndef ASYNCH_H
 #define ASYNCH_H
 
-#include "model.h"
+#include "../model/model.h"
 
 UINT8 asynch_key_to_pitch(char key);
 UINT8 asynch_is_hit(const Model *model, UINT8 pitch);

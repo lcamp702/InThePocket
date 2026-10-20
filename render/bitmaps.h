@@ -19,7 +19,7 @@
 #ifndef BITMAPS_H
 #define BITMAPS_H
 
-#include "types.h"
+#include "../types.h"
 
 #define NOTE8_HEIGHT  14
 #define NOTE16_HEIGHT 28

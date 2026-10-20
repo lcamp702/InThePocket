@@ -18,8 +18,8 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#include "types.h"
-#include "Model.h"
+#include "../types.h"
+#include "../model/model.h"
 
 void render(Model *model, UINT32 *base);
 void render_note(Note *note, UINT32 *base);

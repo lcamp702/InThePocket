@@ -18,7 +18,7 @@
 #ifndef COND_H
 #define COND_H
 
-#include "model.h"
+#include "../model/model.h"
 
 #define TRAVEL_TICKS 140
 #define HIT_WINDOW 5

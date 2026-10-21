@@ -25,10 +25,10 @@
 #include <stdio.h>
 
 static const Note test_song[] = {
-	{ 0, 0, 0 },
-	{ 1, 0, 1 },
-	{ 3, 0, 2 },
-	{ 10, 0, 3 }
+	{ 0, 0, 0, 0 },
+	{ 6, 0, 1, 1 },
+	{ 12, 0, 2, 2 },
+	{ 18, 0, 3, 3 }
 };
 
 #define TEST_SONG_LEN (sizeof(test_song)/sizeof(test_song[0]))

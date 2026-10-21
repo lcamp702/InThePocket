@@ -1315,11 +1315,11 @@ bm32_aligned_loop:	; If start shift == 0, print bmp into bytes
 		bra		bm32_end
 
 bm32_shifted:	; If start shift != 0, shift bmp across 2 bytes
-		moveq.l		#32,d1		; d1.w = 32
-		sub.w		d2,d1		; d1.w = 32-(col % 32)
-
 		cmpi.w		#BYTE_COLS-4,d1
 		bhs.b		bm32_right_loop	; Print only one long at the end of the screen
+
+		moveq.l		#32,d1		; d1.w = 32
+		sub.w		d2,d1		; d1.w = 32-(col % 32)
 
 bm32_shift_loop:
 		move.l		(a1)+,d3	; d3.l = Bitmap row

@@ -24,9 +24,10 @@ INPUT: Note object pointer, UINT pitch value (from 1-4), and UINT32 time object 
 
 OUTPUT: N/A
 */
-void note_init(Note *note, UINT8 pitch, UINT32 time) {
-	note->pitch=pitch;
+void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration) {
 	note->time=time;
+	note->pitch=pitch;
+	note->duration=duration;
 	note->x=NOTE_START_X;
 }
 

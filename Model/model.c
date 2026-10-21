@@ -30,7 +30,7 @@ void model_init(Model * model, const Note* arr, UINT16 notes_amt){
 	model->note_count = (notes_amt > MAX_NOTES) ? MAX_NOTES : notes_amt;
 	
 	for(i=0;i<model->note_count; i++){
-		note_init(&model->notes[i], arr[i].pitch, arr[i].time);
+		note_init(&model->notes[i], arr[i].time, arr[i].pitch, arr[i].duration);
 	}
 	
 	for(i=0;i<TARGET_COUNT;i++){

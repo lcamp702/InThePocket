@@ -31,10 +31,10 @@ typedef struct Note {
 	UINT32 time; /*time of note beginning to appear on screen*/
 	INT16 x; /*x position of note*/
 	UINT8 pitch;
-	/*UINT8 duration;*/
+	UINT8 duration;
 } Note;
 
-void note_init(Note *note, UINT8 pitch, UINT32 time);  /* sets x = NOTE_START_X */
+void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration);  /* sets x = NOTE_START_X */
 void note_move(Note *note);                            /* x -= NOTE_SPEED */
 
 #endif

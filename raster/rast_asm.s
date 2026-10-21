@@ -912,7 +912,7 @@ _plot_triangle:
 		move.l		pt_base(a6),(sp)	; 1: base	0(sp)
 		move.w		d0,4(sp)		; 2: row	4(sp)
 		move.w		d1,6(sp)		; 3: col	6(sp)
-		move.w		d4,8(sp)		; 4: length	8(sp)							
+		move.w		d3,8(sp)		; 4: length	8(sp)							
 
 		subq.w		#1,d3		; Trim height for row offset
 

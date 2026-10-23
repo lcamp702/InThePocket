@@ -16,14 +16,18 @@
 	render.c*/
 
 #include "render.h"
-#include "bitmaps.h"
+#include "../bitmaps/bitmaps.h"
 #include "../raster/raster.h"
 
 #define SCREEN_WIDTH		640
 
-#define LOWEST_NOTE			300
+/* Staff Parameters */
+#define STAFF_BOTTOM		300 /* Bottom pixel row of staff */
 #define LINE_COUNT			5 /* 5 lines, 4 tracks between for notes*/
-#define STAFF_LINE_WIDTH	2
+#define STAFF_LINE_WIDTH	2 /* Thickness of each staff line */
+
+#define METER_ROW			16
+#define METER_COL			560
 
 #define SCORE_OFFSET		5
 #define SCORE_MAX_LEN		20 /*this is almost certainly far too large but we can change it if needed*/
@@ -46,6 +50,9 @@ void render(Model *model, UINT32 *base)
 {
 	int i;
 	clear_screen(base);
+
+	/* Title */
+	plot_string((UINT8 *)base, 8, 268, "In the Pocket");
 
 	render_staff(base); /*must render the staff first for it to appear in the background*/
 
@@ -97,7 +104,7 @@ void render_note(Note *note, UINT32 *base)
 			break;
 	}
 
-	row = LOWEST_NOTE - (note->pitch * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH));
+	row = STAFF_BOTTOM + 1 - ((note->pitch + 1) * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH));
 	plot_32bit_bitmap(base, row, note->x, note_head, NOTE_HEAD_HEIGHT);
 
 	/*
@@ -127,12 +134,13 @@ void render_meter(Meter *meter, UINT32 *base)
 {
 	int i;
 
-	plot_rectangle(base, 40, 520, 100, 80);
-	for (i = 0; i < meter->enjoyment; i++)
-	{ /*rn this function is linear time. There has to be a faster way.*/
-		plot_horizontal_line(base, 140 - i, 520, 80);
+	if (meter->enjoyment > 0)
+	{
+		plot_32bit_bitmap(base, METER_ROW + METER_HEIGHT - meter->enjoyment, METER_COL, meter_left + METER_HEIGHT - meter->enjoyment, meter->enjoyment);
+		plot_32bit_bitmap(base, METER_ROW + METER_HEIGHT - meter->enjoyment, METER_COL + 32, meter_right + METER_HEIGHT - meter->enjoyment, meter->enjoyment);
 	}
-	render_score(base, 140, 520, meter->score);
+
+	render_score(base, METER_ROW + METER_HEIGHT + 8, METER_COL, meter->score);
 }
 
 /*------ Function: render_staff ------
@@ -150,7 +158,7 @@ void render_staff(UINT32 *base)
 	{
 		for (w = 0; w < STAFF_LINE_WIDTH; w++) 
 		{
-			row = LOWEST_NOTE - ((i-1) * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH) + w) - 1;
+			row = STAFF_BOTTOM - 1 + w - i*(NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH);
 			plot_horizontal_line(base, row, 0, SCREEN_WIDTH);
 		}
 	}
@@ -167,18 +175,16 @@ OUTPUT: N/A
 void render_targets(UINT32 *base, UINT8 *targets)
 {
 	int row, i;
-	for (i = 0; i < 4; i++)
+	for (i = 1; i < LINE_COUNT; i++) /* Draw one target for each space */
 	{
-		row = LOWEST_NOTE - (i * NOTE_HEAD_HEIGHT);
-		row -= NOTE16_HEAD_ROW;
-		row -= TARGET_HEIGHT / 2;
+		row = STAFF_BOTTOM + 1 - (i * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH));
 		if (targets[i])
 		{
-			plot_16bit_bitmap((UINT16 *)base, row, 40, target_on_bmp, TARGET_HEIGHT);
+			plot_16bit_bitmap((UINT16 *)base, row, 40, target_on_bmp, NOTE_HEAD_HEIGHT);
 		}
 		else
 		{
-			plot_16bit_bitmap((UINT16 *)base, row, 40, target_off_bmp, TARGET_HEIGHT);
+			plot_16bit_bitmap((UINT16 *)base, row, 40, target_off_bmp, NOTE_HEAD_HEIGHT);
 		}
 	}
 }

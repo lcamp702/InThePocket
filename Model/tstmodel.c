@@ -134,7 +134,7 @@ int main(void){
 	}
 	for(i = 0; i<100; i++){
 		synch_clock_tick(&test_model);
-		test_model.meter.enjoyment=100;
+		test_model.meter.enjoyment=64;
 		printf("-- TICK -- \n");
 		print_model(&test_model);
 		printf("song over = %d \n", cond_is_song_over(&test_model));
@@ -171,7 +171,7 @@ int main(void){
 		synch_clock_tick(&test_model);
 	}
 	for(i = 0; i<30; i++){
-		test_model.meter.enjoyment=100;
+		test_model.meter.enjoyment=64;
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 0));
@@ -194,7 +194,7 @@ int main(void){
 		synch_clock_tick(&test_model);
 	}
 	for(i = 0; i<30; i++){
-		test_model.meter.enjoyment=100;
+		test_model.meter.enjoyment=64;
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		printf("hitting s yields %d \n", asynch_is_hit(&test_model, 1));
@@ -210,7 +210,7 @@ int main(void){
 		synch_clock_tick(&test_model);
 	}
 	for(i = 0; i<30; i++){
-		test_model.meter.enjoyment=100;
+		test_model.meter.enjoyment=64;
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		printf("hitting d yields %d \n", asynch_is_hit(&test_model, 2));
@@ -226,7 +226,7 @@ int main(void){
 		synch_clock_tick(&test_model);
 	}
 	for(i = 0; i<30; i++){
-		test_model.meter.enjoyment=100;
+		test_model.meter.enjoyment=64;
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		printf("hitting f yields %d \n", asynch_is_hit(&test_model, 3));

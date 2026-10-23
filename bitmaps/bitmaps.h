@@ -14,23 +14,32 @@
 	Declarations of the sprite bitmaps used by the renderer. Bitmaps are defined in
 	bitmaps.c, not here, so no space is reserved by including this header.
 
-    bitmaps.h*/
+    bitmaps/bitmaps.h
+*/
 
 #ifndef BITMAPS_H
 #define BITMAPS_H
 
 #include "../types.h"
 
-#define NOTE_HEAD_HEIGHT 16
-#define NOTE8_HEIGHT  14
-#define NOTE16_HEIGHT 28
-#define TARGET_HEIGHT 16
-#define NOTE16_HEAD_ROW 27   /* row of note16_bmp at the centre of the notehead */
+#define METER_HEIGHT 64
+#define NOTE_HEAD_HEIGHT 16	/* Determines line spacing and target size. */
 
-extern const UINT8  note8_bmp[NOTE8_HEIGHT];
-extern const UINT16 note16_bmp[NOTE16_HEIGHT];
-extern const UINT16 target_off_bmp[TARGET_HEIGHT];
-extern const UINT16 target_on_bmp[TARGET_HEIGHT];
+/*
+===============   TARGETS   ===============
+Targets are the same height as note heads
+so they fit between the lines on the staff.
+*/
+extern const UINT16 target_off_bmp[NOTE_HEAD_HEIGHT]; 
+extern const UINT16 target_on_bmp[NOTE_HEAD_HEIGHT];
+
+/*
+=============== SCORE METER ===============
+A saxophone in the top right that is filled
+according to the enjoyment meter level.
+*/
+extern const UINT32 meter_left[METER_HEIGHT];
+extern const UINT32 meter_right[METER_HEIGHT];
 
 /* 
 ===============  NOTE HEADS  ===============

@@ -7,7 +7,10 @@ raster: tstrast.tos
 
 # ==== MODEL OBJECTS ====
 
-build\model.o: model\model.c model\model.h model\note.h model\meter.h types.h
+MODEL	=	build\model.o build\meter.o build\note.o
+MODEL_H	=	model\model.h model\meter.h model\note.h
+
+build\model.o: model\model.c $(MODEL_H) types.h
 	cc68x -g -c model\model.c -o build\model.o
 
 build\meter.o: model\meter.c model\meter.h types.h
@@ -18,22 +21,35 @@ build\note.o: model\note.c model\note.h types.h
 
 # ==== EVENT OBJECTS ====
 
-build\asynch.o: events\asynch.c events\asynch.h events\cond.h model\model.h model\note.h model\meter.h types.h
+EVENTS	=	build\asynch.o build\cond.o build\synch.o
+EVENTS_H	=	events\events.h events\synch.h events\asynch.h events\cond.h
+
+build\asynch.o: events\asynch.c events\asynch.h events\cond.h events\events.h $(MODEL_H) types.h
 	cc68x -g -c events\asynch.c -o build\asynch.o
 
-build\cond.o: events\cond.c events\cond.h model\model.h model\note.h model\meter.h types.h
+build\cond.o: events\cond.c events\cond.h events\events.h $(MODEL_H) types.h
 	cc68x -g -c events\cond.c -o build\cond.o
 
-build\synch.o: events\synch.c events\synch.h events\cond.h model\model.h model\note.h model\meter.h types.h
+build\synch.o: events\synch.c events\synch.h events\cond.h events\events.h $(MODEL_H) types.h
 	cc68x -g -c events\synch.c -o build\synch.o
 
 # ==== RENDER OBJECTS ====
 
-build\render.o: render\render.c render\render.h render\bitmaps.h raster\raster.h model\model.h model\note.h model\meter.h types.h
+build\render.o: render\render.c render\render.h bitmaps\bitmaps.h raster\raster.h $(MODEL_H) types.h
 	cc68x -g -c render\render.c -o build\render.o
 
-build\bitmaps.o: render\bitmaps.c render\bitmaps.h types.h
-	cc68x -g -c render\bitmaps.c -o build\bitmaps.o
+# ==== BITMAPS ====
+# To add more bitmaps, create a .c file in bitmaps/ and create a build rule for it.
+BITMAPS	=	build\meter_bm.o build\notehead.o build\targets.o
+
+build\meter_bm.o: bitmaps\meter_bm.c bitmaps\bitmaps.h types.h
+	cc68x -g -c bitmaps\meter_bm.c -o build\meter_bm.o
+
+build\notehead.o: bitmaps\notehead.c bitmaps\bitmaps.h types.h
+	cc68x -g -c bitmaps\notehead.c -o build\notehead.o
+
+build\targets.o: bitmaps\targets.c bitmaps\bitmaps.h types.h
+	cc68x -g -c bitmaps\targets.c -o build\targets.o
 
 # ==== RASTER OBJECTS ====
 
@@ -41,23 +57,26 @@ raster\rast_asm.o: raster\rast_asm.s
 	gen -D -L2 raster\rast_asm.s
 
 # ==== MODEL/EVENT TESTS ====
-tstmodel.tos: build\asynch.o build\cond.o build\synch.o build\meter.o build\model.o build\note.o build\tstmodel.o
-	cc68x -g build\asynch.o build\cond.o build\synch.o build\meter.o build\model.o build\note.o build\tstmodel.o -o tstmodel.tos
+tstmodel.tos: $(EVENTS) $(MODEL) build\tstmodel.o
+	cc68x -g $(EVENTS) $(MODEL) build\tstmodel.o -o tstmodel.tos
 
-build\tstmodel.o: model\tstmodel.c events\events.h events\asynch.h events\synch.h events\cond.h model\model.h model\note.h model\meter.h types.h
+build\tstmodel.o: model\tstmodel.c $(EVENTS_H) $(MODEL_H) types.h
 	cc68x -g -c model\tstmodel.c -o build\tstmodel.o
 
 # ==== RENDER TESTS ====
-tstrend.tos: build\tstrend.o build\render.o build\bitmaps.o build\asynch.o build\synch.o build\cond.o build\model.o build\note.o build\meter.o raster\rast_asm.o
-	cc68x -g build\tstrend.o build\render.o build\bitmaps.o build\asynch.o build\synch.o build\cond.o build\model.o build\note.o build\meter.o raster\rast_asm.o -o tstrend.tos
+tstrend.tos: build\tstrend.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) raster\rast_asm.o
+	cc68x -g build\tstrend.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) raster\rast_asm.o -o tstrend.tos
 
-build\tstrend.o: render\tstrend.c events\events.h events\asynch.h events\synch.h events\cond.h render\render.h raster\raster.h model\model.h model\note.h model\meter.h types.h
+build\tstrend.o: render\tstrend.c render\render.h raster\raster.h $(EVENTS_H) $(MODEL_H) types.h
 	cc68x -g -c render\tstrend.c -o build\tstrend.o
 
 # ==== RASTER TESTS ====
 
-tstrast.tos: raster\rast_asm.o build\tstrast.o build\test_clr.o build\test_ln.o build\test_shp.o build\test_bmp.o build\test_str.o
-	cc68x -g raster\rast_asm.o build\tstrast.o build\test_clr.o build\test_ln.o build\test_shp.o build\test_bmp.o build\test_str.o -o tstrast.tos
+tstrast.tos: raster\rast_asm.o $(RASTER_TST)
+	cc68x -g raster\rast_asm.o $(RASTER_TST) -o tstrast.tos
+
+RASTER_TST	=	build\tstrast.o build\test_clr.o build\test_ln.o\
+ build\test_shp.o build\test_bmp.o build\test_str.o
 
 build\tstrast.o: raster\tests\tests.c raster\tests\tests.h raster\raster.h
 	cc68x -g -c raster\tests\tests.c -o build\tstrast.o

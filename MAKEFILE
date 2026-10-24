@@ -1,9 +1,10 @@
 # === Keywords ====
 
-all: model render raster
+all: model render raster live
 model: tstmodel.tos
 render: tstrend.tos
 raster: tstrast.tos
+live: tstlive.tos
 
 # ==== MODEL OBJECTS ====
 
@@ -40,10 +41,10 @@ build\render.o: render\render.c render\render.h bitmaps\bitmaps.h raster\raster.
 
 # ==== BITMAPS ====
 # To add more bitmaps, create a .c file in bitmaps/ and create a build rule for it.
-BITMAPS	=	build\meter_bm.o build\notehead.o build\targets.o
+BITMAPS	=	bitmaps\bitmaps.o build\notehead.o build\targets.o
 
-build\meter_bm.o: bitmaps\meter_bm.c bitmaps\bitmaps.h types.h
-	cc68x -g -c bitmaps\meter_bm.c -o build\meter_bm.o
+bitmaps\bitmaps.o: bitmaps\bitmaps.s
+	gen -D -L2 bitmaps\bitmaps.s
 
 build\notehead.o: bitmaps\notehead.c bitmaps\bitmaps.h types.h
 	cc68x -g -c bitmaps\notehead.c -o build\notehead.o
@@ -53,8 +54,13 @@ build\targets.o: bitmaps\targets.c bitmaps\bitmaps.h types.h
 
 # ==== RASTER OBJECTS ====
 
+RASTER	=	raster\rast_asm.o raster\rast_ext.o
+
 raster\rast_asm.o: raster\rast_asm.s
 	gen -D -L2 raster\rast_asm.s
+
+raster\rast_ext.o: raster\rast_ext.s
+	gen -D -L2 raster\rast_ext.s
 
 # ==== MODEL/EVENT TESTS ====
 tstmodel.tos: $(EVENTS) $(MODEL) build\tstmodel.o
@@ -64,19 +70,25 @@ build\tstmodel.o: model\tstmodel.c $(EVENTS_H) $(MODEL_H) types.h
 	cc68x -g -c model\tstmodel.c -o build\tstmodel.o
 
 # ==== RENDER TESTS ====
-tstrend.tos: build\tstrend.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) raster\rast_asm.o
-	cc68x -g build\tstrend.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) raster\rast_asm.o -o tstrend.tos
+tstrend.tos: build\tstrend.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) $(RASTER)
+	cc68x -g build\tstrend.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) $(RASTER) -o tstrend.tos
+
+tstlive.tos: build\tstlive.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) $(RASTER)
+	cc68x -g build\tstlive.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) $(RASTER) -o tstlive.tos
 
 build\tstrend.o: render\tstrend.c render\render.h raster\raster.h $(EVENTS_H) $(MODEL_H) types.h
 	cc68x -g -c render\tstrend.c -o build\tstrend.o
 
-# ==== RASTER TESTS ====
+build\tstlive.o: render\tstlive.c render\render.h raster\raster.h $(EVENTS_H) $(MODEL_H) types.h
+	cc68x -g -c render\tstlive.c -o build\tstlive.o
 
-tstrast.tos: raster\rast_asm.o $(RASTER_TST)
-	cc68x -g raster\rast_asm.o $(RASTER_TST) -o tstrast.tos
+# ==== RASTER TESTS ====
 
 RASTER_TST	=	build\tstrast.o build\test_clr.o build\test_ln.o\
  build\test_shp.o build\test_bmp.o build\test_str.o
+
+tstrast.tos: $(RASTER) $(RASTER_TST) $(BITMAPS)
+	cc68x -g $(RASTER) $(RASTER_TST) $(BITMAPS) -o tstrast.tos
 
 build\tstrast.o: raster\tests\tests.c raster\tests\tests.h raster\raster.h
 	cc68x -g -c raster\tests\tests.c -o build\tstrast.o

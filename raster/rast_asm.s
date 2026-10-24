@@ -38,21 +38,6 @@
 ;	Purpose:
 ;	A raster engine for our game, In the Pocket on the Atari ST.
 
-		xdef		_clear_screen
-		xdef		_clear_region
-		xdef		_plot_pixel
-		xdef		_plot_horizontal_line
-		xdef		_plot_vertical_line
-		xdef		_plot_line
-		xdef		_plot_rectangle
-		xdef		_plot_square
-		xdef		_plot_triangle
-		xdef		_plot_8bit_bitmap
-		xdef		_plot_16bit_bitmap
-		xdef		_plot_32bit_bitmap
-		xdef		_plot_character
-		xdef		_plot_string
-
 ;       Screen details
 ROWS		equ		400
 COLS		equ		640
@@ -62,6 +47,8 @@ BYTE_COLS	equ		80
 ; PURPOSE: Clears the entire screen.
 ; INPUT: Address(UINT32*): to the start of the screen
 ; OUTPUT: None
+		xdef		_clear_screen
+
 cs_base		equ		64	; Offset from SP, not A6
 _clear_screen:	; Quick clear code from Raster Lab on D2L
 		movem.l		d0-7/a0-6,-(sp) ; Store existing register values
@@ -88,6 +75,8 @@ fill_loop:
 ;	   Length: the length (number of rows) in pixels of the region
 ;	   Width: the width (number of columns) in pixels of the region
 ; OUTPUT: None
+		xdef		_clear_region
+
 cr_base		equ		44
 cr_row		equ		48
 cr_col		equ		50
@@ -241,6 +230,8 @@ cr_end:
 ; INPUT: Address(UINT8*): to the start of the screen
 ;       Position(row,col): the location of the pixel to plot
 ; OUTPUT: None
+		xdef		_plot_pixel
+
 px_base		equ		20
 px_row		equ		24
 px_col		equ		26
@@ -281,6 +272,8 @@ pp_end:
 ;	 Position(row,col): the coordinates of the leftmost pixel of the horizontal line
 ;	 Length: the length in pixels of the line
 ; OUTPUT: None
+		xdef		_plot_horizontal_line
+
 hl_base		equ		24
 hl_row		equ		28
 hl_col		equ		30
@@ -379,6 +372,8 @@ hl_end:
 ;	 Position(row,col): the coordinates of the topmost pixel of the vertical line
 ;	 Length: the length in pixels of the line
 ; OUTPUT: None
+		xdef		_plot_vertical_line
+
 vl_base		equ		28
 vl_row		equ		32
 vl_col		equ		34
@@ -550,6 +545,7 @@ clip_reject:	; Pack -1,-1 position into d0 and return
 ;	 Position(start_row,start_col): the coordinates of the start of the line
 ;	 Position(end_row,end_col): the coordinates of the end of the line
 ; OUTPUT: None
+		xdef		_plot_line
 
 pl_base		equ	40
 pl_srow		equ	44
@@ -788,6 +784,8 @@ pl_end:
 ;		Length: the length (number of rows) in pixels of the rectangle
 ;		Width: the width (number of columns) in pixels of the rectangle
 ; OUTPUT: None
+		xdef		_plot_rectangle
+
 pr_base		equ	8
 pr_row		equ	12
 pr_col		equ	14
@@ -838,6 +836,8 @@ _plot_rectangle:
 ;		Position(row,col): the coordinates of the top left pixel of the square
 ;		Side: the length of each side, in pixels, of the square
 ; OUTPUT: None
+		xdef		_plot_square
+
 ps_base		equ	8
 ps_row		equ	12
 ps_col		equ	14
@@ -888,6 +888,8 @@ _plot_square:
 ;			  2 - Coordinate is the bottom left point of the triangle	0010
 ;			  3 - Coordinate is the bottom right point of the triangle	0011
 ; OUTPUT: None
+		xdef		_plot_triangle
+
 TRI_ROW_DIR	equ		1	; Bit # determining row direction
 TRI_COL_DIR	equ		0	; Bit # determining column direction
 
@@ -967,6 +969,8 @@ pt_horiz:
 ;	 Bitmap(UINT8*): pointer to the bitmap to print
 ;	 Height: the length (number of rows) of the height in pixels of the bitmap
 ; OUTPUT: None
+		xdef		_plot_8bit_bitmap
+
 bm8_base	equ		24
 bm8_row		equ		28
 bm8_col		equ		30
@@ -1093,6 +1097,8 @@ bm8_end:
 ;	 Bitmap(UINT16*): pointer to the bitmap to print
 ;	 Height: the length (number of rows) of the height in pixels of the bitmap
 ; OUTPUT: None
+		xdef		_plot_16bit_bitmap
+
 bm16_base	equ		24
 bm16_row	equ		28
 bm16_col	equ		30
@@ -1222,6 +1228,8 @@ bm16_end:
 ;	 Bitmap(UINT32*): pointer to the bitmap to print
 ;	 Height: the length (number of rows) of the height in pixels of the bitmap
 ; OUTPUT: None
+		xdef		_plot_32bit_bitmap
+
 bm32_base	equ		32
 bm32_row	equ		36
 bm32_col	equ		38
@@ -1352,8 +1360,9 @@ bm32_end:
 ;		Position(row,col): the coordinates of the top left pixel of the character
 ;		ch(char): the character to be written to the screen
 ; OUTPUT: None
+		xdef		_plot_character
 
-FONT_HEIGHT	equ		8
+FONT_HEIGHT	equ		7
 
 pc_base		equ		8
 pc_row		equ		12
@@ -1397,6 +1406,7 @@ pc_end:
 ;	 Position(row,col): the coordinates of the top left pixel of the string
 ;	 ch(c-string): the string to be written to the screen
 ; OUTPUT: None
+		xdef		_plot_string
 
 pst_base	equ		8
 pst_row		equ		12
@@ -1434,13 +1444,13 @@ pst_end:
 		unlk		a6
 		rts
 
-; ==== void region_shift_left(base, row, col, height, width) ====
-; Purpose: 
-
 zeros:		ds.l		13
 
+; =============== FONTS ===============
+
 ; 8x8 Font Bitmap table
-font:           dc.b            $00,$00,$00,$00,$00,$00,$00,$00  ; <space>
+		xdef		font
+font:		dc.b            $00,$00,$00,$00,$00,$00,$00,$00  ; <space>
                 dc.b            $30,$30,$30,$30,$00,$30,$00,$00  ; !
                 dc.b            $D8,$D8,$00,$00,$00,$00,$00,$00  ; "
                 dc.b            $48,$FC,$48,$48,$FC,$48,$00,$00  ; #
@@ -1505,7 +1515,7 @@ font:           dc.b            $00,$00,$00,$00,$00,$00,$00,$00  ; <space>
                 dc.b            $20,$70,$F8,$20,$20,$20,$00,$00  ; ^
                 dc.b            $00,$00,$00,$00,$00,$00,$FE,$00  ; _
                 dc.b            $30,$30,$10,$00,$00,$00,$00,$00  ; `
-				dc.b            $38,$38,$5C,$7C,$8E,$8E,$00,$00  ; A
+		dc.b            $38,$38,$5C,$7C,$8E,$8E,$00,$00  ; A
                 dc.b            $FC,$E2,$FC,$E2,$E2,$FC,$00,$00  ; B
                 dc.b            $3C,$66,$E0,$E0,$66,$3C,$00,$00  ; C
                 dc.b            $F8,$E4,$E2,$E2,$E4,$F8,$00,$00  ; D

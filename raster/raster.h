@@ -3,6 +3,8 @@
 
 #include "../types.h"
 
+void plot_20l_bitmap(UINT32 *base, int row, UINT32 *bitmap, UINT16 height);
+
 /*----- Function: clear_screen -----
 
  PURPOSE: Clears the entire screen.
@@ -13,6 +15,10 @@
 
 */
 void clear_screen(UINT32 *base);
+/*
+       Same as clear screen, but writes ones instead of zeroes
+*/
+void fill_screen(UINT32 *base);
 
 
 /*----- Function: clear_region -----
@@ -28,6 +34,10 @@ void clear_screen(UINT32 *base);
 
 */
 void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width);
+/*
+       Same as clear region, but writes ones instead of zeroes
+*/
+void fill_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width);
 
 
 /*----- Function: plot_pixel -----
@@ -140,6 +150,8 @@ void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 
  OUTPUT: None
 */
 void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height);
+/* Same as plot_8bit_bitmap but plotting white pixels */
+void plot_n8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height);
 
 
 /*----- Function: plot_16bit_bitmap -----
@@ -153,7 +165,8 @@ void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16
  OUTPUT: None
 */
 void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height);
-
+/* Same as plot_16bit_bitmap but plotting white pixels */
+void plot_n16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UINT16 height);
 
 /*----- Function: plot_32bit_bitmap -----
 
@@ -166,7 +179,8 @@ void plot_16bit_bitmap(UINT16 *base, int row, int col, const UINT16 *bitmap, UIN
  OUTPUT: None
 */
 void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UINT16 height);
-
+/* Same as plot_32bit_bitmap but plotting white pixels */
+void plot_n32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UINT16 height);
 
 /*----- Function: plot_character -----
 
@@ -179,7 +193,7 @@ void plot_32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UIN
  OUTPUT: None
 */
 void plot_character(UINT8 *base, int row, int col, char ch);
-
+void plot_ncharacter(UINT8 *base, int row, int col, char ch);
 
 /*----- Function: plot_string -----
 
@@ -192,5 +206,6 @@ void plot_character(UINT8 *base, int row, int col, char ch);
  OUTPUT: None
 */
 void plot_string(UINT8 *base, int row, int col, char *ch);
+void plot_nstring(UINT8 *base, int row, int col, char *ch);
 
 #endif

@@ -21,6 +21,8 @@
 #include "../types.h"
 #include "../model/model.h"
 
+void render_level(Model *model, UINT32 *base);
+
 /*------ Function: render ------
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
 

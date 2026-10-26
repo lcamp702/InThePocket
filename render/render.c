@@ -104,13 +104,13 @@ void render_note(Note *note, UINT32 *base)
 	switch (note->duration)
 	{
 		case 0:
-			note_head = note_head_whole;
+			note_head = note_whole_head;
 			break;
 		case 1:
-			note_head = note_head_half;
+			note_head = note_half_head;
 			break;
 		default:
-			note_head = note_head_black;
+			note_head = note_black_head;
 			break;
 	}
 

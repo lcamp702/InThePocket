@@ -31,9 +31,10 @@ int main() {
         timeElapsed = timeNow - timeThen;
 
         /* If input is pending */
-        if (Cconis())
+        if (awaiting_input())
         {
             /* Process async events */
+            
         }
 
         /* If clock has ticked*/

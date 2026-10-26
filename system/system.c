@@ -18,13 +18,24 @@
 */
 
 #include <osbind.h>
+#include "system.h"
 
-void get_time() 
+UINT32 get_time() 
 {
-    long *timer = (long *) 0x462;
-    long time;
-    long exit = Super(0);	/* Enter priviledged mode. */
+    UINT32 *timer = (UINT32 *) 0x462;
+    UINT32 time;
+    UINT32 exit = Super(0);	/* Enter priviledged mode. */
     time = *timer;		/* Read timer value*/
     Super(exit);		/* Exit priviledged mode */
     return time;
+}
+
+UINT8 waiting_input() 
+{
+	return Cconis();
+}
+
+UINT8 get_input()
+{
+	return Cnecin();
 }

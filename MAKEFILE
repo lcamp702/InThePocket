@@ -1,10 +1,21 @@
-# === Keywords ====
+# ==== Keywords ====
 
+game: pocket.tos
 all: model render raster live
 model: tstmodel.tos
 render: tstrend.tos
 raster: tstrast.tos
 live: tstlive.tos
+
+# ==== GAME MODULE ====
+
+pocket.tos: pocket.c build\model.o build\render.o build\system.o
+	cc68x -g -c pocket.c -o pocket.tos
+
+# ==== SYSTEM CALLS ====
+
+build\system.o:
+	cc68x -g -c system\system.c
 
 # ==== MODEL OBJECTS ====
 
@@ -40,14 +51,10 @@ build\render.o: render\render.c render\render.h bitmaps\bitmaps.h raster\raster.
 	cc68x -g -c render\render.c -o build\render.o
 
 # ==== BITMAPS ====
-# To add more bitmaps, create a .c file in bitmaps/ and create a build rule for it.
-BITMAPS	=	bitmaps\bitmaps.o build\notehead.o build\targets.o
+BITMAPS	=	bitmaps\bitmaps.o build\targets.o
 
 bitmaps\bitmaps.o: bitmaps\bitmaps.s
 	gen -D -L2 bitmaps\bitmaps.s
-
-build\notehead.o: bitmaps\notehead.c bitmaps\bitmaps.h types.h
-	cc68x -g -c bitmaps\notehead.c -o build\notehead.o
 
 build\targets.o: bitmaps\targets.c bitmaps\bitmaps.h types.h
 	cc68x -g -c bitmaps\targets.c -o build\targets.o
@@ -61,6 +68,9 @@ raster\rast_asm.o: raster\rast_asm.s
 
 raster\rast_ext.o: raster\rast_ext.s
 	gen -D -L2 raster\rast_ext.s
+
+
+
 
 # ==== MODEL/EVENT TESTS ====
 tstmodel.tos: $(EVENTS) $(MODEL) build\tstmodel.o

@@ -19,3 +19,5 @@
 #include "../types.h"
 
 UINT32 get_time();
+UINT8 waiting_input();
+UINT8 get_input();

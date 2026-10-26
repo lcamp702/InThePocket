@@ -13,7 +13,8 @@
 
 	Implementation file for the render module. Contains function definitions for the functions in render.h.
 
-	render.c*/
+	render/render.c
+*/
 
 #include "render.h"
 #include "../bitmaps/bitmaps.h"

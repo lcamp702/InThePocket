@@ -7,28 +7,22 @@
 ;	COMP2659-001
 ;	Steve Kalmar
 
-;	In the Pocket - Checkpoint 2
-;	Due: Oct 19, 2026
-;	rast_asm.s    
+;	In the Pocket - Checkpoint 3
+;	Due: Nov 9, 2026
+;	raster/rast_ext.s    
 
 ;	Status:
 ;	  Not Tested:
 ;
 ;	  Visual Tests:
-;		clear_screen
-;		clear_region
-;		plot_pixel
-;		plot_horizontal_line
-;		plot_vertical_line
-;		plot_line
-;		plot_rectangle
-;		plot_square
-;		plot_triangle
-;		plot_8bit_bitmap
-;		plot_16bit_bitmap
-;		plot_32bit_bitmap
-;		plot_character
-;		plot_string
+;		fill_screen
+;		fill_region
+;		plot_n8bit_bitmap
+;		plot_n16bit_bitmap
+;		plot_n32bit_bitmap
+;		plot_ncharacter
+;		plot_nstring
+;		plot_20l_bitmap
 
 ;	Purpose:
 ;	Extra functions for the raster engine for our game, In the Pocket on the Atari ST.
@@ -157,6 +151,7 @@ fr_col_clipped:
 		lsr.w		#5,d2		; d2.w = End long offset
 
 		; Create shifted start mask
+
 		andi.w		#31,d0		; d0.w = Start col % 32
 		moveq.l		#-1,d5		; d5.l = (0xFFFFFFFF)
 		lsr.l		d0,d5		; d5.l = Shifted start mask

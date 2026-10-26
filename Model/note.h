@@ -13,7 +13,8 @@
 
 	Header file for the note.c file. Contains function prototypes for the functions in note.c.
 	
-    note.h*/
+    model/note.h
+*/
 
 #ifndef NOTE_H
 #define NOTE_H

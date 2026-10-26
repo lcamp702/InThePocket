@@ -15,7 +15,6 @@
     thrown out in favour of a custom ROM.
 
     system/system.c
-    
 */
 
 #include <osbind.h>

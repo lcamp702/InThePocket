@@ -12,7 +12,9 @@
 	Due: Oct 19, 2026
 
 	Implementation file for the note.c file. Contains function definitions for the functions in note.h.
-    note.c*/
+    
+	model/note.c
+*/
 
 #include "note.h"
 

@@ -9,7 +9,7 @@
 
 ;	In the Pocket - Checkpoint 2
 ;	Due: Oct 19, 2026
-;	rast_asm.s    
+;	raster/rast_asm.s    
 
 ;	Status:
 ;	  Not Tested:

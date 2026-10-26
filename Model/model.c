@@ -12,7 +12,9 @@
 	Due: Oct 19, 2026
 
 	Implementation file for the model.c file. Contains function definitions for the functions in model.h.
-	model.c*/
+	
+	model/model.c
+*/
 
 #include "model.h"
 #include "../system/system.h"

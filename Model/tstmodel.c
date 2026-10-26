@@ -12,7 +12,8 @@
 	Due: Oct 19, 2026
 
 	Test driver for the game model. Sets up model states, calls the event handlers, and prints every model property after each call.
-    tst_model.c*/
+    model/tst_model.c
+*/
 
 #include "../events/events.h"
 #include <osbind.h>

@@ -16,7 +16,8 @@
 	After each render the test waits for a keypress, then clears the screen.
 	Long tick loops render every RENDER_EVERY ticks instead of every tick.
 
-    tstrend.c*/
+    render/tstrend.c
+*/
 
 #include "render.h"
 #include "../events/events.h"

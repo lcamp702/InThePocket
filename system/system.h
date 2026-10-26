@@ -15,7 +15,6 @@
 	These functions will eventually be replaced when TOS is thrown out in favour of a custom ROM.
 
     system/system.h
-    
 */
 #include "../types.h"
 

@@ -12,7 +12,9 @@
 	Due: Oct 19, 2026
 
 	Implementation file for the meter.c file. Contains function definitions for the functions in meter.h.
-    meter.c*/
+	
+	model/meter.c
+*/
 
 #include "meter.h"
 

@@ -13,7 +13,8 @@
 
 	Header file for the model.c file. Contains function prototypes for the functions in model.c.
 	
-    model.h*/
+	model/model.h
+*/
 
 #ifndef MODEL_H
 #define MODEL_H

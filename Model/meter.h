@@ -13,7 +13,8 @@
 
 	Header file for the meter.c file. Contains function prototypes for the functions in meter.c.
 	
-    meter.h*/
+    model/meter.h
+*/
 
 #ifndef METER_H
 #define METER_H

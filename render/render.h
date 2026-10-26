@@ -13,7 +13,8 @@
 
 	Header file for the render.c file. Contains function prototypes for the functions in render.c.
 	
-    render.h*/
+    render/render.h
+*/
 
 #ifndef RENDER_H
 #define RENDER_H

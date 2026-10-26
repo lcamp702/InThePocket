@@ -23,7 +23,7 @@
 #include "../types.h"
 
 /*
-=============== SCORE METER ===============
+=============== ENJOYMENT METER ===============
 A saxophone in the top right that is filled
 according to the enjoyment meter level.
 */
@@ -42,9 +42,9 @@ narrower shapes are center aligned.
 */
 #define NOTE_HEAD_HEIGHT 16	/* Determines line spacing and target size. */
 
-extern const UINT32 note_head_whole[NOTE_HEAD_HEIGHT];
-extern const UINT32 note_head_half[NOTE_HEAD_HEIGHT];
-extern const UINT32 note_head_black[NOTE_HEAD_HEIGHT];
+extern const UINT32 note_whole_head[NOTE_HEAD_HEIGHT];
+extern const UINT32 note_half_head[NOTE_HEAD_HEIGHT];
+extern const UINT32 note_black_head[NOTE_HEAD_HEIGHT];
 
 /*
 ===============   TARGETS   ===============

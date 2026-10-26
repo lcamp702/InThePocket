@@ -35,7 +35,7 @@ typedef struct Model{
 } Model;
 
 void model_init(Model * model, const Note* arr, UINT16 notes_amt);
-void model_tick(Model* model);
+void model_time_sync(Model* model);
 UINT16 model_last_on_screen(const Model* model);
 void model_move_notes(Model* model);
 void model_advance_head(Model* model);

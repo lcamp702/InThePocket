@@ -26,11 +26,14 @@ OUTPUT: N/A
 */
 void synch_clock_tick(Model* model){
 	int i;
-	model_move_notes(model);
-	model_tick(model);
+	model_move_notes(model);	/* Advance the position of every note */
+
+	model_time_sync(model);			/* Tick the model */
+
 	cond_check_misses(model);
+	
+	/* Disable targets */
 	for(i=0; i<TARGET_COUNT; i++){
 		model->targets[i]=0;
 	}
-	/*disable target*/
 }

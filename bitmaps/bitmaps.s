@@ -50,5 +50,3 @@ _full_right:
 		xdef		_bg
 _bg:		
 		incbin		"bg\bg.bin"
-
-; ===============  TARGETS  ===============

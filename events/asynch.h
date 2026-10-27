@@ -32,7 +32,7 @@ UINT8 asynch_key_to_pitch(char key);
 /*------ Function: asynch_is_hit ------
 PURPOSE: Checks if note has been hit
 
-INPUT: Pitch value (UINT8) and pointer to model
+INPUT: Key pressed (char) and pointer to model
 
 OUTPUT:  Is hit? (Boolean 1:0)
 */

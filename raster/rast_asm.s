@@ -1362,7 +1362,7 @@ bm32_end:
 ; OUTPUT: None
 		xdef		_plot_character
 
-FONT_HEIGHT	equ		7
+FONT_HEIGHT	equ		8
 
 pc_base		equ		8
 pc_row		equ		12

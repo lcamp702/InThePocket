@@ -621,7 +621,7 @@ nbm32_end:
 		xdef		_plot_ncharacter
 		xref		font
 
-FONT_HEIGHT	equ		7
+FONT_HEIGHT	equ		8
 
 pn_base		equ		8
 pn_row		equ		12

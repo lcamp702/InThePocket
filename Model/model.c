@@ -26,7 +26,7 @@ INPUT: Takes Model, the song array, and the amount of notes as parameters.
 
 OUTPUT: N/A
 */
-void model_init(Model *model, const Note *arr, UINT16 notes_amt)
+void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now)
 {
 	UINT32 i;
 
@@ -55,9 +55,10 @@ OUTPUT: N/A
 
 NOTE : MOVE NOTES FIRST THEN TICK.
 */
-void model_time_sync(Model *model)
+void model_time_sync(Model *model, UINT32 time_now)
 {
-	model->game_clock = get_time(); /* Sync game clock */
+	UINT32 time = time_now - model->start_time;
+	model->game_clock = time; /* Sync game clock */
 }
 /*------ Function: model_last_on_screen ------
 PURPOSE: Calculates the index of the last note on screen. This gives the bounds for the array which is functional. Assumes the array is non empty.

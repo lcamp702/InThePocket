@@ -32,11 +32,12 @@ typedef struct Model{
 	Meter meter;
 	UINT16 note_count;
 	UINT32 game_clock;
+	UINT32 start_time;
 	UINT16 head;
 } Model;
 
-void model_init(Model * model, const Note* arr, UINT16 notes_amt);
-void model_time_sync(Model* model);
+void model_init(Model * model, const Note* arr, UINT16 notes_amt, UINT32 time_now);
+void model_time_sync(Model* model, UINT32 time_now);
 UINT16 model_last_on_screen(const Model* model);
 void model_move_notes(Model* model);
 void model_advance_head(Model* model);

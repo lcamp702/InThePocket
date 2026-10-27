@@ -7,22 +7,18 @@ render: tstrend.tos
 raster: tstrast.tos
 live: tstlive.tos
 
-# ==== GAME MODULE ====
-
-pocket.tos: pocket.c build\model.o build\render.o build\system.o
-	cc68x -g -c pocket.c -o pocket.tos
-
 # ==== SYSTEM CALLS ====
+# No ext dependencies
+SYSTEM =	build\system.o
 
 build\system.o:
-	cc68x -g -c system\system.c
+	cc68x -g -c system\system.c -o build\system.o
 
 # ==== MODEL OBJECTS ====
+# No ext dependencies
+MODEL =	build\model.o build\meter.o build\note.o
 
-MODEL	=	build\model.o build\meter.o build\note.o
-MODEL_H	=	model\model.h model\meter.h model\note.h
-
-build\model.o: model\model.c $(MODEL_H) types.h
+build\model.o: model\model.c build\meter.o build\note.o types.h
 	cc68x -g -c model\model.c -o build\model.o
 
 build\meter.o: model\meter.c model\meter.h types.h
@@ -32,26 +28,21 @@ build\note.o: model\note.c model\note.h types.h
 	cc68x -g -c model\note.c -o build\note.o
 
 # ==== EVENT OBJECTS ====
+# Also builds model objects by default
+EVENTS =	build\asynch.o build\cond.o build\synch.o
 
-EVENTS	=	build\asynch.o build\cond.o build\synch.o
-EVENTS_H	=	events\events.h events\synch.h events\asynch.h events\cond.h
-
-build\asynch.o: events\asynch.c events\asynch.h events\cond.h events\events.h $(MODEL_H) types.h
+build\asynch.o: events\asynch.c events\asynch.h events\events.h build\model.o types.h
 	cc68x -g -c events\asynch.c -o build\asynch.o
 
-build\cond.o: events\cond.c events\cond.h events\events.h $(MODEL_H) types.h
+build\cond.o: events\cond.c events\cond.h events\events.h build\model.o types.h
 	cc68x -g -c events\cond.c -o build\cond.o
 
-build\synch.o: events\synch.c events\synch.h events\cond.h events\events.h $(MODEL_H) types.h
+build\synch.o: events\synch.c events\synch.h events\events.h build\model.o types.h
 	cc68x -g -c events\synch.c -o build\synch.o
 
-# ==== RENDER OBJECTS ====
-
-build\render.o: render\render.c render\render.h bitmaps\bitmaps.h raster\raster.h $(MODEL_H) types.h
-	cc68x -g -c render\render.c -o build\render.o
-
 # ==== BITMAPS ====
-BITMAPS	=	bitmaps\bitmaps.o build\targets.o
+# No ext dependencies
+BITMAPS =	bitmaps\bitmaps.o build\targets.o
 
 bitmaps\bitmaps.o: bitmaps\bitmaps.s
 	gen -D -L2 bitmaps\bitmaps.s
@@ -60,8 +51,8 @@ build\targets.o: bitmaps\targets.c bitmaps\bitmaps.h types.h
 	cc68x -g -c bitmaps\targets.c -o build\targets.o
 
 # ==== RASTER OBJECTS ====
-
-RASTER	=	raster\rast_asm.o raster\rast_ext.o
+# No ext dependencies
+RASTER =	raster\rast_asm.o raster\rast_ext.o
 
 raster\rast_asm.o: raster\rast_asm.s
 	gen -D -L2 raster\rast_asm.s
@@ -69,8 +60,21 @@ raster\rast_asm.o: raster\rast_asm.s
 raster\rast_ext.o: raster\rast_ext.s
 	gen -D -L2 raster\rast_ext.s
 
+# ==== RENDER OBJECTS ====
+# Also builds raster and bitmap objects
+RENDER =	build\render.o
 
+build\render.o: render\render.c render\render.h build\model.o $(RASTER) $(BITMAPS) types.h
+	cc68x -g -c render\render.c -o build\render.o
 
+# ==== GAME MODULE ====
+# Builds all objects (except tests)
+
+pocket.tos: build\pocket.o $(MODEL) $(EVENTS) $(RASTER) $(BITMAPS) $(RENDER) $(SYSTEM)
+	cc68x -g build\pocket.o $(MODEL) $(EVENTS) $(RASTER) $(BITMAPS) $(RENDER) $(SYSTEM) -o pocket.tos
+
+build\pocket.o: pocket.c
+	cc68x -g -c pocket.c -o build\pocket.o
 
 # ==== MODEL/EVENT TESTS ====
 tstmodel.tos: $(EVENTS) $(MODEL) build\tstmodel.o

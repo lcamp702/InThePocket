@@ -20,21 +20,31 @@
 #include "render/render.h"
 #include "system/system.h"
 
+Note song[] = {
+    /* UINT32 time, INT16 x, UINT8 pitch, UINT8 duration */
+    {}
+}
+
 int main() {
     UINT32 timeThen, timeNow, timeElapsed;
-    char quit = 0; /* Quit = false */
-    /* Initialize model */
-    /* Render model*/
+    UINT32 *base = (UINT32 *) Physbase();
+	static Model model;
+    /* Quit = false */
+    char quit = 0;
     timeThen = get_time();
+    /* Initialize model */
+    model_init(model, test_song, TEST_SONG_LEN);
+    /* Render model */
+	show_frame(model, base);
     while (!quit) {
         timeNow = get_time();
         timeElapsed = timeNow - timeThen;
 
         /* If input is pending */
-        if (awaiting_input())
+        if (waiting_input())
         {
             /* Process async events */
-            
+
         }
 
         /* If clock has ticked*/

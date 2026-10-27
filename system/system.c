@@ -20,6 +20,13 @@
 #include <osbind.h>
 #include "system.h"
 
+/* Return the memory address of the framebuffer */
+UINT32 get_pbase()
+{
+	return (UINT32 *) Physbase();
+}
+
+/* Get the current time from the system VBlank timer */
 UINT32 get_time() 
 {
     UINT32 *timer = (UINT32 *) 0x462;
@@ -30,11 +37,13 @@ UINT32 get_time()
     return time;
 }
 
+/* Check for waiting inputs in the input buffer */
 UINT8 waiting_input() 
 {
 	return Cconis();
 }
 
+/* Read the last input from the input buffer */
 UINT8 get_input()
 {
 	return Cnecin();

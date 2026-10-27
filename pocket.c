@@ -19,41 +19,48 @@
 #include "model/model.h"
 #include "render/render.h"
 #include "system/system.h"
+#include "events/events.h"
 
-Note song[] = {
+#define SONG_NOTES 50
+static const Note song[SONG_NOTES] = {
     /* UINT32 time, INT16 x, UINT8 pitch, UINT8 duration */
     {}
-}
+};
 
 int main() {
-    UINT32 timeThen, timeNow, timeElapsed;
+    UINT32 time_then, time_now, time_elapsed;
     UINT32 *base = (UINT32 *) Physbase();
 	static Model model;
     /* Quit = false */
-    char quit = 0;
-    timeThen = get_time();
+    UINT8 quit = 0;
+    time_then = get_time();
     /* Initialize model */
-    model_init(model, test_song, TEST_SONG_LEN);
+    model_init(&model, song, SONG_NOTES, time_now);
     /* Render model */
 	show_frame(model, base);
     while (!quit) {
-        timeNow = get_time();
-        timeElapsed = timeNow - timeThen;
-
+        time_now = get_time();
+        time_elapsed = time_now - time_then;
         /* If input is pending */
         if (waiting_input())
         {
             /* Process async events */
-
+            if(asynch_is_hit(&model, get_input()))
+                asynch_apply_hit(&model);
+            else
+                asynch_apply_miss(&model);
         }
-
         /* If clock has ticked*/
-        if (timeElapsed > 0) 
+        if (time_elapsed > 0) 
         {
             /* Process sync events */
+            synch_clock_tick(&model, time_now);
             /* Process cond events */
+            cond_check_misses(&model);
+            quit = cond_game_over(&model);
             /* Render frame */
-            timeThen = timeNow;
+            
+            time_then = time_now;
         }
     }
 

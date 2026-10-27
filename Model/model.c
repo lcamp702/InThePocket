@@ -42,7 +42,9 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 		model->targets[i] = 0;
 	}
 
-	model->head = model->game_clock = 0;
+	model->head = 0;
+	model->game_clock = 0;
+	model->start_time = time_now;
 	meter_init(&model->meter);
 }
 

@@ -23,7 +23,7 @@
 
 #define ENJOYMENT_MAX	64
 #define ENJOYMENT_START	32   /* open spec value */
-#define MISS_PENALTY_ENJOYMENT	12
+#define MISS_PENALTY_ENJOYMENT	5
 #define HIT_REWARD_ENJOYMENT 2
 #define HIT_REWARD_SCORE 10
 
@@ -36,7 +36,7 @@ typedef struct Meter{
 void meter_init(Meter *meter);							/*initializes meter*/
 void meter_update_enjoyment(Meter *meter, INT8 delta);  /* Updates change enjoyment */
 void meter_update_score(Meter *meter, UINT32 points);      /* Add's score to meter */
-void meter_double_multiplier(Meter *meter);              /* Increases the multiplier */
+void meter_increase_multiplier(Meter *meter);              /* Increases the multiplier */
 void meter_reset_multiplier(Meter *meter);              /* multiplier goes to 1 */
 
 #endif

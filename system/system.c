@@ -21,7 +21,7 @@
 #include "system.h"
 
 /* Return the memory address of the framebuffer */
-UINT32 get_pbase()
+UINT32 *get_pbase()
 {
 	return (UINT32 *) Physbase();
 }

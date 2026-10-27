@@ -44,10 +44,9 @@ void meter_update_enjoyment(Meter *meter, INT8 delta){
 	if(meter->enjoyment>0){ /*this check ensures that enjoyment never changes once it goes non-positive */
 		meter->enjoyment+=delta; /*increases/decreases the enjoyment meter */
 	}	 
-	if(meter->enjoyment>ENJOYMENT_MAX) meter->enjoyment=ENJOYMENT_MAX; /*ensures upper bound of 100 for enjoyment*/
+	if(meter->enjoyment>ENJOYMENT_MAX) meter->enjoyment=ENJOYMENT_MAX; /*ensures upper bound for enjoyment*/
 }
 
-/* */
 /*------ Function: meter_update_score ------
 PURPOSE: Add's score to meter 
 
@@ -56,22 +55,18 @@ INPUT: Meter*, a pointer to a Meter struct, and points to be added in the form o
 OUTPUT: N/A
 */
 void meter_update_score(Meter *meter, UINT32 points){
-	UINT32 delta; /*probably unnecessary*/
-	delta=points;
-	delta*=meter->multiplier;
-	meter->score+=delta;
+	meter->score += points * meter->multiplier;
 }      
 
-/* Increases the multiplier */
-/*------ Function: meter_double_multiplier ------
+/*------ Function: meter_increase_multiplier ------
 PURPOSE: Doubles the mutiplier
 
 INPUT: pointer to Meter
 
 OUTPUT: N/A
 */
-void meter_double_multiplier(Meter *meter){
-	if(meter->multiplier<16) meter->multiplier*=2; /*doubles score multiplier*/
+void meter_increase_multiplier(Meter *meter){
+	if(meter->multiplier<4) meter->multiplier++; /*increase score multiplier*/
 }              
 
 /* multiplier goes to 1 */
@@ -83,5 +78,5 @@ INPUT: pointer to Meter
 OUTPUT: N/A
 */
 void meter_reset_multiplier(Meter *meter){
-	meter->multiplier=1; /*etc. self documenting.*/
+	meter->multiplier=1;
 }              

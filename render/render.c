@@ -60,7 +60,7 @@ void render(Model *model, UINT32 *base)
 {
 	int i;
 
-	clear_region(base, 272, 0, 128, 640);	/* Parameterize!!!!! */
+	clear_region(base, 272, 0, 128, SCREEN_WIDTH);	/* Parameterize!!!!! */
 
 	render_staff(base); /*must render the staff first for it to appear in the background*/
 
@@ -70,9 +70,10 @@ void render(Model *model, UINT32 *base)
 	}
 
 	render_targets(base, model->targets);
-	fill_region(base, SCORE_ROW, SCORE_COL, 8, 8*SCORE_MAX_LEN);
+	
 	render_meter(&model->meter, base);
-	fill_region(base, METER_ROW, METER_COL, METER_HEIGHT, 64);
+	
+	fill_region(base, SCORE_ROW, SCORE_COL, 8, 8*SCORE_MAX_LEN);
 	render_score(base, SCORE_ROW, SCORE_COL, model->meter.score);
 }
 
@@ -145,6 +146,7 @@ void render_meter(Meter *meter, UINT32 *base)
 {
 	int i;
 	int enjoyment = meter->enjoyment;
+	UINT16 plot_height;
 
 	/* Clip enjoyment to meter size */
 	/* Replace with scaling if meter height and max value are different. */
@@ -153,16 +155,23 @@ void render_meter(Meter *meter, UINT32 *base)
 	if (enjoyment < 0)
 		enjoyment = 0;
 
-	if (meter->enjoyment < 64)
+	plot_height = (UINT16) METER_HEIGHT - enjoyment;
+
+	if (enjoyment < METER_HEIGHT)
 	{
-		plot_n32bit_bitmap(base, METER_ROW, METER_COL, emp_left, METER_HEIGHT - meter->enjoyment);
-		plot_n32bit_bitmap(base, METER_ROW, METER_COL + 32, emp_right, METER_HEIGHT - meter->enjoyment);
+		/* Plot meter in black to erase negative version */
+		plot_32bit_bitmap(base, METER_ROW, METER_COL, full_left, plot_height);
+		plot_32bit_bitmap(base, METER_ROW, METER_COL + 32, full_right, plot_height);
+		/* Plot empty portion of the meter */
+		plot_n32bit_bitmap(base, METER_ROW, METER_COL, emp_left, plot_height);
+		plot_n32bit_bitmap(base, METER_ROW, METER_COL + 32, emp_right, plot_height);
 	}
 
-	if (meter->enjoyment > 0)
+	if (enjoyment > 0)
 	{
-		plot_n32bit_bitmap(base, METER_ROW + METER_HEIGHT - meter->enjoyment, METER_COL, full_left + METER_HEIGHT - meter->enjoyment, meter->enjoyment);
-		plot_n32bit_bitmap(base, METER_ROW + METER_HEIGHT - meter->enjoyment, METER_COL + 32, full_right + METER_HEIGHT - meter->enjoyment, meter->enjoyment);
+		/* Plot filled portion of the meter */
+		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL, full_left + plot_height, enjoyment);
+		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL + 32, full_right + plot_height, enjoyment);
 	}
 }
 

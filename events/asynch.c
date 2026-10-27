@@ -15,7 +15,6 @@
     asynch.c*/
 
 #include "asynch.h"
-#include "cond.h"
 
 /*------ Function: asynch_key_to_pitch ------
 PURPOSE: Converts char value from input ket to corresponding int value.
@@ -77,9 +76,12 @@ UINT8 asynch_is_hit(Model *model, char key)
 	model->targets[pitch]=1; /* Enable the target for this pitch. */
 
 	/* Hit conditions */
-	song_playing = model->head<model->note_count; /* Check if song is playing  */
-	pitch_ok = model->notes[model->head].pitch==pitch; /* Check if the pitch matches the next note */
-	can_hit = model->game_clock>=(model->notes[model->head].time+TRAVEL_TICKS); /* Check if note can be hit based on time */
+	song_playing = model->head <= model->note_count; /* Check if song is playing  */
+	pitch_ok = model->notes[model->head].pitch == pitch; /* Check if the pitch matches the next note */
+
+	/* Check if note can be hit based on time */
+	can_hit = model->game_clock >= (model->notes[model->head].time + TRAVEL_TICKS); 
+	can_hit &= model->game_clock < (model->notes[model->head].time + TRAVEL_TICKS + HIT_WINDOW);
 
 	return (UINT8) (song_playing && pitch_ok && can_hit);
 }
@@ -95,7 +97,7 @@ void asynch_apply_hit(Model *model)
 {
 	meter_update_enjoyment(&model->meter, HIT_REWARD_ENJOYMENT); /*adds to enjoyment meter*/
 	meter_update_score(&model->meter, HIT_REWARD_SCORE); /*updates score*/
-	meter_double_multiplier(&model->meter); /*double multiplier*/
+	meter_increase_multiplier(&model->meter); /*double multiplier*/
 	model_advance_head(model); /*advance head*/
 }
 
@@ -108,8 +110,8 @@ OUTPUT: N/A
 */
 void asynch_apply_miss(Model *model)
 { 
-		meter_update_enjoyment(&model->meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/	
-		meter_reset_multiplier(&model->meter); /*reset the score multiplier to 1*/
-		model_advance_head(model); /*advance head*/
+	meter_update_enjoyment(&model->meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/	
+	meter_reset_multiplier(&model->meter); /*reset the score multiplier to 1*/
+	model_advance_head(model); /*advance head*/
 }
 

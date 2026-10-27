@@ -10,14 +10,14 @@
 _note_whole_head:
 		incbin		"notehead\note_who.bin"
 
-; note_half_head[NOTE_HEAD_HEIGHT]
+; UINT32 note_half_head[NOTE_HEAD_HEIGHT]
 ; The head of a half note, requires a stem.
 ; 16x22 with a counter (hollow inset).
 		xdef		_note_half_head
 _note_half_head:
 		incbin		"notehead\note_hal.bin"
 
-; note_black_head[NOTE_HEAD_HEIGHT]
+; UINT32 note_black_head[NOTE_HEAD_HEIGHT]
 ; A solid black note head, requires a stem.
 ; Used for quarter, eighth, sixteenth, and shorter notes.
 		xdef		_note_black_head
@@ -27,8 +27,13 @@ _note_black_head:
 
 ; =============== ENJOYMENT METER ===============
 ; A saxophone in the top right that is filled
-; according to the enjoyment meter level.
+; according to the enjoyment meter level. Each
+; bitmap is 64px wide, split in half to render
+; with the plot_32bit_bitmap function.
 
+; UINT32 emp_left[METER_HEIGHT], UINT32 emp_right[METER_HEIGHT]
+; To be plotted from the top showing 
+; the empty portion of the meter
 		xdef		_emp_left
 _emp_left:	
 		incbin		"meter\emp_left.bin"
@@ -37,6 +42,9 @@ _emp_left:
 _emp_right:	
 		incbin		"meter\emp_rght.bin"
 
+; UINT32 full_left[METER_HEIGHT], UINT32 full_right[METER_HEIGHT]
+; To be plotted from the bottom showing 
+; the full portion of the meter
 		xdef		_full_left
 _full_left:	
 		incbin		"meter\ful_left.bin"

@@ -25,8 +25,11 @@
 #define KEY_S 1
 #define KEY_D 2
 #define KEY_F 3
-#define NOTE_START_X  640   /* right edge, ST high-res; adjust to res */
+#define NOTE_START_X 640   /* right edge, ST high-res; adjust to res */
 #define NOTE_SPEED 1   /* pixels per tick: open spec value */
+
+#define TRAVEL_TICKS 616 /* On screen ticks before note needs to be hit */
+#define HIT_WINDOW 16 /* Total window for button presses */
 
 typedef struct Note {
 	UINT32 time; /*time of note beginning to appear on screen*/
@@ -35,7 +38,7 @@ typedef struct Note {
 	UINT8 duration;
 } Note;
 
-void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration);  /* sets x = NOTE_START_X */
-void note_move(Note *note);                            /* x -= NOTE_SPEED */
+void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration);	/* sets x = NOTE_START_X */
+void note_move(Note *note);	/* x -= NOTE_SPEED */
 
 #endif

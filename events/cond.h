@@ -20,9 +20,6 @@
 
 #include "../model/model.h"
 
-#define TRAVEL_TICKS 140
-#define HIT_WINDOW 5
-
 /*------ Function: cond_check_misses ------
 PURPOSE: Checks to see if index points at a missed note, and if so updates the meter and repeats until head points at an "alive" note 
 

@@ -52,20 +52,20 @@ PURPOSE: Checks if note has been hit
 
 INPUT: pitch value (UINT8) and pointer to model
 
-OUTPUT: N/A
+OUTPUT: Is hit? (Boolean 1:0)
 */
-UINT8 asynch_is_hit(Model *model, UINT8 pitch){
-	
+UINT8 asynch_is_hit(Model *model, char key){
 	UINT8 is_hit;
-	model->targets[pitch]=1;
-	if(model->head<model->note_count && model->notes[model->head].pitch==pitch && model->game_clock>=(model->notes[model->head].time+TRAVEL_TICKS)){ /*checks to see if note is in the timing window for hitting*/
-		is_hit=1;
-	}
-	else{
-		is_hit=0;
-	}
+	int song_playing, pitch_ok, can_hit;
+	UINT8 pitch = asynch_key_to_pitch(key);
 
-	return is_hit;
+	model->targets[pitch]=1; /* Light up the target for this pitch. */
+	
+	song_playing = model->head<model->note_count; /* Check if song is playing  */
+	pitch_ok = model->notes[model->head].pitch==pitch; /* Check if the pitch matches the next note */
+	can_hit = model->game_clock>=(model->notes[model->head].time+TRAVEL_TICKS); /* Check if note can be hit based on time */
+
+	return (UINT8) (song_playing && pitch_ok && can_hit);
 }
 
 /*------ Function: asynch_apply_hit ------

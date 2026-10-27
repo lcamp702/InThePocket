@@ -78,8 +78,8 @@ int main(void){
 
 	model_init(&test_model, test_song, TEST_SONG_LEN);
 	
-	/*cond_is_game_over test*/
-	printf("Press any key to proceed with cond_is_game_over test\n");
+	/*cond_game_over test*/
+	printf("Press any key to proceed with cond_game_over test\n");
 	fflush(stdout);
 	Cconin();
 
@@ -90,18 +90,18 @@ int main(void){
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		print_model(&test_model);
-		printf("game over = %d \n", cond_is_game_over(&test_model));
+		printf("game over = %d \n", cond_game_over(&test_model));
 	}
 
 
-	/*cond_is_game_over (enjoyment = 40) test
+	/*cond_game_over (enjoyment = 40) test
 	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
-	3		Checks that cond		Model w/ test	cond_is_game_over		as expected		
+	3		Checks that cond		Model w/ test	cond_game_over		as expected		
 			is_game_over returns	song			returns 1 when
 			1 when enjoyment						enjoyment goes below
 			goes below 1.							0
 	*/
-	printf("Press any key to proceed with cond_is_game_over (enjoyment = 40) test\n");
+	printf("Press any key to proceed with cond_game_over (enjoyment = 40) test\n");
 	fflush(stdout);
 	Cconin();
 
@@ -114,7 +114,7 @@ int main(void){
 		synch_clock_tick(&test_model);
 		printf("-- TICK -- \n");
 		print_model(&test_model);
-		printf("game over = %d \n", cond_is_game_over(&test_model));
+		printf("game over = %d \n", cond_game_over(&test_model));
 	}
 	
 	/*cond_is_song_over test
@@ -138,7 +138,7 @@ int main(void){
 		test_model.meter.enjoyment=64;
 		printf("-- TICK -- \n");
 		print_model(&test_model);
-		printf("song over = %d \n", cond_is_song_over(&test_model));
+		printf("song over = %d \n", cond_game_over(&test_model));
 	}
 
 	/*Test that key inputs yield correct pitch values

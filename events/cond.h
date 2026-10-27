@@ -23,8 +23,22 @@
 #define TRAVEL_TICKS 140
 #define HIT_WINDOW 5
 
+/*------ Function: cond_check_misses ------
+PURPOSE: Checks to see if index points at a missed note, and if so updates the meter and repeats until head points at an "alive" note 
+
+INPUT: pointer to Model
+
+OUTPUT: N/A
+*/
 void cond_check_misses(Model *model);
-UINT8 cond_is_game_over(const Model *model);
-UINT8 cond_is_song_over(const Model *model);
+
+/*------ Function: cond_game_over ------
+PURPOSE: Checks if game is over (enjoyment meter has gone to 0)
+
+INPUT: pointer to Model
+
+OUTPUT: N/A
+*/
+UINT8 cond_game_over(const Model *model);
 
 #endif

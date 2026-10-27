@@ -26,7 +26,7 @@
 #define KEY_D 2
 #define KEY_F 3
 #define NOTE_START_X  640   /* right edge, ST high-res; adjust to res */
-#define NOTE_SPEED      1   /* pixels per tick: open spec value */
+#define NOTE_SPEED 1   /* pixels per tick: open spec value */
 
 typedef struct Note {
 	UINT32 time; /*time of note beginning to appear on screen*/

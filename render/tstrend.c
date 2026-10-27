@@ -56,7 +56,7 @@ int main(void){
 	test_init(&test_model, base);
 	test_clock_tick(&test_model, base);
 	test_advance_head(&test_model, base);
-	test_game_over(&test_model, base, ENJOYMENT_START, "cond_is_game_over");
+	test_game_over(&test_model, base, ENJOYMENT_START, "cond_game_over");
 	for(pitch = KEY_A; pitch <= KEY_F; pitch++){
 		test_hit(&test_model, base, pitch);
 	}

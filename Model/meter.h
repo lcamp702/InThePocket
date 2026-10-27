@@ -23,7 +23,9 @@
 
 #define ENJOYMENT_MAX	64
 #define ENJOYMENT_START	32   /* open spec value */
-#define MISS_PENALTY	12
+#define MISS_PENALTY_ENJOYMENT	12
+#define HIT_REWARD_ENJOYMENT 2
+#define HIT_REWARD_SCORE 10
 
 typedef struct Meter{
 	INT8 enjoyment; /*the "health bar" of the game. Falling to 0 causes game to end. */

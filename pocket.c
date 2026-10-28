@@ -77,7 +77,7 @@ int main() {
     base = get_pbase();
     time_then = get_time();
     /* Initialize model */
-    model_init(&model, song, SONG_NOTES, time_now);
+    model_init(&model, song, SONG_NOTES, time_then);
     /* Render model */
 	render_level(&model, base);
     while (!quit) {
@@ -99,6 +99,7 @@ int main() {
             synch_clock_tick(&model, time_now);
             /* Process cond events */
             cond_check_misses(&model);
+            print_debug("Game clock", model.game_clock, (UINT8 *)base);
             quit = cond_game_over(&model);
             /* Render frame */
             render(&model, base);

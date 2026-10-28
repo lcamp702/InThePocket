@@ -12,7 +12,7 @@
 	Due: Oct 19, 2026
 
 	Implementation file for the note.c file. Contains function definitions for the functions in note.h.
-    
+
 	model/note.c
 */
 
@@ -26,21 +26,9 @@ INPUT: Note object pointer, UINT pitch value (from 1-4), and UINT32 time object 
 
 OUTPUT: N/A
 */
-void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration) {
-	note->time=time;
-	note->pitch=pitch;
-	note->duration=duration;
-	note->x=NOTE_START_X;
+void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration)
+{
+	note->time = time;
+	note->pitch = pitch;
+	note->duration = duration;
 }
-
-/* Moves note according to note speed */
-/*------ Function: note_move ------
-PURPOSE: Moves the note i.e. updates its value which corresponds to the x position
-
-INPUT: pointer to Note
-
-OUTPUT: N/A
-*/
-void note_move(Note *note, int speed){
-	note->x-=speed; /*moves the note. This calculation is only for the renderer*/
-}                            

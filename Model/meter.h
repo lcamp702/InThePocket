@@ -31,6 +31,7 @@ typedef struct Meter{
 	INT8 enjoyment; /*the "health bar" of the game. Falling to 0 causes game to end. */
 	UINT32 score;
 	INT8 multiplier;
+	INT8 multi_progress;
 } Meter; 
 
 void meter_init(Meter *meter);							/*initializes meter*/

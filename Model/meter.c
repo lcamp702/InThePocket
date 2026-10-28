@@ -18,6 +18,9 @@
 
 #include "meter.h"
 
+#define MAX_MULTI 4
+#define CONSEC_MULTI 10
+
 /*initializes meter*/
 /*------ Function: meter_init ------
 PURPOSE: Initializes Meter struct
@@ -30,6 +33,7 @@ void meter_init(Meter *meter){
 	meter->enjoyment=ENJOYMENT_START;
 	meter->score=0;
 	meter->multiplier=1;
+	meter->multi_progress=0;
 }
 
 /* update enjoyment meter NB POSITIVE DELTA MAX 2 AND WILL NEVER OVERFLOW METER SINCE 100+2=102<127*/
@@ -41,10 +45,13 @@ INPUT: Meter*, a pointer to a Meter struct and the amount to change it by in the
 OUTPUT: N/A
 */
 void meter_update_enjoyment(Meter *meter, INT8 delta){
-	if(meter->enjoyment>0){ /*this check ensures that enjoyment never changes once it goes non-positive */
-		meter->enjoyment+=delta; /*increases/decreases the enjoyment meter */
-	}	 
-	if(meter->enjoyment>ENJOYMENT_MAX) meter->enjoyment=ENJOYMENT_MAX; /*ensures upper bound for enjoyment*/
+	if(meter->enjoyment >= 0) 
+		/* Stop updating enjoyment once it hits/passes 0 */
+		meter->enjoyment += delta;
+
+	if(meter->enjoyment > ENJOYMENT_MAX)
+		/* Clip enjoyment to max value */
+		meter->enjoyment = ENJOYMENT_MAX;
 }
 
 /*------ Function: meter_update_score ------
@@ -59,24 +66,34 @@ void meter_update_score(Meter *meter, UINT32 points){
 }      
 
 /*------ Function: meter_increase_multiplier ------
-PURPOSE: Doubles the mutiplier
+PURPOSE: Increases the multiplier progress and the multiplier, if applicable
 
 INPUT: pointer to Meter
 
 OUTPUT: N/A
 */
 void meter_increase_multiplier(Meter *meter){
-	if(meter->multiplier<4) meter->multiplier++; /*increase score multiplier*/
+	if(meter->multiplier < MAX_MULTI)
+	/* Don't track progress if multiplier can't increase */
+		if (++meter->multi_progress >= CONSEC_MULTI) /* Increase multi progress */
+		{ /* 10 consecutive notes, increase multiplier */
+			meter->multiplier++;
+			/* Reset multi increase progress */
+			meter->multi_progress = 0;
+		}
 }              
 
 /* multiplier goes to 1 */
 /*------ Function: meter_reset_multiplier ------
-PURPOSE: Resets Multiplier to 1
+PURPOSE: Resets Multiplier to 1, resets multiplier progress to 0
 
 INPUT: pointer to Meter
 
 OUTPUT: N/A
 */
 void meter_reset_multiplier(Meter *meter){
-	meter->multiplier=1;
+	/* Multi minimum is 1x (Gotta get points somehow) */
+	meter->multiplier = 1;
+	/* Reset progress (consecutive streak broken) */
+	meter->multi_progress = 0;
 }              

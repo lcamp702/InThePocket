@@ -14,7 +14,7 @@
 	Header file for the system.c file. Contains function prototypes for the functions in system.c.
 	These functions will eventually be replaced when TOS is thrown out in favour of a custom ROM.
 
-    system/system.h
+	system/system.h
 */
 #include "../types.h"
 

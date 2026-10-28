@@ -12,8 +12,9 @@
 	Due: Oct 19, 2026
 
 	Header file for the cond.c file. Contains function prototypes for the functions in cond.c.
-	
-    cond.h*/
+
+	cond.h
+*/
 
 #ifndef COND_H
 #define COND_H
@@ -21,7 +22,7 @@
 #include "../model/model.h"
 
 /*------ Function: cond_check_misses ------
-PURPOSE: Checks to see if index points at a missed note, and if so updates the meter and repeats until head points at an "alive" note 
+PURPOSE: Checks to see if index points at a missed note, and if so updates the meter and repeats until head points at an "alive" note
 
 INPUT: pointer to Model
 

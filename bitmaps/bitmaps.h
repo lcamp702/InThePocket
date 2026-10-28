@@ -14,7 +14,7 @@
 	Declarations of the sprite bitmaps used by the renderer. Bitmaps are defined in
 	bitmaps.c, not here, so no space is reserved by including this header.
 
-    bitmaps/bitmaps.h
+	bitmaps/bitmaps.h
 */
 
 #ifndef BITMAPS_H
@@ -34,13 +34,13 @@ extern const UINT32 emp_right[METER_HEIGHT];
 extern const UINT32 full_left[METER_HEIGHT];
 extern const UINT32 full_right[METER_HEIGHT];
 
-/* 
+/*
 ===============  NOTE HEADS  ===============
-Each note head is a 16px tall shape. 
+Each note head is a 16px tall shape.
 The widest form is 32px wide,
 narrower shapes are center aligned.
 */
-#define NOTE_HEAD_HEIGHT 16	/* Determines line spacing and target size. */
+#define NOTE_HEAD_HEIGHT 16 /* Determines line spacing and target size. */
 
 extern const UINT32 note_whole_head[NOTE_HEAD_HEIGHT];
 extern const UINT32 note_half_head[NOTE_HEAD_HEIGHT];
@@ -51,7 +51,7 @@ extern const UINT32 note_black_head[NOTE_HEAD_HEIGHT];
 Targets are the same height as note heads
 so they fit between the lines on the staff.
 */
-extern const UINT16 target_off_bmp[NOTE_HEAD_HEIGHT]; 
+extern const UINT16 target_off_bmp[NOTE_HEAD_HEIGHT];
 extern const UINT16 target_on_bmp[NOTE_HEAD_HEIGHT];
 
 /*

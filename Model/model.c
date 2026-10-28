@@ -12,7 +12,7 @@
 	Due: Oct 19, 2026
 
 	Implementation file for the model.c file. Contains function definitions for the functions in model.h.
-	
+
 	model/model.c
 */
 
@@ -35,14 +35,14 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 	/* Clip note amount down to max if it is larger */
 	model->note_count = (notes_amt > MAX_NOTES) ? MAX_NOTES : notes_amt;
 
-	model->head = 0;	/* Start at note 0 */
+	model->head = 0; /* Start at note 0 */
 
 	for (i = 0; i < model->note_count; i++)
 		note_init(&model->notes[i], arr[i].time, arr[i].pitch, arr[i].duration);
 
 	for (i = 0; i < TARGET_COUNT; i++)
 		model->targets[i] = 0;
-	
+
 	model->game_clock = 0;
 	model->start_time = time_now;
 

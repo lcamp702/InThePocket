@@ -11,10 +11,10 @@
 	In the Pocket - Checkpoint 2
 	Due: Oct 19, 2026
 
-	TOS System calls. These functions will eventually be replaced when TOS is 
-    thrown out in favour of a custom ROM.
+	TOS System calls. These functions will eventually be replaced when TOS is
+	thrown out in favour of a custom ROM.
 
-    system/system.c
+	system/system.c
 */
 
 #include <osbind.h>
@@ -23,22 +23,22 @@
 /* Return the memory address of the framebuffer */
 UINT32 *get_pbase()
 {
-	return (UINT32 *) Physbase();
+	return (UINT32 *)Physbase();
 }
 
 /* Get the current time from the system VBlank timer */
-UINT32 get_time() 
+UINT32 get_time()
 {
-    UINT32 *timer = (UINT32 *) 0x462;
-    UINT32 time;
-    UINT32 exit = Super(0);	/* Enter priviledged mode. */
-    time = *timer;		/* Read timer value*/
-    Super(exit);		/* Exit priviledged mode */
-    return time;
+	UINT32 *timer = (UINT32 *)0x462;
+	UINT32 time;
+	UINT32 exit = Super(0); /* Enter priviledged mode. */
+	time = *timer;			/* Read timer value*/
+	Super(exit);			/* Exit priviledged mode */
+	return time;
 }
 
 /* Check for waiting inputs in the input buffer */
-UINT8 waiting_input() 
+UINT8 waiting_input()
 {
 	return Cconis();
 }

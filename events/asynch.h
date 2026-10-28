@@ -12,8 +12,9 @@
 	Due: Oct 19, 2026
 
 	Header file for the asynch.c file. Contains function prototypes for the functions in asynch.c.
-	
-    asynch.h*/
+
+	asynch.h
+*/
 
 #ifndef ASYNCH_H
 #define ASYNCH_H

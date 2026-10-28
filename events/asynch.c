@@ -12,7 +12,8 @@
 	Due: Oct 19, 2026
 
 	Implementation file for the asynch.c file. Contains function definitions for the functions in asynch.h.
-    asynch.c*/
+	asynch.c
+*/
 
 #include "asynch.h"
 
@@ -46,12 +47,12 @@ UINT8 asynch_key_to_pitch(char key)
 	case 'F':
 		pitch = KEY_F;
 		break;
-		
+
 	default:
 		pitch = -1;
 		break;
 	}
-	
+
 	return pitch;
 }
 
@@ -66,24 +67,20 @@ UINT8 asynch_is_hit(Model *model, char key)
 {
 	UINT8 pitch;
 	int song_playing, pitch_ok, can_hit;
-	asynch_key_to_pitch(key);
-	
-	/* Disable all targets 	THIS NEEDS TO MOVE (WHAT IF MULTIPLE KEY PRESSES HAPPEN IN ONE FRAME??)
-	for(i=0; i<TARGET_COUNT; i++){
-		model->targets[i]=0;
-	}
-	*/
-	model->targets[pitch]=1; /* Enable the target for this pitch. */
+
+	pitch = asynch_key_to_pitch(key);
+
+	model->targets[pitch] = 1; /* Enable the target for this pitch. */
 
 	/* Hit conditions */
-	song_playing = model->head <= model->note_count; /* Check if song is playing  */
+	song_playing = model->head <= model->note_count;	 /* Check if song is playing  */
 	pitch_ok = model->notes[model->head].pitch == pitch; /* Check if the pitch matches the next note */
 
 	/* Check if note can be hit based on time */
-	can_hit = model->game_clock >= (model->notes[model->head].time + TRAVEL_TICKS); 
+	can_hit = model->game_clock >= (model->notes[model->head].time + TRAVEL_TICKS);
 	can_hit &= model->game_clock < (model->notes[model->head].time + TRAVEL_TICKS + HIT_WINDOW);
 
-	return (UINT8) (song_playing && pitch_ok && can_hit);
+	return (UINT8)(song_playing && pitch_ok && can_hit);
 }
 
 /*------ Function: asynch_apply_hit ------
@@ -96,9 +93,9 @@ OUTPUT: N/A
 void asynch_apply_hit(Model *model)
 {
 	meter_update_enjoyment(&model->meter, HIT_REWARD_ENJOYMENT); /*adds to enjoyment meter*/
-	meter_update_score(&model->meter, HIT_REWARD_SCORE); /*updates score*/
-	meter_increase_multiplier(&model->meter); /*double multiplier*/
-	model_advance_head(model); /*advance head*/
+	meter_update_score(&model->meter, HIT_REWARD_SCORE);		 /*updates score*/
+	meter_increase_multiplier(&model->meter);					 /*double multiplier*/
+	model_advance_head(model);									 /*advance head*/
 }
 
 /*------ Function: asynch_apply_miss ------
@@ -109,9 +106,8 @@ INPUT: pointer to Model.
 OUTPUT: N/A
 */
 void asynch_apply_miss(Model *model)
-{ 
-	meter_update_enjoyment(&model->meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/	
-	meter_reset_multiplier(&model->meter); /*reset the score multiplier to 1*/
-	model_advance_head(model); /*advance head*/
+{
+	meter_update_enjoyment(&model->meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/
+	meter_reset_multiplier(&model->meter);							/*reset the score multiplier to 1*/
+	model_advance_head(model);										/*advance head*/
 }
-

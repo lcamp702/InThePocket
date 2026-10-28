@@ -20,7 +20,6 @@ void clear_screen(UINT32 *base);
 */
 void fill_screen(UINT32 *base);
 
-
 /*----- Function: clear_region -----
 
  PURPOSE: Clear a region of the screen. The section is specified by the coordinates of the top left corner, and the height and width of the region.
@@ -39,7 +38,6 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width);
 */
 void fill_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width);
 
-
 /*----- Function: plot_pixel -----
 
  PURPOSE: Plots a single pixel on the screen.
@@ -51,7 +49,6 @@ void fill_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width);
 
 */
 void plot_pixel(UINT8 *base, int row, int col);
-
 
 /*----- Function: plot_horizontal_line -----
 
@@ -65,7 +62,6 @@ void plot_pixel(UINT8 *base, int row, int col);
 */
 void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length);
 
-
 /*----- Function: plot_vertical_line -----
 
  PURPOSE: Plot a vertical line on the screen. The vertical line is specified by the topmost pixel of the line and the length of the line.
@@ -78,7 +74,6 @@ void plot_horizontal_line(UINT32 *base, int row, int col, UINT16 length);
 */
 void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length);
 
-
 /*----- Function: plot_line -----
 
  PURPOSE: Plots a line on the screen between the two given points.
@@ -90,7 +85,6 @@ void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length);
  OUTPUT: None
 */
 void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col);
-
 
 /*----- Function: plot_rectangle -----
 
@@ -105,7 +99,6 @@ void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_
 */
 void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width);
 
-
 /*----- Function: plot_square -----
 
  PURPOSE: Plots a square on the screen given by the top left pixel, and the length of the sides of the square.
@@ -117,7 +110,6 @@ void plot_rectangle(UINT32 *base, int row, int col, UINT16 length, UINT16 width)
  OUTPUT: None
 */
 void plot_square(UINT32 *base, int row, int col, UINT16 side);
-
 
 /*----- Function: plot_triangle -----
 
@@ -138,7 +130,6 @@ void plot_square(UINT32 *base, int row, int col, UINT16 side);
 */
 void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 height, UINT8 direction);
 
-
 /*----- Function: plot_8bit_bitmap -----
 
  PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
@@ -152,7 +143,6 @@ void plot_triangle(UINT32 *base, int row, int col, UINT16 triangle_base, UINT16 
 void plot_8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height);
 /* Same as plot_8bit_bitmap but plotting white pixels */
 void plot_n8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height);
-
 
 /*----- Function: plot_16bit_bitmap -----
 

@@ -12,8 +12,9 @@
 	Due: Oct 19, 2026
 
 	Header file for the events module. Includes asynch.h, synch.h and cond.h so a single include gives access to every event handler.
-	
-    events.h*/
+
+	events.h
+*/
 
 #ifndef EVENTS_H
 #define EVENTS_H

@@ -22,6 +22,8 @@
 #include "../types.h"
 #include "../model/model.h"
 
+void print_debug(char *text, UINT32 number, UINT8 *base);
+
 void render_level(Model *model, UINT32 *base);
 
 /*------ Function: render ------

@@ -33,13 +33,40 @@
 #define SCORE_ROW			8
 #define SCORE_COL			8
 #define SCORE_OFFSET		5
-#define SCORE_MAX_LEN		20 /*this is almost certainly far too large but we can change it if needed*/
+#define SCORE_MAX_LEN		12
 
 #define STEM_LENGTH			(int)((NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH)*3.5)
 #define STEM_COL_R			26	/* Stem column offset */
 #define STEM_COL_L			5
 #define STEM_ROW			8
 #define STEM_WIDTH			2
+
+void print_debug(char *text, UINT32 number, UINT8 *base)
+{
+	char s[SCORE_MAX_LEN];
+	int i = 0;
+	int j;
+
+	fill_region((UINT32 *)base, 24, 0, 8, 200);
+
+	plot_nstring(base, 24, 0, text);
+
+	do
+	{
+		s[i++] = (char)((number % 10) + '0');
+		number /= 10;
+	} while (number > 0);
+
+	s[i] = '\0';
+
+	for (j = i - 1, i = 0; i < j; i++, j--)
+	{
+		char temp = s[i];
+		s[i] = s[j];
+		s[j] = temp;
+	}
+	plot_nstring(base, 24, 100, s);
+}
 
 void render_level(Model *model, UINT32 *base) {
 	clear_screen(base);
@@ -233,18 +260,20 @@ OUTPUT: N/A
 void render_score(UINT32 *base, int row, int col, UINT32 score)
 {
 	char s[SCORE_MAX_LEN];
-	char temp;
-	int i, j;
-	i = 0;
+	int i = 0;
+	int j;
+
 	do
 	{
-		s[i++] = score % 10 + '0';
+		s[i++] = (char)((score % 10) + '0');
 		score /= 10;
 	} while (score > 0);
+
 	s[i] = '\0';
+
 	for (j = i - 1, i = 0; i < j; i++, j--)
 	{
-		temp = s[i];
+		char temp = s[i];
 		s[i] = s[j];
 		s[j] = temp;
 	}

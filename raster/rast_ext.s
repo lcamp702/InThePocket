@@ -158,7 +158,7 @@ fr_col_clipped:
 
 		andi.w		#31,d4		; d4.w = End col % 32
 		neg.w		d4		; d4.w = -(End col % 32)
-		addi.w		#32,d4		; d4.w = End mask left shift val
+		addi.w		#31,d4		; d4.w = End mask left shift val
 
 		; Create shifted end mask
 		moveq.l		#-1,d0		; d0.l = (0xFFFFFFFF)
@@ -318,7 +318,7 @@ nbm8_shift_loop:
 		clr.w		d1		; Clear word to shift byte within
 		move.b		(a1)+,d1	; d1.b = Bitmap row
 		ror.w		d2,d1		; d1.b = Shifted start byte
-		not.b		d1		; Invert (Nevative printing)
+		not.w		d1		; Invert (Nevative printing)
 		and.b		d1,(a0)+	; Apply bitmap row masks to framebuffer
 		ror.w		#8,d1		; d1.b = Shifted end byte
 		and.b		d1,(a0)
@@ -415,8 +415,8 @@ nbm16_clipped_row:	; Clipped row + height found
 
 nbm16_left_loop:	; No column offset needed, draw shifted bitmap on the left
 		move.w		(a1)+,d2	; Load next bitmap row into register
-		neg.w		d2		; Negate for inverse drawing
 		lsl.w		d1,d2		; Shift bitmap row
+		not.w		d2		; Invert for negative drawing
 		and.w		d2,(a0)		; Apply mask to framebuffer
 		adda.w		#BYTE_COLS,a0	; Move to next row of framebuffer
 		dbra		d0,nbm16_left_loop
@@ -437,7 +437,7 @@ nbm16_right:	; Col > 0, no left clip
 		
 nbm16_aligned_loop:	; If start shift == 0, print bmp into words
 		move.w		(a1)+,d1	; d1.w = Bitmap row
-		not.w		d1		; Negate for inverse drawing
+		not.w		d1		; Invert for negative drawing
 		and.w		d1,(a0)		; Apply bitmap row mask to framebuffer
 		adda.w		#BYTE_COLS,a0	; Move to next line of the framebuffer
 		dbra		d0,nbm16_aligned_loop
@@ -446,14 +446,14 @@ nbm16_aligned_loop:	; If start shift == 0, print bmp into words
 
 nbm16_shifted:
 		cmpi.w		#BYTE_COLS-2,d1
-		bhs.b		nbm16_right_loop
+		bhs.b		nbm16_right_loop	; Clipping with no 2nd word
 
-nbm16_shift_loop:
+nbm16_shift_loop:	; Clipping with 2nd word
 		; Speed optimized shift with swap.w and longs
 		moveq.l		#0,d1		; Clear long to shift word in
 		move.w		(a1)+,d1	; d1.w = Bitmap row
 		ror.l		d2,d1		; d1.l = Shifted bitmap
-		not.w		d1		; Negate for inverse drawing
+		not.l		d1		; Invert for negative drawing
 		and.w		d1,(a0)+	; Apply start word bitmap row to framebuffer
 		swap.w		d1		; d1.w = End word bitmap row
 		and.w		d1,(a0)		; Apply end word bitmap row
@@ -464,10 +464,11 @@ nbm16_shift_loop:
 		bra.b		nbm16_end
 
 nbm16_right_loop:
-		move.w		(a1)+,d1
-		lsr.w		d2,d1
-		and.w		d1,(a0)
-		adda.w		#BYTE_COLS,a0
+		move.w		(a1)+,d1	; Copy word mask
+		lsr.w		d2,d1		; Shift right to get start mask
+		not.w		d1		; Invert for negative drawing
+		and.w		d1,(a0)		; Apply start word bitmap row to framebuffer
+		adda.w		#BYTE_COLS,a0	; Move to next row
 		dbra		d0,nbm16_right_loop
 
 nbm16_end:
@@ -570,8 +571,8 @@ nbm32_right:	; Col > 0, no left clip
 		
 nbm32_aligned_loop:	; If start shift == 0, print bmp into bytes
 		move.l		(a1)+,d3	; d3.l = Bitmap row
-		and.l		d3,(a0)		; Apply bitmap row mask to framebuffer
 		not.l		d3
+		and.l		d3,(a0)		; Apply bitmap row mask to framebuffer
 		adda.w		#BYTE_COLS,a0	; Move to next line of the framebuffer
 		dbra		d0,nbm32_aligned_loop
 
@@ -589,8 +590,8 @@ nbm32_shift_loop:
 		move.l		d3,d4		; d4.l = Copy of bitmap row
 		lsr.l		d2,d3		; d3.l = Shifted start byte
 		lsl.l		d1,d4		; d4.l = Shifted end byte
-		not.l		d3
-		not.l		d4
+		not.l		d3		; Invert for negative printing
+		not.l		d4		; Invert for negative printing
 
 		and.l		d3,(a0)+	; Apply bitmap row masks to framebuffer
 		and.l		d4,(a0)
@@ -601,10 +602,10 @@ nbm32_shift_loop:
 		bra.b		nbm32_end
 
 nbm32_right_loop:
-		move.l		(a1)+,d3	; d3.l = Bitmap row
-		not.l		d3
-		lsr.l		d2,d3		; Shifter start long
-		and.l		d3,(a0)		; Write the left long
+		move.l		(a1)+,d3	; d3.l = Bitmap row	
+		lsr.l		d2,d3		; Shift start long
+		not.l		d3		; Invert for negative printing
+		and.l		d3,(a0)		; Apply to framebuffer
 		adda.w		#BYTE_COLS,a0	; Move to next row
 		dbra		d0,nbm32_right_loop
 
@@ -653,8 +654,8 @@ _plot_ncharacter:
 		move.w		pn_row(a6),-(sp)	; Pass row
 		move.l		pn_base(a6),-(sp)	; Pass framebuffer base pointer
 		jsr		_plot_n8bit_bitmap	; Plot negative bitmap
-pn_end:
 		adda.w		#14,sp		; Super pop
+pn_end:
 		movem.l		(sp)+,d0/a0
 		unlk		a6
 		rts
@@ -737,7 +738,10 @@ _plot_20l_bitmap:
 
 		; Top clipped but bitmap partially appears
 		ext.l		d1
-		lsl.l		#2,d1		; Row * 4 = Bitmap row offset
+		move.l		d1,d2
+		lsl.l		#6,d1
+		lsl.l		#4,d2
+		add.l		d2,d1		; Bitmap row offset
 		adda.l		d1,a1		; Offset bitmap pointer by # of negative rows
 		clr.w		d1		; Zero start row
 
@@ -767,10 +771,10 @@ bml20_clipped_row:	; Clipped row + height found
 		add.w		d2,d1		; d1.w = Row byte offset
 		adda.w		d1,a0		; a0 points to the first row to draw on
 		
-bml20_aligned_loop:
+bml20_loop:
 		move.l		(a1)+,d3	; d3.l = Bitmap row
 		or.l		d3,(a0)+	; Apply bitmap row mask to framebuffer
-		dbra		d0,bml20_aligned_loop
+		dbra		d0,bml20_loop
 
 		bra		bml20_end
 

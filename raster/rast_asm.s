@@ -1394,8 +1394,8 @@ _plot_character:
 		move.w		pc_row(a6),-(sp)	; Pass row
 		move.l		pc_base(a6),-(sp)	; Pass framebuffer base pointer
 		jsr		_plot_8bit_bitmap	; Plot bitmap
-pc_end:
 		adda.w		#14,sp		; Super pop
+pc_end:
 		movem.l		(sp)+,d0/a0
 		unlk		a6
 		rts

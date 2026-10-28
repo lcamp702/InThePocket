@@ -68,18 +68,22 @@ static const Note song[SONG_NOTES] = {
 
 int main()
 {
-    UINT32 time_then, time_now, time_elapsed;
-    UINT32 *base;
     static Model model;
-    UINT8 quit;
+    UINT32 *buff_1, *buff_2;
+    UINT32 time_then, time_now, time_elapsed;
+    UINT8 quit, buffer;
 
     quit = 0;
-    base = get_pbase();
-    time_then = get_time();
+    buffer = 0;
+    buff_1 = get_pbase();
+    buff_2 = malloc_256((SCREEN_WIDTH * SCREEN_HEIGHT) >> 3);
+
     /* Initialize model */
+    time_then = get_time();
     model_init(&model, song, SONG_NOTES, time_then);
     /* Render model */
-    render(base, &model);
+    render(buff_1, &model);
+    render(buff_2, &model);
     while (!quit)
     {
         time_now = get_time();
@@ -100,12 +104,27 @@ int main()
             synch_clock_tick(&model, time_now);
             /* Process cond events */
             cond_check_misses(&model);
-            print_debug((UINT8 *)base, "Game clock", model.game_clock);
             quit = cond_game_over(&model);
             /* Render frame */
-            render(base, &model);
+            if (buffer == 0)
+            {
+                render(buff_2, &model);
+                set_screen(buff_2);
+                buffer = 1;
+            }
+            else
+            {
+                render(buff_1, &model);
+                set_screen(buff_1);
+                buffer = 0;
+            }
+            /* Update game module clock */
             time_then = time_now;
         }
     }
+
+    set_screen(buff_1);
+    free_buff(buff_2);
+
     return 0;
 }

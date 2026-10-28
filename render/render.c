@@ -41,7 +41,10 @@
 #define STEM_ROW			8
 #define STEM_WIDTH			2
 
-void print_debug(char *text, UINT32 number, UINT8 *base)
+#define NOTE_START_X 640   /* right edge, ST high-res; adjust to res */
+
+
+void print_debug(UINT8 *base, char *text, UINT32 number)
 {
 	char s[SCORE_MAX_LEN];
 	int i = 0;
@@ -68,13 +71,6 @@ void print_debug(char *text, UINT32 number, UINT8 *base)
 	plot_nstring(base, 24, 100, s);
 }
 
-void render_level(Model *model, UINT32 *base) {
-	clear_screen(base);
-	/* Plot background once */
-	plot_20l_bitmap(base, 0, bg, BG_HEIGHT);
-	render(model, base);
-}
-
 /*------ Function: render ------
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
 
@@ -83,23 +79,28 @@ INPUT: model(Model *): Pointer to Model,
 
 OUTPUT: N/A
 */
-void render(Model *model, UINT32 *base)
+void render(UINT32 *base, Model *model)
 {
 	int i;
 
-	clear_region(base, 272, 0, 128, SCREEN_WIDTH);	/* Parameterize!!!!! */
-
-	render_staff(base); /*must render the staff first for it to appear in the background*/
-
-	for (i = model->head; i < model_last_on_screen(model); i++)
-	{ /*model_last_on_screen returns index of first note off screen. it needs to be renamed probably but it is what it is.*/
-		render_note(&model->notes[i], base);
+	if (model->render_bg) 
+	{	/* Plot background once */
+		clear_screen(base);
+		plot_20l_bitmap(base, 0, bg, BG_HEIGHT);
+		model->render_bg = 0;
 	}
+	else
+		clear_region(base, 272, 0, 128, SCREEN_WIDTH);	/* Parameterize!!!!! */
+
+	render_staff(base);
+
+	for (i = model->head; i < model_next_disp_note(model); i++)
+		render_note(base, &model->notes[i], model->game_clock);
 
 	render_targets(base, model->targets);
-	
-	render_meter(&model->meter, base);
-	
+
+	/* Top stats */
+	render_meter(base, &model->meter);
 	fill_region(base, SCORE_ROW, SCORE_COL, 8, 8*SCORE_MAX_LEN);
 	render_score(base, SCORE_ROW, SCORE_COL, model->meter.score);
 }
@@ -113,7 +114,7 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_note(Note *note, UINT32 *base)
+void render_note(UINT32 *base, Note *note, UINT32 time)
 {
 	/*
 		TODO:
@@ -123,7 +124,7 @@ void render_note(Note *note, UINT32 *base)
 		Connecting stems for multiple notes
 	*/
 
-	int row;
+	int row, col;
 	UINT32 *note_head;
 
 	/*
@@ -144,7 +145,8 @@ void render_note(Note *note, UINT32 *base)
 	}
 
 	row = STAFF_BOTTOM + 1 - ((note->pitch + 1) * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH));
-	plot_32bit_bitmap(base, row, note->x, note_head, NOTE_HEAD_HEIGHT);
+	col = NOTE_START_X + note->time - time;
+	plot_32bit_bitmap(base, row, col, note_head, NOTE_HEAD_HEIGHT);
 
 	/*
 	Note Stems (Vertical lines)
@@ -154,10 +156,10 @@ void render_note(Note *note, UINT32 *base)
 		int w;
 		if (note->pitch > 1) /* Bottom 2 tracks */
 			for (w = 0; w < STEM_WIDTH; w++)
-				plot_vertical_line(base, row + STEM_ROW, note->x + STEM_COL_L + w, STEM_LENGTH);
+				plot_vertical_line(base, row + STEM_ROW, col + STEM_COL_L + w, STEM_LENGTH);
 		else
 			for (w = 0; w < STEM_WIDTH; w++)
-				plot_vertical_line(base, row + STEM_ROW - STEM_LENGTH, note->x + STEM_COL_R - w, STEM_LENGTH);
+				plot_vertical_line(base, row + STEM_ROW - STEM_LENGTH, col + STEM_COL_R - w, STEM_LENGTH);
 	}
 }
 
@@ -169,7 +171,7 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_meter(Meter *meter, UINT32 *base)
+void render_meter(UINT32 *base, Meter *meter)
 {
 	int i;
 	int enjoyment = meter->enjoyment;

@@ -22,9 +22,7 @@
 #include "../types.h"
 #include "../model/model.h"
 
-void print_debug(char *text, UINT32 number, UINT8 *base);
-
-void render_level(Model *model, UINT32 *base);
+void print_debug(UINT8 *base, char *text, UINT32 number);
 
 /*------ Function: render ------
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
@@ -34,7 +32,7 @@ INPUT: model(Model *): Pointer to Model,
        
 OUTPUT: N/A
 */
-void render(Model *model, UINT32 *base);
+void render(UINT32 *base, Model *model);
 
 /*------ Function: render_note ------
 PURPOSE: Renders a single note to screen. It's place in the staff is determined by its pitch.
@@ -44,7 +42,7 @@ INPUT: note(Note *): Pointer to Note
 
 OUTPUT: N/A
 */
-void render_note(Note *note, UINT32 *base);
+void render_note(UINT32 *base, Note *note, UINT32 time);
 
 /*------ Function: render_meter ------
 PURPOSE: Renders meter. Fills it up based on enjoyment.
@@ -54,7 +52,7 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_meter(Meter *meter, UINT32 *base);
+void render_meter(UINT32 *base, Meter *meter);
 
 /*------ Function: render_staff ------
 PURPOSE: Renders one four line staff. 

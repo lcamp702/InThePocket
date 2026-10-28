@@ -28,7 +28,7 @@
 #define NOTE_START_X 640   /* right edge, ST high-res; adjust to res */
 #define NOTE_SPEED 1   /* pixels per tick: open spec value */
 
-#define TRAVEL_TICKS 616 /* On screen ticks before note needs to be hit */
+#define TRAVEL_TICKS 600 /* On screen ticks before note needs to be hit */
 #define HIT_WINDOW 16 /* Total window for button presses */
 
 typedef struct Note {
@@ -39,6 +39,6 @@ typedef struct Note {
 } Note;
 
 void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration);	/* sets x = NOTE_START_X */
-void note_move(Note *note);	/* x -= NOTE_SPEED */
+void note_move(Note *note, int speed);	/* x -= speed */
 
 #endif

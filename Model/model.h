@@ -33,6 +33,7 @@ typedef struct Model{
 	UINT16 note_count;
 	UINT32 game_clock;
 	UINT32 start_time;
+	UINT32 last_interval;
 	UINT16 head;
 } Model;
 

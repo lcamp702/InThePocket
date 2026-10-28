@@ -60,6 +60,7 @@ NOTE : MOVE NOTES FIRST THEN TICK.
 void model_time_sync(Model *model, UINT32 time_now)
 {
 	UINT32 time = time_now - model->start_time;
+	model->last_interval = time - model->game_clock;
 	model->game_clock = time; /* Sync game clock */
 }
 /*------ Function: model_last_on_screen ------
@@ -102,7 +103,7 @@ void model_move_notes(Model *model)
 
 	for (i = model->head; i < last_note && i < model->note_count; i++)
 	{
-		note_move(&model->notes[i]);
+		note_move(&model->notes[i], model->last_interval);
 	}
 }
 

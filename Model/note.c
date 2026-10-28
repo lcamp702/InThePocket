@@ -41,6 +41,6 @@ INPUT: pointer to Note
 
 OUTPUT: N/A
 */
-void note_move(Note *note){
-	note->x-=NOTE_SPEED; /*moves the note. This calculation is only for the renderer*/
+void note_move(Note *note, int speed){
+	note->x-=speed; /*moves the note. This calculation is only for the renderer*/
 }                            

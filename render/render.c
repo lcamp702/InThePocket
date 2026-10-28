@@ -20,8 +20,6 @@
 #include "../bitmaps/bitmaps.h"
 #include "../raster/raster.h"
 
-#define SCREEN_WIDTH 640
-
 /* Staff Parameters */
 #define STAFF_BOTTOM 372   /* Bottom pixel row of staff */
 #define LINE_COUNT 5	   /* 5 lines, 4 tracks between for notes*/
@@ -32,7 +30,6 @@
 
 #define SCORE_ROW 8
 #define SCORE_COL 8
-#define SCORE_OFFSET 5
 #define SCORE_MAX_LEN 12
 
 #define STEM_LENGTH (int)((NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH) * 3.5)
@@ -86,7 +83,6 @@ void render(UINT32 *base, Model *model)
 	{ /* Plot background once */
 		clear_screen(base);
 		plot_20l_bitmap(base, 0, bg, BG_HEIGHT);
-		model->render_bg = 0;
 	}
 	else
 		clear_region(base, 272, 0, 128, SCREEN_WIDTH); /* Parameterize!!!!! */
@@ -100,7 +96,6 @@ void render(UINT32 *base, Model *model)
 
 	/* Top stats */
 	render_meter(base, &model->meter);
-	fill_region(base, SCORE_ROW, SCORE_COL, 8, 8 * SCORE_MAX_LEN);
 	render_score(base, SCORE_ROW, SCORE_COL, model->meter.score);
 }
 
@@ -276,5 +271,7 @@ void render_score(UINT32 *base, int row, int col, UINT32 score)
 		s[i] = s[j];
 		s[j] = temp;
 	}
-	plot_nstring((UINT8 *)base, row + SCORE_OFFSET, col, s);
+
+	fill_region(base, row, col, 8, 8 * SCORE_MAX_LEN);
+	plot_nstring((UINT8 *)base, row, col, s);
 }

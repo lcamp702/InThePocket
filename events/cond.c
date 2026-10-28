@@ -43,5 +43,7 @@ INPUT: pointer to Model
 OUTPUT: N/A
 */
 UINT8 cond_game_over(const Model *model){
-	return (UINT8) !ENJOYMENT || !SONG_PLAYING;
+	int no_enjoyment = model->meter.enjoyment <= 0;
+	int song_ended = model->head>=model->note_count;
+	return (UINT8) no_enjoyment || song_ended;
 }

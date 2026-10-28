@@ -319,7 +319,7 @@ void print_model(const Model * model){
 		 model->game_clock,
 		 model->note_count,
 		 model->head,
-		 model_last_on_screen(model)
+		 model_next_disp_note(model)
 	);
 
 	print_meter(&model->meter);

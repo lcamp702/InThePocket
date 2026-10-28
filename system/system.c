@@ -26,6 +26,33 @@ UINT32 *get_pbase()
 	return (UINT32 *)Physbase();
 }
 
+UINT32 *malloc_256(int bytes)
+{
+	UINT32 *mem = (UINT32 *)Malloc(bytes+256);
+	int i;
+
+	/* 256 bit align */
+	mem = (UINT32 *)(((UINT32)mem + 255) & ~255);
+
+	/* Clear memory */
+	for (i = 0; i < (bytes / 4); i++)
+		/* Clear all longs */
+		*(mem + i) = 0;
+
+	return mem;
+}
+
+void free_buff(UINT32 *ptr)
+{
+	Mfree(ptr);
+}
+
+void set_screen(UINT32 *base)
+{
+	Setscreen(-1, base, -1);
+		Vsync();
+}
+
 /* Get the current time from the system VBlank timer */
 UINT32 get_time()
 {

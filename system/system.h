@@ -18,7 +18,15 @@
 */
 #include "../types.h"
 
+/* Framebuffer tools */
 UINT32 *get_pbase();
+UINT32 *malloc_256(int bytes);
+void free_buff();
+void set_screen(UINT32 *base);
+
+/* Clock tools */
 UINT32 get_time();
+
+/* Input tools */
 UINT8 waiting_input();
 UINT8 get_input();

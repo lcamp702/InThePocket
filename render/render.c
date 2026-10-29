@@ -20,18 +20,21 @@
 #include "../bitmaps/bitmaps.h"
 #include "../raster/raster.h"
 
-/* Staff Parameters */
+/* ===== Staff ===== */
 #define STAFF_BOTTOM 372   /* Bottom pixel row of staff */
 #define LINE_COUNT 5	   /* 5 lines, 4 tracks between for notes*/
 #define STAFF_LINE_WIDTH 2 /* Thickness of each staff line */
 
+/* ===== Meter ===== */
 #define METER_ROW 8
 #define METER_COL 568
 
+/* ===== Score ===== */
 #define SCORE_ROW 8
 #define SCORE_COL 8
 #define SCORE_MAX_LEN 12
 
+/* ===== Notes ===== */
 #define STEM_LENGTH (int)((NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH) * 3.5)
 #define STEM_COL_R 26 /* Stem column offset */
 #define STEM_COL_L 5
@@ -40,13 +43,24 @@
 
 #define NOTE_START_X 640 /* right edge, ST high-res; adjust to res */
 
+static const int pitch_row[4] = {
+	STAFF_BOTTOM + 1 - (1 * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH)),
+	STAFF_BOTTOM + 1 - (2 * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH)),
+	STAFF_BOTTOM + 1 - (3 * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH)),
+	STAFF_BOTTOM + 1 - (4 * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH))};
+
+static const UINT32 *const note_heads[3] = {
+	note_whole_head,
+	note_half_head,
+	note_black_head};
+
 void print_debug(UINT8 *base, char *text, UINT32 number)
 {
 	char s[SCORE_MAX_LEN];
 	int i = 0;
 	int j;
 
-	fill_region((UINT32 *)base, 24, 0, 8, 200);
+	fill_region((UINT32 *)base, 24, 8, 8, 200);
 
 	plot_nstring(base, 24, 0, text);
 
@@ -64,7 +78,7 @@ void print_debug(UINT8 *base, char *text, UINT32 number)
 		s[i] = s[j];
 		s[j] = temp;
 	}
-	plot_nstring(base, 24, 100, s);
+	plot_nstring(base, 24, 80, s);
 }
 
 /*------ Function: render ------
@@ -77,26 +91,32 @@ OUTPUT: N/A
 */
 void render(UINT32 *base, Model *model)
 {
-	int i;
+	UINT16 i, next_note;
+	UINT32 playback_col;
 
 	if (model->render_bg)
 	{ /* Plot background once */
 		clear_screen(base);
 		plot_20l_bitmap(base, 0, bg, BG_HEIGHT);
+		model->render_bg--;
 	}
-	else
-		clear_region(base, 272, 0, 128, SCREEN_WIDTH); /* Parameterize!!!!! */
 
 	render_staff(base);
 
-	for (i = model->head; i < model_next_disp_note(model); i++)
-		render_note(base, &model->notes[i], model->game_clock);
+	next_note = model_next_disp_note(model);
+	playback_col = NOTE_START_X - model->game_clock;
+	for (i = model->head; i < next_note; i++)
+		render_note(base, &model->notes[i], playback_col);
 
 	render_targets(base, model->targets);
 
 	/* Top stats */
-	render_meter(base, &model->meter);
-	render_score(base, SCORE_ROW, SCORE_COL, model->meter.score);
+	if (model->meter.dirty)
+	{
+		render_meter(base, &model->meter);
+		render_score(base, SCORE_ROW, SCORE_COL, model->meter.score);
+		model->meter.dirty--;
+	}
 }
 
 /*------ Function: render_note ------
@@ -108,7 +128,7 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_note(UINT32 *base, Note *note, UINT32 time)
+void render_note(UINT32 *base, Note *note, UINT32 playback_col)
 {
 	/*
 		TODO:
@@ -118,43 +138,23 @@ void render_note(UINT32 *base, Note *note, UINT32 time)
 		Connecting stems for multiple notes
 	*/
 
-	int row, col;
-	UINT32 *note_head;
+	int row = pitch_row[note->pitch];
+	int col = playback_col + note->time;
 
-	/*
-	Note Heads (32bit Bitmaps)
-	*/
-
-	switch (note->duration)
-	{
-	case 0:
-		note_head = note_whole_head;
-		break;
-	case 1:
-		note_head = note_half_head;
-		break;
-	default:
-		note_head = note_black_head;
-		break;
-	}
-
-	row = STAFF_BOTTOM + 1 - ((note->pitch + 1) * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH));
-	col = NOTE_START_X + note->time - time;
+	UINT32 *note_head = note_heads[note->duration];
 	plot_32bit_bitmap(base, row, col, note_head, NOTE_HEAD_HEIGHT);
 
 	/*
 	Note Stems (Vertical lines)
 	*/
 
-	if (note->duration != 0)
+	if (note->duration > 0 && note->neighbour == 0)
 	{
 		int w;
 		if (note->pitch > 1) /* Bottom 2 tracks */
-			for (w = 0; w < STEM_WIDTH; w++)
-				plot_vertical_line(base, row + STEM_ROW, col + STEM_COL_L + w, STEM_LENGTH);
-		else
-			for (w = 0; w < STEM_WIDTH; w++)
-				plot_vertical_line(base, row + STEM_ROW - STEM_LENGTH, col + STEM_COL_R - w, STEM_LENGTH);
+				plot_vertical_line(base, row + STEM_ROW, col + STEM_COL_L, STEM_LENGTH);
+		else /* Top 2 tracks */
+				plot_vertical_line(base, row + STEM_ROW - STEM_LENGTH, col + STEM_COL_R, STEM_LENGTH);
 	}
 }
 
@@ -193,7 +193,7 @@ void render_meter(UINT32 *base, Meter *meter)
 
 	if (enjoyment > 0)
 	{
-		/* Plot filled portion of the meter */
+		/* Plot filled portion of the meter (Always overwrites empty section) */
 		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL, full_left + plot_height, enjoyment);
 		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL + 32, full_right + plot_height, enjoyment);
 	}
@@ -208,15 +208,18 @@ OUTPUT: N/A
 */
 void render_staff(UINT32 *base)
 {
-	int row, i, w;
+	int row = STAFF_BOTTOM - 1;
+	int i, w;
+
+	clear_20l(base, 283, 108);
 
 	for (i = 0; i < LINE_COUNT; i++)
 	{
 		for (w = 0; w < STAFF_LINE_WIDTH; w++)
 		{
-			row = STAFF_BOTTOM - 1 + w - i * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH);
-			plot_horizontal_line(base, row, 0, SCREEN_WIDTH);
+			plot_horizontal_line(base, row + w, 0, SCREEN_WIDTH);
 		}
+		row -= (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH);
 	}
 }
 
@@ -235,10 +238,12 @@ void render_targets(UINT32 *base, UINT8 *targets)
 	{
 		int row = STAFF_BOTTOM + 1 - ((i + 1) * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH));
 		if (targets[i])
+		{
 			plot_16bit_bitmap((UINT16 *)base, row, 40, target_on_bmp, NOTE_HEAD_HEIGHT);
+			targets[i] = 0; /* Clear after rendering */
+		}
 		else
 			plot_16bit_bitmap((UINT16 *)base, row, 40, target_off_bmp, NOTE_HEAD_HEIGHT);
-		targets[i] = 0; /* Clear after rendering */
 	}
 }
 

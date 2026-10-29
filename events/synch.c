@@ -28,6 +28,5 @@ OUTPUT: N/A
 */
 void synch_clock_tick(Model *model, UINT32 time_now)
 {
-	model->render_bg = 0;
 	model_time_sync(model, time_now); /* Update model clock */
 }

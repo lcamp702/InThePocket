@@ -18,7 +18,6 @@
 #include "cond.h"
 
 #define SONG_PLAYING model->head < model->note_count /* The head is not at the end of the song */
-#define ENJOYMENT model->meter.enjoyment > 0
 #define NOTE_PASSED model->game_clock > (model->notes[model->head].time + TRAVEL_TICKS + HIT_WINDOW) /* Game clock passed hit time */
 
 /*------ Function: cond_check_misses ------
@@ -30,7 +29,7 @@ OUTPUT: N/A
 */
 void cond_check_misses(Model *model)
 {
-	while (SONG_PLAYING && NOTE_PASSED && ENJOYMENT)
+	while (SONG_PLAYING && NOTE_PASSED)
 	{																	/*checks that the head is pointed at a note that has passed the hit window*/
 		meter_update_enjoyment(&model->meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/
 		meter_reset_multiplier(&model->meter);							/*sends score multiplier back to 1*/

@@ -60,6 +60,59 @@ fill_loop:
 		movem.l		(sp)+,d0-7/a0-6 ; Return existing register values
 		rts
 
+; ==== void clear_20l(UINT32 *base, int row, UINT16 height) ====
+; PURPOSE: Clears entire scanlines.
+; INPUT: Address(UINT32*): to the start of the screen
+;	height(UINT16): the number of lines to clear
+; OUTPUT: None
+        	xdef		_clear_20l
+
+cl_base		equ		64	; Offset from SP, not A6
+cl_row		equ		68
+cl_height	equ		70
+_clear_20l:	; Quick fill code based on Raster Lab on D2L
+		movem.l		d0-7/a0-6,-(sp) ; Store existing register values
+
+		lea		zeros,a0
+		movem.l		(a0)+,d1-7/a1-6	; Clear registers d1-7 and a1-6
+
+
+		move.w		cl_height(sp),d0	; Set loop counter to height
+		beq.b		cl_end		; End if no height
+		subq.w		#1,d0		; Predecrement for dbra
+
+		move.w		cl_row(sp),d1	; d1.w = Row #
+		bpl.b		cl_pos_row
+		neg.w		d1		
+		sub.w		d1,d0		; Subtract from height	
+		bls.w		cl_end		; Not on screen, exit
+		clr.w		d1		; Reset row to 0
+cl_pos_row:
+		cmp.w		#ROWS,d1
+		bge.w		cl_end		; Row upper bound check
+
+		add.w		d0,d1		; d1.w = row + height
+		move.w		d1,d2
+		lsl.w		#6,d1
+		lsl.w		#4,d2
+		add.w		d2,d1		; d1.w = 80 * (row + height)
+
+		movea.l		d1,a0		; a0 = framebuffer offset
+		cmpa.l		#32000,a0	; check if offset is within framebuffer
+		ble		cl_print
+		movea.l		#32000,a0	; clip to end of framebuffer
+cl_print:
+		moveq.l		#0,d1
+		moveq.l		#0,d2
+		adda.l		cl_base(sp),a0	; a0 points framebuffer
+cl_loop:
+		movem.l		d1-7/a1-6,-(a0) ; Clear 13 longs at once and decrement
+		movem.l		d1-7,-(a0)	; Clear remaining 7 longs and decrement
+		dbra		d0,cl_loop
+cl_end:
+		movem.l		(sp)+,d0-7/a0-6 ; Return existing register values
+		rts
+
 ; ==== void fill_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width) ====
 ; PURPOSE: Fills a region of the screen. The section is specified by the coordinates of the top left corner, and the height and width of the region.
 ; INPUT: Address(UINT32*): to the start of the screen
@@ -785,3 +838,4 @@ bml20_end:
 
 
 ones:		dcb.l		13,-1
+zeros:		ds.l		13

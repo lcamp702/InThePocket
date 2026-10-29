@@ -37,6 +37,10 @@ void clear_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width);
        Same as clear region, but writes ones instead of zeroes
 */
 void fill_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width);
+/*
+       Same as clear region, but for whole screen widths
+*/
+void clear_20l(UINT32 *base, int row, UINT16 height);
 
 /*----- Function: plot_pixel -----
 

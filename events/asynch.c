@@ -80,6 +80,12 @@ UINT8 asynch_is_hit(Model *model, char key)
 	can_hit = model->game_clock >= (model->notes[model->head].time + TRAVEL_TICKS);
 	can_hit &= model->game_clock < (model->notes[model->head].time + TRAVEL_TICKS + HIT_WINDOW);
 
+	/*
+	
+	ON LONG NOTES NOT HOLDING = NO SCORE!!!!
+	
+	*/
+
 	return (UINT8)(song_playing && pitch_ok && can_hit);
 }
 
@@ -109,5 +115,4 @@ void asynch_apply_miss(Model *model)
 {
 	meter_update_enjoyment(&model->meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/
 	meter_reset_multiplier(&model->meter);							/*reset the score multiplier to 1*/
-	model_advance_head(model);										/*advance head*/
 }

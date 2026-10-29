@@ -24,6 +24,8 @@ UINT32 *malloc_256(int bytes);
 void free_buff();
 void set_screen(UINT32 *base);
 
+void disable_cursor();
+
 /* Clock tools */
 UINT32 get_time();
 

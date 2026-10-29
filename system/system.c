@@ -18,6 +18,7 @@
 */
 
 #include <osbind.h>
+#include <stdio.h>
 #include "system.h"
 
 /* Return the memory address of the framebuffer */
@@ -50,7 +51,13 @@ void free_buff(UINT32 *ptr)
 void set_screen(UINT32 *base)
 {
 	Setscreen(-1, base, -1);
-		Vsync();
+	Vsync();
+}
+
+void disable_cursor()
+{
+	printf("\033f");
+	fflush(stdout);
 }
 
 /* Get the current time from the system VBlank timer */

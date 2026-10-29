@@ -30,7 +30,7 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 {
 	UINT32 i;
 
-	model->render_bg = 1;
+	model->render_bg = 2; /* Render background on both framebuffers */
 
 	/* Clip note amount down to max if it is larger */
 	model->note_count = (notes_amt > MAX_NOTES) ? MAX_NOTES : notes_amt;
@@ -38,7 +38,12 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 	model->head = 0; /* Start at note 0 */
 
 	for (i = 0; i < model->note_count; i++)
-		note_init(&model->notes[i], arr[i].time, arr[i].pitch, arr[i].duration);
+	{
+		UINT8 next_neighbour = 0;
+		if ((i < (model->note_count - 1)) && model->notes[i].time == model->notes[i+1].time)
+			next_neighbour = 1;
+		note_init(&model->notes[i], arr[i].time, arr[i].pitch, arr[i].duration, next_neighbour);
+	}
 
 	for (i = 0; i < TARGET_COUNT; i++)
 		model->targets[i] = 0;

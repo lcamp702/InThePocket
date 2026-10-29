@@ -33,6 +33,7 @@ typedef struct Meter
 	UINT32 score;
 	INT8 multiplier;
 	INT8 multi_progress;
+	INT8 dirty; /* A bool flag, wether or not to redraw */
 } Meter;
 
 void meter_init(Meter *meter);						   /*initializes meter*/

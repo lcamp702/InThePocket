@@ -441,7 +441,6 @@ int main()
             synch_clock_tick(&model, time_now);
             /* Process cond events */
             cond_check_misses(&model);
-            model.meter.enjoyment = 48;
             quit = cond_game_over(&model);
             /* Render frame */
             if (buffer == 0)

@@ -35,6 +35,7 @@ void meter_init(Meter *meter)
 	meter->score = 0;
 	meter->multiplier = 1;
 	meter->multi_progress = 0;
+	meter->dirty = 2;
 }
 
 /* update enjoyment meter NB POSITIVE DELTA MAX 2 AND WILL NEVER OVERFLOW METER SINCE 100+2=102<127*/
@@ -47,6 +48,7 @@ OUTPUT: N/A
 */
 void meter_update_enjoyment(Meter *meter, INT8 delta)
 {
+	meter->dirty = 2; /* Redraw in both framebuffers */
 	if (meter->enjoyment >= 0)
 		/* Stop updating enjoyment once it hits/passes 0 */
 		meter->enjoyment += delta;

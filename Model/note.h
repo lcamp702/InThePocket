@@ -34,8 +34,9 @@ typedef struct Note
 	UINT32 time; /* Time to draw note on screen */
 	UINT8 pitch;
 	UINT8 duration;
+	UINT8 neighbour;
 } Note;
 
-void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration); /* sets x = NOTE_START_X */
+void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, UINT8 neighbour); /* sets x = NOTE_START_X */
 
 #endif

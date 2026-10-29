@@ -23,12 +23,13 @@
 PURPOSE: Initializes note object
 
 INPUT: Note object pointer, UINT pitch value (from 1-4), and UINT32 time object (time when note will begin on screen)
-
+	neighbour(UINT8) Boolean: Is the next neighbour of this note played at the same time?
 OUTPUT: N/A
 */
-void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration)
+void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, UINT8 neighbour)
 {
 	note->time = time;
 	note->pitch = pitch;
 	note->duration = duration;
+	note->neighbour = neighbour;
 }

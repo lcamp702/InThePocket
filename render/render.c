@@ -60,9 +60,9 @@ void print_debug(UINT8 *base, char *text, UINT32 number)
 	int i = 0;
 	int j;
 
-	fill_region((UINT32 *)base, 24, 8, 8, 200);
+	fill_region((UINT32 *)base, 24, 8, 8, 88);
 
-	plot_nstring(base, 24, 0, text);
+	plot_nstring(base, 24, 8, text);
 
 	do
 	{
@@ -78,7 +78,7 @@ void print_debug(UINT8 *base, char *text, UINT32 number)
 		s[i] = s[j];
 		s[j] = temp;
 	}
-	plot_nstring(base, 24, 80, s);
+	plot_nstring(base, 24, 56, s);
 }
 
 /*------ Function: render ------

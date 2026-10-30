@@ -20,8 +20,7 @@
 
 /* Framebuffer tools */
 UINT32 *get_pbase();
-UINT32 *malloc_256(int bytes);
-void free_buff();
+UINT32 *buff_256();
 void set_screen(UINT32 *base);
 
 void disable_cursor();

@@ -413,7 +413,7 @@ int main()
     quit = 0;
     buffer = 0;
     buff_1 = get_pbase();
-    buff_2 = malloc_256((SCREEN_WIDTH * SCREEN_HEIGHT) >> 3);
+    buff_2 = buff_256();
 
     /* Initialize model */
     time_then = get_time();
@@ -445,14 +445,14 @@ int main()
             /* Render frame */
             if (buffer == 0)
             {
-                print_debug(buff_2, "FPS:", 70/time_elapsed);
+                print_debug(buff_2, "Ticks:", time_elapsed);
                 render(buff_2, &model);
                 set_screen(buff_2);
                 buffer = 1;
             }
             else
             {
-                print_debug(buff_1, "FPS:", 70/time_elapsed);
+                print_debug(buff_1, "Ticks:", time_elapsed);
                 render(buff_1, &model);
                 set_screen(buff_1);
                 buffer = 0;
@@ -463,7 +463,6 @@ int main()
     }
 
     set_screen(buff_1);
-    free_buff(buff_2);
 
     return 0;
 }

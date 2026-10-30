@@ -21,31 +21,22 @@
 #include <stdio.h>
 #include "system.h"
 
+static UINT32 buffer[8008]; /* Extra 8 longs for 256 bit alignment */
+
 /* Return the memory address of the framebuffer */
 UINT32 *get_pbase()
 {
 	return (UINT32 *)Physbase();
 }
 
-UINT32 *malloc_256(int bytes)
+UINT32 *buff_256()
 {
-	UINT32 *mem = (UINT32 *)Malloc(bytes+256);
-	int i;
+	UINT32 *buff = buffer;
 
 	/* 256 bit align */
-	mem = (UINT32 *)(((UINT32)mem + 255) & ~255);
+	buff = (UINT32 *)(((UINT32)buff + 255) & ~255);
 
-	/* Clear memory */
-	for (i = 0; i < (bytes / 4); i++)
-		/* Clear all longs */
-		*(mem + i) = 0;
-
-	return mem;
-}
-
-void free_buff(UINT32 *ptr)
-{
-	Mfree(ptr);
+	return buff;
 }
 
 void set_screen(UINT32 *base)

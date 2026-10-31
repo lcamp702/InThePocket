@@ -70,7 +70,8 @@ UINT8 asynch_is_hit(Model *model, char key)
 
 	pitch = asynch_key_to_pitch(key);
 
-	model->targets[pitch] = 1; /* Enable the target for this pitch. */
+	if (pitch < TARGET_COUNT)
+		model->targets[pitch] = 1; /* Enable the target for this pitch. */
 
 	/* Hit conditions */
 	song_playing = model->head <= model->note_count;	 /* Check if song is playing  */

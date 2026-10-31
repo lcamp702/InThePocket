@@ -188,6 +188,8 @@ void plot_n32bit_bitmap(UINT32 *base, int row, int col, const UINT32 *bitmap, UI
 */
 void plot_character(UINT8 *base, int row, int col, char ch);
 void plot_ncharacter(UINT8 *base, int row, int col, char ch);
+void plot_xcharacter(UINT8 *base, int row, int col, char ch, UINT8 size);
+void plot_xncharacter(UINT8 *base, int row, int col, char ch, UINT8 size);
 
 /*----- Function: plot_string -----
 
@@ -201,5 +203,7 @@ void plot_ncharacter(UINT8 *base, int row, int col, char ch);
 */
 void plot_string(UINT8 *base, int row, int col, char *ch);
 void plot_nstring(UINT8 *base, int row, int col, char *ch);
+void plot_xstring(UINT32 *base, int row, int col, char *ch, UINT8 size);
+void plot_nxstring(UINT32 *base, int row, int col, char *ch, UINT8 size);
 
 #endif

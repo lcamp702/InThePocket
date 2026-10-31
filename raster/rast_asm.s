@@ -48,12 +48,19 @@ BYTE_COLS	equ		80
 ; INPUT: Address(UINT32*): to the start of the screen
 ; OUTPUT: None
 		xdef		_clear_screen
+		xdef		_fill_screen
 
 cs_base		equ		64	; Offset from SP, not A6
+
+_fill_screen:	; Quick clear with ones instead of zeroes
+		movem.l		d0-7/a0-6,-(sp) ; Store existing register values
+		lea		ones,a0		; Prep ones for registers
+		bra		fill_prep	; Reuse clearing code
+
 _clear_screen:	; Quick clear code from Raster Lab on D2L
 		movem.l		d0-7/a0-6,-(sp) ; Store existing register values
-
 		lea		zeros,a0
+fill_prep:
 		movem.l		(a0)+,d1-7/a1-6	; Clear registers d1-7 and a1-6
 
 		movea.l		cs_base(sp),a0	; a0 points framebuffer base
@@ -1362,6 +1369,8 @@ bm32_end:
 ; OUTPUT: None
 		xdef		_plot_character
 
+		xref		pocket8
+
 FONT_HEIGHT	equ		8
 
 pc_base		equ		8
@@ -1384,7 +1393,7 @@ _plot_character:
 		subi.w		#' ',d0		; Get font table symbol index
 		mulu.w		#FONT_HEIGHT,d0		; Get font table byte address (x8 for 8px height)
 
-		lea		font,a0		; a0 = font base pointer
+		lea		pocket8,a0	; a0 = font base pointer
 		adda.w		d0,a0		; Offset by # of bytes
 
 		; Push parameters for bitmap subroutine
@@ -1444,103 +1453,6 @@ pst_end:
 		unlk		a6
 		rts
 
+		even
 zeros:		ds.l		13
-
-; =============== FONTS ===============
-
-; 8x8 Font Bitmap table
-		xdef		font
-font:		dc.b            $00,$00,$00,$00,$00,$00,$00,$00  ; <space>
-                dc.b            $30,$30,$30,$30,$00,$30,$00,$00  ; !
-                dc.b            $D8,$D8,$00,$00,$00,$00,$00,$00  ; "
-                dc.b            $48,$FC,$48,$48,$FC,$48,$00,$00  ; #
-                dc.b            $10,$3C,$70,$38,$1C,$78,$10,$00  ; $
-                dc.b            $C4,$C8,$10,$20,$4C,$8C,$00,$00  ; %
-                dc.b            $20,$70,$20,$74,$D8,$74,$00,$00  ; &
-                dc.b            $30,$30,$20,$00,$00,$00,$00,$00  ; '
-                dc.b            $18,$30,$30,$30,$30,$18,$00,$00  ; (
-                dc.b            $60,$30,$30,$30,$30,$60,$00,$00  ; )
-                dc.b            $00,$50,$20,$F8,$20,$50,$00,$00  ; *
-                dc.b            $00,$20,$20,$F8,$20,$20,$00,$00  ; +
-                dc.b            $00,$00,$00,$00,$30,$30,$20,$00  ; ,
-                dc.b            $00,$00,$00,$F8,$00,$00,$00,$00  ; -
-                dc.b            $00,$00,$00,$00,$30,$30,$00,$00  ; .
-                dc.b            $00,$08,$10,$20,$40,$80,$00,$00  ; /
-                dc.b            $7C,$E2,$E2,$E2,$E2,$7C,$00,$00  ; 0
-                dc.b            $18,$38,$78,$38,$38,$38,$00,$00  ; 1
-                dc.b            $3C,$4E,$0E,$1C,$38,$7E,$00,$00  ; 2
-                dc.b            $3C,$4E,$1C,$0E,$4E,$3C,$00,$00  ; 3
-                dc.b            $0C,$1C,$3C,$5C,$7E,$1C,$00,$00  ; 4
-                dc.b            $7E,$70,$7C,$0E,$4E,$3C,$00,$00  ; 5
-                dc.b            $18,$30,$7C,$72,$72,$3C,$00,$00  ; 6
-                dc.b            $7E,$0E,$0E,$1C,$38,$38,$00,$00  ; 7
-                dc.b            $3C,$72,$3C,$4E,$4E,$3C,$00,$00  ; 8
-                dc.b            $3C,$4E,$4E,$3E,$0C,$18,$00,$00  ; 9
-                dc.b            $00,$60,$60,$00,$60,$60,$00,$00  ; :
-                dc.b            $00,$60,$60,$00,$60,$60,$40,$00  ; ;
-                dc.b            $00,$18,$30,$60,$30,$18,$00,$00  ; <
-                dc.b            $00,$00,$F8,$00,$F8,$00,$00,$00  ; =
-                dc.b            $00,$60,$30,$18,$30,$60,$00,$00  ; >
-                dc.b            $78,$9C,$18,$30,$00,$30,$00,$00  ; ?
-                dc.b            $78,$D4,$AC,$BC,$C0,$78,$00,$00  ; @
-                dc.b            $38,$38,$5C,$7C,$8E,$8E,$00,$00  ; A
-                dc.b            $FC,$E2,$FC,$E2,$E2,$FC,$00,$00  ; B
-                dc.b            $3C,$66,$E0,$E0,$66,$3C,$00,$00  ; C
-                dc.b            $F8,$E4,$E2,$E2,$E4,$F8,$00,$00  ; D
-                dc.b            $FE,$E0,$FC,$E0,$E0,$FE,$00,$00  ; E
-                dc.b            $FE,$E0,$FC,$E0,$E0,$E0,$00,$00  ; F
-                dc.b            $3C,$66,$E0,$EE,$62,$3C,$00,$00  ; G
-                dc.b            $E2,$E2,$FE,$E2,$E2,$E2,$00,$00  ; H
-                dc.b            $38,$38,$38,$38,$38,$38,$00,$00  ; I
-                dc.b            $0E,$0E,$0E,$0E,$8E,$7C,$00,$00  ; J
-                dc.b            $E2,$E4,$E8,$F8,$E4,$E2,$00,$00  ; K
-                dc.b            $E0,$E0,$E0,$E0,$E0,$FE,$00,$00  ; L
-                dc.b            $86,$CE,$FE,$AE,$8E,$8E,$00,$00  ; M
-                dc.b            $E2,$F2,$FA,$BE,$9E,$8E,$00,$00  ; N
-                dc.b            $38,$64,$E2,$E2,$64,$38,$00,$00  ; O
-                dc.b            $F8,$E4,$E2,$E4,$F8,$E0,$00,$00  ; P
-                dc.b            $38,$64,$E2,$E2,$64,$3E,$00,$00  ; Q
-                dc.b            $F8,$E4,$E2,$E4,$F8,$E6,$00,$00  ; R
-                dc.b            $7C,$F2,$78,$3C,$9E,$7C,$00,$00  ; S
-                dc.b            $FE,$38,$38,$38,$38,$38,$00,$00  ; T
-                dc.b            $E2,$E2,$E2,$E2,$E2,$7C,$00,$00  ; U
-                dc.b            $E2,$E2,$74,$74,$38,$38,$00,$00  ; V
-                dc.b            $E2,$E2,$EA,$FE,$E6,$C2,$00,$00  ; W
-                dc.b            $E2,$F4,$78,$3C,$5E,$8E,$00,$00  ; X
-                dc.b            $E2,$F4,$78,$30,$20,$40,$00,$00  ; Y
-                dc.b            $FE,$1E,$3C,$78,$F0,$FE,$00,$00  ; Z
-                dc.b            $3C,$30,$30,$30,$30,$3C,$00,$00  ; [
-                dc.b            $00,$80,$40,$20,$10,$08,$00,$00  ; \
-                dc.b            $F0,$30,$30,$30,$30,$F0,$00,$00  ; ]
-                dc.b            $20,$70,$F8,$20,$20,$20,$00,$00  ; ^
-                dc.b            $00,$00,$00,$00,$00,$00,$FE,$00  ; _
-                dc.b            $30,$30,$10,$00,$00,$00,$00,$00  ; `
-		dc.b            $38,$38,$5C,$7C,$8E,$8E,$00,$00  ; A
-                dc.b            $FC,$E2,$FC,$E2,$E2,$FC,$00,$00  ; B
-                dc.b            $3C,$66,$E0,$E0,$66,$3C,$00,$00  ; C
-                dc.b            $F8,$E4,$E2,$E2,$E4,$F8,$00,$00  ; D
-                dc.b            $FE,$E0,$FC,$E0,$E0,$FE,$00,$00  ; E
-                dc.b            $FE,$E0,$FC,$E0,$E0,$E0,$00,$00  ; F
-                dc.b            $3C,$66,$E0,$EE,$62,$3C,$00,$00  ; G
-                dc.b            $E2,$E2,$FE,$E2,$E2,$E2,$00,$00  ; H
-                dc.b            $38,$38,$38,$38,$38,$38,$00,$00  ; I
-                dc.b            $0E,$0E,$0E,$0E,$8E,$7C,$00,$00  ; J
-                dc.b            $E2,$E4,$E8,$F8,$E4,$E2,$00,$00  ; K
-                dc.b            $E0,$E0,$E0,$E0,$E0,$FE,$00,$00  ; L
-                dc.b            $86,$CE,$FE,$AE,$8E,$8E,$00,$00  ; M
-                dc.b            $E2,$F2,$FA,$BE,$9E,$8E,$00,$00  ; N
-                dc.b            $38,$64,$E2,$E2,$64,$38,$00,$00  ; O
-                dc.b            $F8,$E4,$E2,$E4,$F8,$E0,$00,$00  ; P
-                dc.b            $38,$64,$E2,$E2,$64,$3E,$00,$00  ; Q
-                dc.b            $F8,$E4,$E2,$E4,$F8,$E6,$00,$00  ; R
-                dc.b            $7C,$F2,$78,$3C,$9E,$7C,$00,$00  ; S
-                dc.b            $FE,$38,$38,$38,$38,$38,$00,$00  ; T
-                dc.b            $E2,$E2,$E2,$E2,$E2,$7C,$00,$00  ; U
-                dc.b            $E2,$E2,$74,$74,$38,$38,$00,$00  ; V
-                dc.b            $E2,$E2,$EA,$FE,$E6,$C2,$00,$00  ; W
-                dc.b            $E2,$F4,$78,$3C,$5E,$8E,$00,$00  ; X
-                dc.b            $E2,$F4,$78,$30,$20,$40,$00,$00  ; Y
-                dc.b            $FE,$1E,$3C,$78,$F0,$FE,$00,$00  ; Z
-                dc.b            $3C,$30,$E0,$30,$30,$3C,$00,$00  ; {
-                dc.b            $20,$20,$20,$20,$20,$20,$00,$00  ; |
-                dc.b            $F0,$30,$1C,$30,$30,$F0,$00,$00  ; }
+ones:		dcb.l		13,-1

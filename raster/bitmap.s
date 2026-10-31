@@ -35,232 +35,6 @@ ROWS		equ		400
 COLS		equ		640
 BYTE_COLS	equ		80
 
-; ==== void fill_screen(UINT32 *base) ====
-; PURPOSE: Fills the entire screen.
-; INPUT: Address(UINT32*): to the start of the screen
-; OUTPUT: None
-        	xdef		_fill_screen
-
-fs_base		equ		64	; Offset from SP, not A6
-_fill_screen:	; Quick fill code based on Raster Lab on D2L
-		movem.l		d0-7/a0-6,-(sp) ; Store existing register values
-
-		lea		ones,a0
-		movem.l		(a0)+,d1-7/a1-6	; Clear registers d1-7 and a1-6
-
-		movea.l		fs_base(sp),a0	; a0 points framebuffer base
-		adda.l		#32000,a0	; a0 points to end of framebuffer
-		move.w		#614,d0	; Set loop counter to 614 (615 * 13 = 7995 longs)
-fill_loop:
-		movem.l		d1-7/a1-6,-(a0) ; Clear 13 longs at once and decrement
-		dbra		d0,fill_loop
-		; End loop
-		movem.l		d1-5,-(a0)	; Clear remaining 5 longs
-
-		movem.l		(sp)+,d0-7/a0-6 ; Return existing register values
-		rts
-
-; ==== void clear_20l(UINT32 *base, int row, UINT16 height) ====
-; PURPOSE: Clears entire scanlines.
-; INPUT: Address(UINT32*): to the start of the screen
-;	height(UINT16): the number of lines to clear
-; OUTPUT: None
-        	xdef		_clear_20l
-
-cl_base		equ		64	; Offset from SP, not A6
-cl_row		equ		68
-cl_height	equ		70
-_clear_20l:	; Quick fill code based on Raster Lab on D2L
-		movem.l		d0-7/a0-6,-(sp) ; Store existing register values
-
-		lea		zeros,a0
-		movem.l		(a0)+,d1-7/a1-6	; Clear registers d1-7 and a1-6
-
-
-		move.w		cl_height(sp),d0	; Set loop counter to height
-		beq.b		cl_end		; End if no height
-		subq.w		#1,d0		; Predecrement for dbra
-
-		move.w		cl_row(sp),d1	; d1.w = Row #
-		bpl.b		cl_pos_row
-		neg.w		d1		
-		sub.w		d1,d0		; Subtract from height	
-		bls.w		cl_end		; Not on screen, exit
-		clr.w		d1		; Reset row to 0
-cl_pos_row:
-		cmp.w		#ROWS,d1
-		bge.w		cl_end		; Row upper bound check
-
-		add.w		d0,d1		; d1.w = row + height
-		move.w		d1,d2
-		lsl.w		#6,d1
-		lsl.w		#4,d2
-		add.w		d2,d1		; d1.w = 80 * (row + height)
-
-		movea.l		d1,a0		; a0 = framebuffer offset
-		cmpa.l		#32000,a0	; check if offset is within framebuffer
-		ble		cl_print
-		movea.l		#32000,a0	; clip to end of framebuffer
-cl_print:
-		moveq.l		#0,d1
-		moveq.l		#0,d2
-		adda.l		cl_base(sp),a0	; a0 points framebuffer
-cl_loop:
-		movem.l		d1-7/a1-6,-(a0) ; Clear 13 longs at once and decrement
-		movem.l		d1-7,-(a0)	; Clear remaining 7 longs and decrement
-		dbra		d0,cl_loop
-cl_end:
-		movem.l		(sp)+,d0-7/a0-6 ; Return existing register values
-		rts
-
-; ==== void fill_region(UINT32 *base, int row, int col, UINT16 length, UINT16 width) ====
-; PURPOSE: Fills a region of the screen. The section is specified by the coordinates of the top left corner, and the height and width of the region.
-; INPUT: Address(UINT32*): to the start of the screen
-;	   Position(row,col): the coordinates of the top left pixel of the region
-;	   Length: the length (number of rows) in pixels of the region
-;	   Width: the width (number of columns) in pixels of the region
-; OUTPUT: None
-		xdef		_fill_region
-
-fr_base		equ		44
-fr_row		equ		48
-fr_col		equ		50
-fr_len		equ		52
-fr_wid		equ		54
-_fill_region:
-		movem.l		d0-6/a0-2,-(sp)
-
-		; Copy params to registers and bound check
-		move.w		fr_len(sp),d3	; d3.w = Length
-		beq.w		fr_end		; if (length == 0) return
-
-		move.w		fr_row(sp),d0	; d0.w = Row #
-		bpl.b		fr_pos_row
-		neg.w		d0		
-		sub.w		d0,d3		; Subtract from length	
-		bls.w		fr_end		; Not on screen, exit
-		clr.w		d0		; Reset row to 0
-fr_pos_row:
-		cmp.w		#ROWS,d0
-		bge.w		fr_end		; Row upper bound check
-
-		move.w		fr_wid(sp),d2	; d2.w = Width
-		ble.w		fr_end		; if (width < 0) return
-
-		move.w		fr_col(sp),d1	; d1.w = Column #
-		bpl.b		fr_pos_col
-		neg.w		d1		
-		sub.w		d1,d2		; Subtract from width	
-		bls.w		fr_end		; Not on screen, exit
-		clr.w		d1		; Reset start col to 0
-fr_pos_col:
-		cmp.w		#COLS,d1	
-		bge.w		fr_end		; Col upper bound check
-
-		movea.l		fr_base(sp),a0	; a0.l = framebuffer base
-		movea.l		a0,a1		; a1.l = framebuffer base
-
-		; Calculate end row offset
-		move.w		d0,d4
-		add.w		d3,d4		; d4.w = row + length
-
-		; Clip length
-		cmp.w		#ROWS,d4
-		ble.b		fr_row_clipped	; If end row < ROWS continue
-		move.w		#ROWS,d3	; End row is too large, clip it
-		move.w		d3,d4		; d4.w = Clipped end row
-		sub.w		d0,d3		; d3.w = Clipped length
-fr_row_clipped:	; End row is on the screen
-		subq.w		#1,d4		; d4.w = End row
-
-		; Calculate row offset in bytes
-		move.w		d4,d5
-		lsl.w		#4,d4
-		lsl.w		#6,d5
-		add.w		d5,d4		; d4.w = End row byte offset
-
-		move.w		d1,d0		; d0.w = Copy of start col for shift calc
-
-		; Calculate end col
-		add.w		d1,d2		; d2.w = Col + Width
-
-		; Move end pointer
-		lsr.w		#3,d1		; d1.w = Start long offset
-		andi.w		#$FFFC,d1		; d1.w = Start byte offset (long aligned)
-		add.w		d4,d1		
-		adda.w		d1,a1		; End pointer is at the first pixel of the last row to clear
-
-		; Clip width
-		cmp.w		#COLS,d2	
-		ble.w		fr_col_clipped	; If end col < COLS continue
-		move.w		#COLS,d2
-fr_col_clipped:
-		subq.w		#1,d2		; d2.w = End col
-
-		move.w		d2,d4		; d4.w = Copy of end col for shift calc
-
-		move.w		d0,d1		; d1.w = Start col
-		lsr.w		#5,d1		; d1.w = Start long offset
-		lsr.w		#5,d2		; d2.w = End long offset
-
-		; Create shifted start mask
-
-		andi.w		#31,d0		; d0.w = Start col % 32
-		moveq.l		#-1,d5		; d5.l = (0xFFFFFFFF)
-		lsr.l		d0,d5		; d5.l = Shifted start mask
-
-		andi.w		#31,d4		; d4.w = End col % 32
-		neg.w		d4		; d4.w = -(End col % 32)
-		addi.w		#31,d4		; d4.w = End mask left shift val
-
-		; Create shifted end mask
-		moveq.l		#-1,d0		; d0.l = (0xFFFFFFFF)
-		lsl.l		d4,d0		; d0.l = Shifted end mask
-
-		; Start filling the screen
-		move.l		#BYTE_COLS,d6	; d1.l = #80 for quicker sub loop
-						; 8(length) - 12 clocks speedup. (Slower for length = 1)
-
-		subq.w		#1,d3
-
-		cmp.w		d1,d2
-		bne.b		fr_thick
-
-		; Clearing mask fits in one long
-		and.l		d5,d0		; d0.l = Full mask
-fr_thin_loop:	; Apply mask over entire length
-		or.l		d0,(a1)		; Apply mask to target long in memory
-		suba.l		d6,a1		; Move back one row
-		dbra.w		d3,fr_thin_loop
-		bra		fr_end
-
-fr_thick:	; Clearing spans multiple longs
-		moveq.l		#-1,d4		; d4.l = ones mask
-		sub.w		d1,d2		; d2 = End offset - start offset
-		subq.w		#2,d2		; d2 = Fills count
-
-fr_thick_loop:
-		move.w		d2,d1		; d1.w = Row fill counter
-
-		movea.l		a1,a2		; a2.l = Row cursor
-		suba.l		d6,a1		; Move a1 back one row
-
-		or.l		d5,(a2)+	; Apply start mask to long in memory
-
-		tst.w		d2
-		blt.b		fr_thick_end	; Skip fills if fill count < 0
-fr_thick_fill:
-		move.l		d4,(a2)+	; Clear long in memory
-		dbra.w		d1,fr_thick_fill
-
-fr_thick_end:
-		or.l		d0,(a2)		; Apply end mask to long in memory
-		dbra.w		d3,fr_thick_loop	
-
-fr_end:
-		movem.l		(sp)+,d0-6/a0-2
-		rts
-
 ; ==== void plot_n8bit_bitmap(UINT8 *base, int row, int col, const UINT8 *bitmap, UINT16 height) ====
 ; PURPOSE: Plots a bitmap to the screen given by the top left pixel of the bitmap and the height of bitmap.
 ; INPUT: Address(UINT8*): to the start of the screen
@@ -666,97 +440,6 @@ nbm32_end:
 		movem.l		(sp)+,d0-4/a0-1
 		rts
 
-; ==== void plot_ncharacter(UINT8 *base, int row, int col, char ch) ====
-; PURPOSE: Plots a single character, as a bitmap from a font table, to the screen.
-; INPUT: Address(UINT8*): to the start of the screen
-;		Position(row,col): the coordinates of the top left pixel of the character
-;		ch(char): the character to be written to the screen
-; OUTPUT: None
-		xdef		_plot_ncharacter
-		xref		font
-
-FONT_HEIGHT	equ		8
-
-pn_base		equ		8
-pn_row		equ		12
-pn_col		equ		14
-pn_char		equ		17
-_plot_ncharacter:
-		link	a6,#0
-		movem.l	d0/a0,-(sp)
-
-		; IS_PRINTABLE
-		move.b		pn_char(a6),d0	; Get char #
-		cmpi.b		#' ',d0		; Compare to space (ASCII 32) for printable check
-		blt.b		pn_end		; Below printable range, exit
-		cmpi.b		#'~',d0		; Compare to tilde (ASCII 126) for printable check
-		bgt.b		pn_end		; Above printable range, exit
-
-		; GLYPH_START
-		ext.w		d0
-		subi.w		#' ',d0		; Get font table symbol index
-		mulu.w		#FONT_HEIGHT,d0		; Get font table byte address (x8 for 8px height)
-
-		lea		font,a0		; a0 = font base pointer
-		adda.w		d0,a0		; Offset by # of bytes
-
-		; Push parameters for bitmap subroutine
-		move.w		#FONT_HEIGHT,-(sp)	; Set height
-		move.l		a0,-(sp)		; Pass bitmap char pointer
-		move.w		pn_col(a6),-(sp)	; Pass col
-		move.w		pn_row(a6),-(sp)	; Pass row
-		move.l		pn_base(a6),-(sp)	; Pass framebuffer base pointer
-		jsr		_plot_n8bit_bitmap	; Plot negative bitmap
-		adda.w		#14,sp		; Super pop
-pn_end:
-		movem.l		(sp)+,d0/a0
-		unlk		a6
-		rts
-
-; ==== void plot_nstring(UINT8 *base, int row, int col, char *ch) ====
-; PURPOSE: Plots a string, as a sequence of bitmaps from a font table, to the screen.
-; INPUT: Address(UINT8*): to the start of the screen
-;	 Position(row,col): the coordinates of the top left pixel of the string
-;	 ch(c-string): the string to be written to the screen
-; OUTPUT: None
-		xdef		_plot_nstring
-
-pns_base	equ		8
-pns_row		equ		12
-pns_col		equ		14
-pns_char	equ		16
-_plot_nstring:
-		link		a6,#0
-		movem.l		a5,-(sp)
-
-		move.l		pns_char(a6),a5	; a5.l = String char pointer
-
-		suba.w		#10,sp
-
-		move.l		pns_base(a6),(sp)	; 0: base	0(sp)
-		move.w		pns_row(a6),4(sp)	; 1: row	4(sp)
-		move.w		pns_col(a6),6(sp)	; 2: col	6(sp)
-		move.b		#0,8(sp)	; Clear top byte of param 3 for char
-pns_loop:
-		move.b		(a5)+,9(sp)	; 3: char	9(sp)
-		beq		pns_end		; Stop printing on null terminator
-		; More to print
-		jsr		_plot_ncharacter
-
-		addq.w		#8,6(sp)
-		cmpi.w		#COLS-8,6(sp)
-		ble.b		pns_loop
-		; Wrap to next line
-		move.w		#0,6(sp)
-		add.w		#FONT_HEIGHT,4(sp)
-		bra		pns_loop
-
-pns_end:
-		adda.w		#10,sp
-		movem.l		(sp)+,a5
-		unlk		a6
-		rts
-
 ; ==== void plot_20l_bitmap(UINT32 *base, int row, UINT32 *bitmap, UINT16 height) ====
 ; PURPOSE: Plots a full width bitmap across the screen from the given row
 ; INPUT: Address(UINT32 *): to the start of the screen
@@ -766,12 +449,12 @@ pns_end:
 ; OUTPUT: None
 		xdef		_plot_20l_bitmap
 
-bml20_base	equ		32
-bml20_row	equ		36
-bml20_bmp	equ		38
-bml20_hei	equ		42
+bml20_base	equ		56
+bml20_row	equ		60
+bml20_bmp	equ		62
+bml20_hei	equ		66
 _plot_20l_bitmap:
-		movem.l		d0-4/a0-1,-(sp)
+		movem.l		d0-7/a0-4,-(sp)
 
 		; Height must be > 0
 		move.w		bml20_hei(sp),d0	; d0.w = height
@@ -812,30 +495,30 @@ bml20_bottom:
 		move.w		d2,d0		; Clamp height to visible height
 
 bml20_clipped_row:	; Clipped row + height found
-		mulu.w		#20,d0		; Multiply by 20 for long count
-		subq.w		#1,d0		; Predecrement long count for print loop
-
-
 		; Move fb pointer to first byte of row
 		movea.l		bml20_base(sp),a0	; a0.l = Framebuffer base pointer
+		add.w		d0,d1
 		move.w		d1,d2
 		lsl.w		#4,d1
 		lsl.w		#6,d2
-		add.w		d2,d1		; d1.w = Row byte offset
+		add.w		d2,d1		; d1.w = Final row byte offset
 		adda.w		d1,a0		; a0 points to the first row to draw on
 		
-bml20_loop:
-		move.l		(a1)+,d3	; d3.l = Bitmap row
-		or.l		d3,(a0)+	; Apply bitmap row mask to framebuffer
+		subq.w		#1,d0		; Predecrement loop count
+bml20_loop:	; Print entire rows. Longs are printed in reverse order.
+		movem.l		(a1)+,d1-7/a2-4
+		movem.l		d1-7/a2-4,-(a0)	; Transfer 10 registers
+		movem.l		(a1)+,d1-7/a2-4
+		movem.l		d1-7/a2-4,-(a0)	; Transfer 10 more registers
 		dbra		d0,bml20_loop
 
 		bra		bml20_end
 
 bml20_end:
-		movem.l		(sp)+,d0-4/a0-1
+		movem.l		(sp)+,d0-7/a0-4
 		rts
 
 
-
+		even
 ones:		dcb.l		13,-1
 zeros:		ds.l		13

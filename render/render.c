@@ -49,20 +49,22 @@ static const int pitch_row[4] = {
 	STAFF_BOTTOM + 1 - (3 * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH)),
 	STAFF_BOTTOM + 1 - (4 * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH))};
 
-static const UINT32 *const note_heads[3] = {
+static const UINT32 *note_heads[3] = {
 	note_whole_head,
 	note_half_head,
 	note_black_head};
 
-void print_debug(UINT8 *base, char *text, UINT32 number)
+static UINT32 staff_cache[2160];
+
+void print_debug(UINT32 *base, char *text, UINT32 number)
 {
 	char s[SCORE_MAX_LEN];
 	int i = 0;
 	int j;
 
-	fill_region((UINT32 *)base, 24, 8, 8, 88);
+	fill_region(base, 24, 8, 8, 88);
 
-	plot_nstring(base, 24, 8, text);
+	plot_nxstring(base, 24, 8, text, 0);
 
 	do
 	{
@@ -78,7 +80,7 @@ void print_debug(UINT8 *base, char *text, UINT32 number)
 		s[i] = s[j];
 		s[j] = temp;
 	}
-	plot_nstring(base, 24, 56, s);
+	plot_nxstring(base, 24, 56, s, 0);
 }
 
 /*------ Function: render ------
@@ -97,11 +99,12 @@ void render(UINT32 *base, Model *model)
 	if (model->render_bg)
 	{ /* Plot background once */
 		clear_screen(base);
+		render_staff(base);
 		plot_20l_bitmap(base, 0, bg, BG_HEIGHT);
 		model->render_bg--;
 	}
 
-	render_staff(base);
+	clean_staff(base);
 
 	next_note = model_next_disp_note(model);
 	playback_col = NOTE_START_X - model->game_clock;
@@ -210,15 +213,29 @@ void render_staff(UINT32 *base)
 {
 	int row = STAFF_BOTTOM - 1;
 	int i, w;
-
-	clear_20l(base, 283, 108);
-
+	
 	for (i = 0; i < LINE_COUNT; i++)
 	{
 		for (w = 0; w < STAFF_LINE_WIDTH; w++)
 		{
 			plot_horizontal_line(base, row + w, 0, SCREEN_WIDTH);
 		}
+		row -= (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH);
+	}
+}
+
+void clean_staff(UINT32 *base)
+{
+	int row = STAFF_BOTTOM - 1;
+	int i;
+
+	/* Clear below */
+	clear_20l(base, STAFF_BOTTOM + STAFF_LINE_WIDTH, 10);
+
+	for (i = 0; i < LINE_COUNT; i++)
+	{
+		/* Clear between the lines */
+		clear_20l(base, row - NOTE_HEAD_HEIGHT, NOTE_HEAD_HEIGHT);
 		row -= (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH);
 	}
 }
@@ -277,6 +294,6 @@ void render_score(UINT32 *base, int row, int col, UINT32 score)
 		s[j] = temp;
 	}
 
-	fill_region(base, row, col, 8, 8 * SCORE_MAX_LEN);
-	plot_nstring((UINT8 *)base, row, col, s);
+	fill_region(base, row, col, 16, 16 * SCORE_MAX_LEN);
+	plot_nxstring((UINT8 *)base, row, col, s, 1);
 }

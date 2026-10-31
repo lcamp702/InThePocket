@@ -25,7 +25,7 @@
 #include "../types.h"
 #include "../model/model.h"
 
-void print_debug(UINT8 *base, char *text, UINT32 number);
+void print_debug(UINT32 *base, char *text, UINT32 number);
 
 /*------ Function: render ------
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
@@ -65,6 +65,7 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 OUTPUT: N/A
 */
 void render_staff(UINT32 *base);
+void clean_staff(UINT32 *base);
 
 /*------ Function: render_targets ------
 PURPOSE: Renders one target.

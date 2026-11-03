@@ -32,7 +32,7 @@
 /* ===== Score ===== */
 #define SCORE_ROW 8
 #define SCORE_COL 8
-#define SCORE_MAX_LEN 12
+#define SCORE_MAX_LEN 6
 
 /* ===== Notes ===== */
 #define STEM_LENGTH (int)((NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH) * 3.5)
@@ -118,6 +118,7 @@ void render(UINT32 *base, Model *model)
 	{
 		render_meter(base, &model->meter);
 		render_score(base, SCORE_ROW, SCORE_COL, model->meter.score);
+		render_multiplier(base, SCORE_ROW, SCORE_COL, model->meter.multiplier, model->meter.multi_progress);
 		model->meter.dirty--;
 	}
 }
@@ -275,7 +276,7 @@ OUTPUT: N/A
 */
 void render_score(UINT32 *base, int row, int col, UINT32 score)
 {
-	char s[SCORE_MAX_LEN];
+	char s[SCORE_MAX_LEN + 1];
 	int i = 0;
 	int j;
 
@@ -283,7 +284,7 @@ void render_score(UINT32 *base, int row, int col, UINT32 score)
 	{
 		s[i++] = (char)((score % 10) + '0');
 		score /= 10;
-	} while (score > 0);
+	} while (score > 0 && i < SCORE_MAX_LEN);
 
 	s[i] = '\0';
 
@@ -295,5 +296,26 @@ void render_score(UINT32 *base, int row, int col, UINT32 score)
 	}
 
 	fill_region(base, row, col, 16, 16 * SCORE_MAX_LEN);
-	plot_nxstring((UINT8 *)base, row, col, s, 1);
+	plot_nxstring(base, row, col, s, 1);
+}
+
+void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progress)
+{
+	/* Print score multiplier */
+	char str[3] = {'x', '0', '\0'};
+	int i;
+
+	str[1] += multi;
+	/* Update to clear 32,64 when 32bit fonts are added. */
+	fill_region(base, row, col + (16 * SCORE_MAX_LEN), 16, 32);
+	/* Update size to 2 when 32bit fonts are added. */
+	plot_nxstring(base, row, col + (16 * SCORE_MAX_LEN), str, 1);
+
+	for (i = 0; i < CONSEC_MULTI; i++) {
+		plot_8bit_bitmap((UINT8 *)base, row + 24, col + (i * 10), multi_on, MULTI_HEIGHT);
+		if(progress > i)
+			plot_n8bit_bitmap((UINT8 *)base, row + 24, col + (i * 10), multi_on, MULTI_HEIGHT);
+		else
+			plot_n8bit_bitmap((UINT8 *)base, row + 24, col + (i * 10), multi_off, MULTI_HEIGHT);
+	}
 }

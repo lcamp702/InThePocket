@@ -88,4 +88,6 @@ OUTPUT: N/A
 */
 void render_score(UINT32 *base, int row, int col, UINT32 score);
 
+void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progress);
+
 #endif

@@ -62,4 +62,9 @@ extern const UINT16 target_on_bmp[NOTE_HEAD_HEIGHT];
 
 extern const UINT32 bg[BG_HEIGHT];
 
+#define MULTI_HEIGHT 8
+
+extern const UINT8 multi_on[MULTI_HEIGHT];
+extern const UINT8 multi_off[MULTI_HEIGHT];
+
 #endif

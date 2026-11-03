@@ -19,7 +19,6 @@
 #include "meter.h"
 
 #define MAX_MULTI 4
-#define CONSEC_MULTI 10
 
 /*initializes meter*/
 /*------ Function: meter_init ------

@@ -26,6 +26,7 @@
 #define MISS_PENALTY_ENJOYMENT 5
 #define HIT_REWARD_ENJOYMENT 2
 #define HIT_REWARD_SCORE 10
+#define CONSEC_MULTI 10	/* Number of hits in a row to increase multiplier */
 
 typedef struct Meter
 {

@@ -108,7 +108,7 @@ void tick_and_show(Model *model, UINT32 *base, UINT16 ticks, UINT16 step)
 
 	for (i = 1; i <= ticks; i++)
 	{
-		synch_clock_tick(model);
+		synch_clock_tick(model, i);
 		if (i % step == 0)
 		{
 			show_frame(model, base);
@@ -129,7 +129,7 @@ void skip_ticks(Model *model, UINT16 ticks)
 
 	for (i = 0; i < ticks; i++)
 	{
-		synch_clock_tick(model);
+		synch_clock_tick(model, i);
 	}
 }
 
@@ -146,7 +146,7 @@ void apply_hits_and_show(Model *model, UINT32 *base)
 
 	for (i = 0; i < 30; i++)
 	{
-		synch_clock_tick(model);
+		synch_clock_tick(model, i);
 		if (asynch_is_hit(model, 0) || asynch_is_hit(model, 1) ||
 			asynch_is_hit(model, 2) || asynch_is_hit(model, 3))
 		{
@@ -173,7 +173,7 @@ OUTPUT: N/A
 void test_init(Model *model, UINT32 *base)
 {
 	show("model_init");
-	model_init(model, test_song, TEST_SONG_LEN);
+	model_init(model, test_song, TEST_SONG_LEN, 1);
 	show_frame(model, base);
 }
 
@@ -239,11 +239,14 @@ OUTPUT: N/A
 */
 void test_game_over(Model *model, UINT32 *base, INT8 enjoyment, const char *title)
 {
+	int i;
 	show(title);
-	model_init(model, test_song, TEST_SONG_LEN);
+	model_init(model, test_song, TEST_SONG_LEN, 1);
 	model->meter.enjoyment = enjoyment;
-	skip_ticks(model, 145);
-	tick_and_show(model, base, 12, 1);
+	for(i=145;i<12;i++) {
+		synch_clock_tick(model, i);
+		show_frame(model, base);
+	}
 }
 
 /*------ Function: test_hit ------
@@ -263,12 +266,11 @@ void test_hit(Model *model, UINT32 *base, UINT8 pitch)
 	UINT8 i;
 
 	show("asynch_is_hit");
-	model_init(model, test_song, TEST_SONG_LEN);
-	skip_ticks(model, 138);
-	for (i = 1; i <= 30; i++)
+	model_init(model, test_song, TEST_SONG_LEN, 1);
+	for (i = 138; i <= 168; i++)
 	{
 		model->meter.enjoyment = ENJOYMENT_MAX;
-		synch_clock_tick(model);
+		synch_clock_tick(model, i);
 		asynch_is_hit(model, pitch);
 		if (i % 5 == 0)
 		{
@@ -297,7 +299,7 @@ OUTPUT: N/A
 void test_apply_hit(Model *model, UINT32 *base)
 {
 	show("asynch_apply_hit");
-	model_init(model, test_song, TEST_SONG_LEN);
+	model_init(model, test_song, TEST_SONG_LEN, 1);
 	skip_ticks(model, 138);
 	apply_hits_and_show(model, base);
 }
@@ -331,11 +333,10 @@ void test_apply_miss(Model *model, UINT32 *base)
 	UINT8 i;
 
 	show("asynch_apply_miss");
-	model_init(model, test_song, TEST_SONG_LEN);
-	skip_ticks(model, 133);
-	for (i = 0; i < 5; i++)
+	model_init(model, test_song, TEST_SONG_LEN, 1);
+	for (i = 133; i < 138; i++)
 	{
-		synch_clock_tick(model);
+		synch_clock_tick(model, i);
 		if (!asynch_is_hit(model, 3))
 		{
 			asynch_apply_miss(model);

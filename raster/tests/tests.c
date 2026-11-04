@@ -48,7 +48,7 @@ int main()
 	{
 		for (j = 0; j < 16; j++)
 		{
-			plot_ncharacter(b_fb, j*16, i*8, i+(j*16));
+			plot_xncharacter(b_fb, j*16, i*8, i+(j*16), 0);
 		}
 	}
 

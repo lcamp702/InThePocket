@@ -306,16 +306,14 @@ void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progre
 	int i;
 
 	str[1] += multi;
-	/* Update to clear 32,64 when 32bit fonts are added. */
-	fill_region(base, row, col + (16 * SCORE_MAX_LEN), 16, 32);
-	/* Update size to 2 when 32bit fonts are added. */
-	plot_nxstring(base, row, col + (16 * SCORE_MAX_LEN), str, 1);
+	fill_region(base, row, col + (16 * SCORE_MAX_LEN), 32, 64);
+	plot_nxstring(base, row, col + (16 * SCORE_MAX_LEN), str, 2);
 
 	for (i = 0; i < CONSEC_MULTI; i++) {
-		plot_8bit_bitmap((UINT8 *)base, row + 24, col + (i * 10), multi_on, MULTI_HEIGHT);
+		plot_8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_on, MULTI_HEIGHT);
 		if(progress > i)
-			plot_n8bit_bitmap((UINT8 *)base, row + 24, col + (i * 10), multi_on, MULTI_HEIGHT);
+			plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_on, MULTI_HEIGHT);
 		else
-			plot_n8bit_bitmap((UINT8 *)base, row + 24, col + (i * 10), multi_off, MULTI_HEIGHT);
+			plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_off, MULTI_HEIGHT);
 	}
 }

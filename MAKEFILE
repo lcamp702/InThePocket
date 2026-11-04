@@ -11,7 +11,7 @@ live: tstlive.tos
 # No ext dependencies
 SYSTEM =	build\system.o
 
-build\system.o:
+build\system.o: system\system.c system\system.h
 	cc68x -g -c system\system.c -o build\system.o
 
 # ==== MODEL OBJECTS ====
@@ -76,11 +76,17 @@ RENDER =	build\render.o
 build\render.o: render\render.c render\render.h build\model.o $(RASTER) $(BITMAPS) types.h
 	cc68x -g -c render\render.c -o build\render.o
 
+# ==== SONG OBJECTS ====
+SONG = build\song.o
+
+build\song.o: song\song.c song\song.h
+	cc68x -g -c song\song.c -o build\song.o
+
 # ==== GAME MODULE ====
 # Builds all objects (except tests)
 
-pocket.tos: build\pocket.o $(MODEL) $(EVENTS) $(RASTER) $(BITMAPS) $(RENDER) $(SYSTEM)
-	cc68x -g build\pocket.o $(MODEL) $(EVENTS) $(RASTER) $(BITMAPS) $(RENDER) $(SYSTEM) -o pocket.tos
+pocket.tos: build\pocket.o $(MODEL) $(EVENTS) $(RASTER) $(BITMAPS) $(RENDER) $(SYSTEM) $(SONG)
+	cc68x -g build\pocket.o $(MODEL) $(EVENTS) $(RASTER) $(BITMAPS) $(RENDER) $(SYSTEM) $(SONG) -o pocket.tos
 
 build\pocket.o: pocket.c
 	cc68x -g -c pocket.c -o build\pocket.o

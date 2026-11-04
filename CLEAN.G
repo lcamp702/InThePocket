@@ -1,8 +1,14 @@
-Rm *.tos
 cd raster
-echo 'Clear raster files'
+echo 'Delete raster files'
+Rm *.o
+cd ..
+cd bitmaps
+echo 'Delete bitmap files'
 Rm *.o
 cd ..
 cd build
-echo 'Clear build files'
+echo 'Delete C object files'
 Rm *.o
+cd ..
+echo 'Delete program'
+Rm *.tos

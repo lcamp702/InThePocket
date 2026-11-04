@@ -18,7 +18,7 @@
 
 		xref		pocket8
 		xref		pocket16
-;		xref		pocket32
+		xref		pocket32
 
 pcx_base	equ		8
 pcx_row		equ		12
@@ -57,7 +57,7 @@ pcx_common:
 		beq.b		pcx_sz16	; = 1 (16 bit)
 pcx_sz32:
 		lsl.w		#7,d0		; 128 bytes per char (index << 7)
-;		lea		pocket32,a0	; a0 = font bitmap base address
+		lea		pocket32,a0	; a0 = font bitmap base address
 		moveq		#32,d1		; d1.w = font height
 		movea.l		8(a2),a3	; Load plot function address into memory
 		bra.b		pcx_plot

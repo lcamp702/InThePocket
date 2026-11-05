@@ -1,3 +1,39 @@
+;	Peter Ursem
+;	purse327@mtroyal.ca
+
+;	Logan Campbell
+;	lcamp702@mtroyal.ca
+
+;	COMP2659-001
+;	Steve Kalmar
+
+;	In the Pocket - Checkpoint 3
+;	Due: Nov 9, 2026
+;	raster/bitmap.s    
+
+;	Status:
+;	  Not Tested:
+;
+;	  Visual Tests:
+;		bg
+;		note_whole_head
+;		note_half_head
+;		note_black_head
+;		emp_left
+;		emp_right
+;		full_left
+;		full_right
+
+;	Purpose:
+;	Define bitmaps from binary files
+
+; ===============  BACKGROUNDS  ===============
+; 640px wide bitmaps to plot in their entirety.
+; UINT32 bg[BG_HEIGHT]
+		xdef		_bg
+_bg:		
+		incbin		"bg\bg.bin"
+
 ; ===============  NOTE HEADS  ===============
 ; Each note head is a 16px tall shape. 
 ; The widest form is 32px wide,
@@ -52,9 +88,3 @@ _full_left:
 		xdef		_full_right
 _full_right:	
 		incbin		"meter\ful_rght.bin"
-
-; ===============  BACKGROUNDS  ===============
-; 640px wide bitmaps to plot in their entirety.
-		xdef		_bg
-_bg:		
-		incbin		"bg\bg.bin"

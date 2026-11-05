@@ -12,7 +12,7 @@
 	Due: Oct 19, 2026
 
 	Declarations of the sprite bitmaps used by the renderer. Bitmaps are defined in
-	bitmaps.c, not here, so no space is reserved by including this header.
+	bitmaps.c/bitmaps.s, not here, so no space is reserved by including this header.
 
 	bitmaps/bitmaps.h
 */
@@ -21,6 +21,15 @@
 #define BITMAPS_H
 
 #include "../types.h"
+
+/*
+===============  Backgrounds  ===============
+640px wide bitmaps to plot in their entirety.
+*/
+#define BG_HEIGHT 272
+
+extern const UINT32 bg[BG_HEIGHT];
+
 
 /*
 =============== ENJOYMENT METER ===============
@@ -55,13 +64,9 @@ extern const UINT16 target_off_bmp[NOTE_HEAD_HEIGHT];
 extern const UINT16 target_on_bmp[NOTE_HEAD_HEIGHT];
 
 /*
-===============  Backgrounds  ===============
-640px wide bitmaps to plot in their entirety.
+===============  Multiplier Bubbles  ===============
+8px circle bitmaps to show multiplier level up progress
 */
-#define BG_HEIGHT 272
-
-extern const UINT32 bg[BG_HEIGHT];
-
 #define MULTI_HEIGHT 8
 
 extern const UINT8 multi_on[MULTI_HEIGHT];

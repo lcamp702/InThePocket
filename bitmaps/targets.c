@@ -11,8 +11,9 @@
 	In the Pocket - Checkpoint 2
 	Due: Oct 19, 2026
 
-	Definitions of the target sprite bitmaps used by the renderer. Each array holds one
-	entry per pixel row; the *_HEIGHT constants in bitmaps.h give the row counts.
+	Definitions of the target and multiplier progress sprite bitmaps used by the renderer. 
+	Each array holds one entry per pixel row; the *_HEIGHT constants in bitmaps.h give 
+	the row counts.
 
 	bitmaps/targets.c
 */

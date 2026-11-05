@@ -25,29 +25,28 @@
 #include "../types.h"
 #include "../model/model.h"
 
-void print_debug(UINT32 *base, char *text, UINT32 number);
-
-/*------ Function: render ------
+/* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
 
-INPUT: model(Model *): Pointer to Model,
-	   base(UINT32 *): Pointer to frame buffer
+INPUT: base(UINT32 *): Pointer to frame buffer,
+	   model(Model *): Pointer to Model
 
 OUTPUT: N/A
 */
 void render(UINT32 *base, Model *model);
 
-/*------ Function: render_note ------
+/* ==== Function: render_note ====
 PURPOSE: Renders a single note to screen. It's place in the staff is determined by its pitch.
 
-INPUT: note(Note *): Pointer to Note
-	   base(UINT32 *): Pointer to frame buffer
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   note(Note *): Pointer to note
+
 
 OUTPUT: N/A
 */
 void render_note(UINT32 *base, Note *note, UINT32 time);
 
-/*------ Function: render_meter ------
+/* ==== Function: render_meter ====
 PURPOSE: Renders meter. Fills it up based on enjoyment.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -57,7 +56,7 @@ OUTPUT: N/A
 */
 void render_meter(UINT32 *base, Meter *meter);
 
-/*------ Function: render_staff ------
+/* ==== Function: render_staff ====
 PURPOSE: Renders one four line staff.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -65,9 +64,18 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 OUTPUT: N/A
 */
 void render_staff(UINT32 *base);
+
+/* ==== Function: clean_staff ====
+
+PURPOSE: Clear all the pixels between the lines on the staff and slightly above/below.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+
+OUTPUT: N/A
+*/
 void clean_staff(UINT32 *base);
 
-/*------ Function: render_targets ------
+/* ==== Function: render_targets ====
 PURPOSE: Renders one target.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -77,7 +85,7 @@ OUTPUT: N/A
 */
 void render_targets(UINT32 *base, UINT8 *targets);
 
-/*------ Function: render_score ------
+/* ==== Function: render_score ====
 PURPOSE: Renders the score.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -88,6 +96,16 @@ OUTPUT: N/A
 */
 void render_score(UINT32 *base, int row, int col, UINT32 score);
 
+/* ==== Function: render_multiplier ====
+PURPOSE: Renders the multiplier number (X1) and multiplier progress.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   position(row,col): Integer row and column pixel position
+	   multi(UINT8): Multiplier value (to be printed)
+	   progress(UINT8): Number of current consecutive hits
+
+OUTPUT: N/A
+*/
 void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progress);
 
 #endif

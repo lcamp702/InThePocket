@@ -35,7 +35,7 @@
 #define SCORE_MAX_LEN 6
 
 /* ===== Notes ===== */
-#define STEM_LENGTH (int)((NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH) * 3.5)
+#define STEM_LENGTH (int)((NOTE_HEAD_HEIGHT) * 3)
 #define STEM_COL_R 26 /* Stem column offset */
 #define STEM_COL_L 5
 #define STEM_ROW 8
@@ -56,38 +56,11 @@ static const UINT32 *note_heads[3] = {
 
 static UINT32 staff_cache[2160];
 
-void print_debug(UINT32 *base, char *text, UINT32 number)
-{
-	char s[SCORE_MAX_LEN];
-	int i = 0;
-	int j;
-
-	fill_region(base, 24, 8, 8, 88);
-
-	plot_nxstring(base, 24, 8, text, 0);
-
-	do
-	{
-		s[i++] = (char)((number % 10) + '0');
-		number /= 10;
-	} while (number > 0);
-
-	s[i] = '\0';
-
-	for (j = i - 1, i = 0; i < j; i++, j--)
-	{
-		char temp = s[i];
-		s[i] = s[j];
-		s[j] = temp;
-	}
-	plot_nxstring(base, 24, 56, s, 0);
-}
-
-/*------ Function: render ------
+/* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
 
-INPUT: model(Model *): Pointer to Model,
-	   base(UINT32 *): Pointer to frame buffer
+INPUT: base(UINT32 *): Pointer to frame buffer,
+	   model(Model *): Pointer to Model
 
 OUTPUT: N/A
 */
@@ -96,12 +69,12 @@ void render(UINT32 *base, Model *model)
 	UINT16 i, next_note;
 	UINT32 playback_col;
 
-	if (model->render_bg)
+	if (model->new_bg)
 	{ /* Plot background once */
 		clear_screen(base);
 		render_staff(base);
 		plot_20l_bitmap(base, 0, bg, BG_HEIGHT);
-		model->render_bg--;
+		model->new_bg--;
 	}
 
 	clean_staff(base);
@@ -123,7 +96,7 @@ void render(UINT32 *base, Model *model)
 	}
 }
 
-/*------ Function: render_note ------
+/* ==== Function: render_note ====
 PURPOSE: Renders a single note to screen. It's place in the staff is determined by its pitch.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -138,8 +111,8 @@ void render_note(UINT32 *base, Note *note, UINT32 playback_col)
 		TODO:
 
 		Note flags
-		Ligatures (Connected flags)
-		Connecting stems for multiple notes
+		(MAYBE) Ligatures (Connected flags)
+		(MAYBE) Connecting stems for multiple notes
 	*/
 
 	int row = pitch_row[note->pitch];
@@ -154,15 +127,14 @@ void render_note(UINT32 *base, Note *note, UINT32 playback_col)
 
 	if (note->duration > 0 && note->neighbour == 0)
 	{
-		int w;
 		if (note->pitch > 1) /* Bottom 2 tracks */
-				plot_vertical_line(base, row + STEM_ROW, col + STEM_COL_L, STEM_LENGTH);
+			plot_vertical_line(base, row + STEM_ROW, col + STEM_COL_L, STEM_LENGTH);
 		else /* Top 2 tracks */
-				plot_vertical_line(base, row + STEM_ROW - STEM_LENGTH, col + STEM_COL_R, STEM_LENGTH);
+			plot_vertical_line(base, row + STEM_ROW - STEM_LENGTH, col + STEM_COL_R, STEM_LENGTH);
 	}
 }
 
-/*------ Function: render_meter ------
+/* ==== Function: render_meter ====
 PURPOSE: Renders meter. Fills it up based on enjoyment.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -203,7 +175,7 @@ void render_meter(UINT32 *base, Meter *meter)
 	}
 }
 
-/*------ Function: render_staff ------
+/* ==== Function: render_staff ====
 PURPOSE: Renders one four line staff.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -225,6 +197,14 @@ void render_staff(UINT32 *base)
 	}
 }
 
+/* ==== Function: clean_staff ====
+
+PURPOSE: Clear all the pixels between the lines on the staff and slightly above/below.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+
+OUTPUT: N/A
+*/
 void clean_staff(UINT32 *base)
 {
 	int row = STAFF_BOTTOM - 1;
@@ -241,7 +221,7 @@ void clean_staff(UINT32 *base)
 	}
 }
 
-/*------ Function: render_targets ------
+/* ==== Function: render_targets ====
 PURPOSE: Renders one target.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -265,7 +245,7 @@ void render_targets(UINT32 *base, UINT8 *targets)
 	}
 }
 
-/*------ Function: render_score ------
+/* ==== Function: render_score ====
 PURPOSE: Renders the score.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -299,6 +279,16 @@ void render_score(UINT32 *base, int row, int col, UINT32 score)
 	plot_nxstring(base, row, col, s, 1);
 }
 
+/* ==== Function: render_multiplier ====
+PURPOSE: Renders the multiplier number (X1) and multiplier progress.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   position(row,col): Integer row and column pixel position
+	   multi(UINT8): Multiplier value (to be printed)
+	   progress(UINT8): Number of current consecutive hits
+
+OUTPUT: N/A
+*/
 void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progress)
 {
 	/* Print score multiplier */

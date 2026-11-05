@@ -20,7 +20,7 @@
 #define SONG_PLAYING model->head < model->note_count /* The head is not at the end of the song */
 #define NOTE_PASSED model->game_clock > (model->notes[model->head].time + TRAVEL_TICKS + HIT_WINDOW) /* Game clock passed hit time */
 
-/*------ Function: cond_check_misses ------
+/* ==== Function: cond_check_misses ====
 PURPOSE: Checks to see if index points at a missed note, and if so updates the meter and repeats until head points at an "alive" note
 
 INPUT: pointer to Model
@@ -37,7 +37,7 @@ void cond_check_misses(Model *model)
 	}
 }
 
-/*------ Function: cond_game_over ------
+/* ==== Function: cond_game_over ====
 PURPOSE: Checks if game is over (enjoyment meter has gone to 0)
 
 INPUT: pointer to Model

@@ -21,8 +21,8 @@
 
 #include "../model/model.h"
 
-/*------ Function: synch_clock_tick ------
-PURPOSE: Handler function to call model_move_notes, updates model clock. Designed to handle and call all "timed" base events.
+/* ==== Function: synch_clock_tick ====
+PURPOSE: Updates model clock based on the realtime clock value.
 
 INPUT: Pointer to Model,
 	The current time from the system clock (UINT32)

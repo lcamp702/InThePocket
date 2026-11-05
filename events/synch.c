@@ -16,10 +16,9 @@
 */
 
 #include "synch.h"
-/*Synch clock should advance clock, move notes, and move head past moved notes. Parameters is the model. Assumes the model has been initialized.*/
 
-/*------ Function: synch_clock_tick ------
-PURPOSE: Handler function to call model_move_notes, updates model clock. Designed to handle and call all "timed" base events.
+/* ==== Function: synch_clock_tick ====
+PURPOSE: Updates model clock based on the realtime clock value.
 
 INPUT: Pointer to Model,
 	The current time from the system clock (UINT32)
@@ -28,5 +27,8 @@ OUTPUT: N/A
 */
 void synch_clock_tick(Model *model, UINT32 time_now)
 {
-	model_time_sync(model, time_now); /* Update model clock */
+	/* Sync game clock based on real time */
+	UINT32 time = time_now - model->start_time;
+	model->last_interval = time - model->game_clock;
+	model->game_clock = time;
 }

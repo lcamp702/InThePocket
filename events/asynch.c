@@ -17,7 +17,7 @@
 
 #include "asynch.h"
 
-/*------ Function: asynch_key_to_pitch ------
+/* ==== Function: asynch_key_to_pitch ====
 PURPOSE: Converts char value from input ket to corresponding int value.
 
 INPUT: Char value of keyboard press
@@ -56,7 +56,7 @@ UINT8 asynch_key_to_pitch(char key)
 	return pitch;
 }
 
-/*------ Function: asynch_is_hit ------
+/* ==== Function: asynch_is_hit ====
 PURPOSE: Checks if note has been hit
 
 INPUT: Key pressed (char) and pointer to model
@@ -83,14 +83,14 @@ UINT8 asynch_is_hit(Model *model, char key)
 
 	/*
 	
-	ON LONG NOTES NOT HOLDING = NO SCORE!!!!
+	OPTIONAL: ON LONG NOTES HOLDING = EXTRA SCORE!
 	
 	*/
 
 	return (UINT8)(song_playing && pitch_ok && can_hit);
 }
 
-/*------ Function: asynch_apply_hit ------
+/* ==== Function: asynch_apply_hit ====
 PURPOSE: Handles hit event.
 
 INPUT: pointer to Model
@@ -105,7 +105,7 @@ void asynch_apply_hit(Model *model)
 	model_advance_head(model);									 /*advance head*/
 }
 
-/*------ Function: asynch_apply_miss ------
+/* ==== Function: asynch_apply_miss ====
 PURPOSE: Handles miss event.
 
 INPUT: pointer to Model.

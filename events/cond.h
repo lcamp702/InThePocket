@@ -21,7 +21,7 @@
 
 #include "../model/model.h"
 
-/*------ Function: cond_check_misses ------
+/* ==== Function: cond_check_misses ====
 PURPOSE: Checks to see if index points at a missed note, and if so updates the meter and repeats until head points at an "alive" note
 
 INPUT: pointer to Model
@@ -30,7 +30,7 @@ OUTPUT: N/A
 */
 void cond_check_misses(Model *model);
 
-/*------ Function: cond_game_over ------
+/* ==== Function: cond_game_over ====
 PURPOSE: Checks if game is over (enjoyment meter has gone to 0)
 
 INPUT: pointer to Model

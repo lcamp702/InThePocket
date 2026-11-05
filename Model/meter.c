@@ -20,8 +20,7 @@
 
 #define MAX_MULTI 4
 
-/*initializes meter*/
-/*------ Function: meter_init ------
+/* ==== Function: meter_init ====
 PURPOSE: Initializes Meter struct
 
 INPUT: Meter*, a pointer to a Meter struct
@@ -37,18 +36,20 @@ void meter_init(Meter *meter)
 	meter->dirty = 2;
 }
 
-/* update enjoyment meter NB POSITIVE DELTA MAX 2 AND WILL NEVER OVERFLOW METER SINCE 100+2=102<127*/
-/*------ Function: meter_update_enjoyment ------
+/* ==== Function: meter_update_enjoyment ====
 PURPOSE: Updates the enjoyment meter
 
-INPUT: Meter*, a pointer to a Meter struct and the amount to change it by in the form of a byte sized signed integer
+INPUT: Meter*, a pointer to a Meter struct and the amount to change it by in the 
+form of a byte sized signed integer
 
 OUTPUT: N/A
+
+NOTE: Assumes ENJOYMENT_MAX + delta < 127
 */
 void meter_update_enjoyment(Meter *meter, INT8 delta)
 {
 	meter->dirty = 2; /* Redraw in both framebuffers */
-	if (meter->enjoyment >= 0)
+	if (meter->enjoyment > 0)
 		/* Stop updating enjoyment once it hits/passes 0 */
 		meter->enjoyment += delta;
 
@@ -57,10 +58,11 @@ void meter_update_enjoyment(Meter *meter, INT8 delta)
 		meter->enjoyment = ENJOYMENT_MAX;
 }
 
-/*------ Function: meter_update_score ------
-PURPOSE: Add's score to meter
+/* ==== Function: meter_update_score ====
+PURPOSE: Adds score to meter
 
-INPUT: Meter*, a pointer to a Meter struct, and points to be added in the form of a 32-bit unsigned Integer
+INPUT: Meter*, a pointer to a Meter struct, and the number of points to be added 
+in the form of a 32-bit unsigned Integer
 
 OUTPUT: N/A
 */
@@ -69,7 +71,7 @@ void meter_update_score(Meter *meter, UINT32 points)
 	meter->score += points * meter->multiplier;
 }
 
-/*------ Function: meter_increase_multiplier ------
+/* ==== Function: meter_increase_multiplier ====
 PURPOSE: Increases the multiplier progress and the multiplier, if applicable
 
 INPUT: pointer to Meter
@@ -81,15 +83,14 @@ void meter_increase_multiplier(Meter *meter)
 	if (meter->multiplier < MAX_MULTI)
 		/* Don't track progress if multiplier can't increase */
 		if (++meter->multi_progress >= CONSEC_MULTI) /* Increase multi progress */
-		{											 /* 10 consecutive notes, increase multiplier */
+		{ /* 10 consecutive notes, increase multiplier */
 			meter->multiplier++;
 			/* Reset multi increase progress */
 			meter->multi_progress = 0;
 		}
 }
 
-/* multiplier goes to 1 */
-/*------ Function: meter_reset_multiplier ------
+/* ==== Function: meter_reset_multiplier ====
 PURPOSE: Resets Multiplier to 1, resets multiplier progress to 0
 
 INPUT: pointer to Meter

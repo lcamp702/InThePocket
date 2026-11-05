@@ -29,14 +29,28 @@
 #define TRAVEL_TICKS 600 /* On screen ticks before note needs to be hit */
 #define HIT_WINDOW 16	 /* Total window for button presses */
 
+/*
+==== Note ====
+	UINT32 time (Time when note should appear on screen)
+	UINT8 pitch	(Track number for note to run along)
+	UINT8 duration (Icon number to be be drawn)
+	UINT8 neighbour (Is the next neighbour played at the same time?)
+*/
 typedef struct Note
 {
-	UINT32 time; /* Time to draw note on screen */
+	UINT32 time; /* Time when note should be hit */
 	UINT8 pitch;
 	UINT8 duration;
 	UINT8 neighbour;
 } Note;
 
-void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, UINT8 neighbour); /* sets x = NOTE_START_X */
+/* ==== Function: note_init ====
+PURPOSE: Initializes note object
+
+INPUT: Note object pointer, UINT32 time (time when note should appear on screen), UINT pitch value (from 1-4)
+	neighbour(UINT8) Boolean: Is the next neighbour of this note played at the same time? (For multiple notes at the same time)
+OUTPUT: N/A
+*/
+void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, UINT8 neighbour);
 
 #endif

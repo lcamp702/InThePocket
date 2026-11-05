@@ -26,24 +26,43 @@
 #define MAX_NOTES 512
 #define TARGET_COUNT 4
 
+/*
+==== Model ====
+Stores general game information and objects
+
+== Objects ==
+Note notes[MAX_NOTES];	(Song array of note objects)
+UINT8 targets[TARGET_COUNT];  (Array of target states)
+Meter meter;	(Object of scores and enjoyment meter)
+
+UINT16 note_count; (Total number of notes in the song)
+UINT16 head;	(First note in on the screen)
+
+UINT8 new_bg;	(Flag for changing backgrounds)
+
+== Clock (70Hz) ==
+UINT32 game_clock;	(Ticks since game start)
+UINT32 start_time;	(Clock ticks at game start)
+UINT32 last_interval; (Ticks passed since last model update)
+*/
 typedef struct Model
 {
-	Note notes[MAX_NOTES];
-	UINT8 targets[TARGET_COUNT];
-	Meter meter;
+	Note notes[MAX_NOTES];	/*Song array of note objects*/
+	UINT8 targets[TARGET_COUNT];	/*Array of target states*/
+	Meter meter;	/*Object of scores and enjoyment meter*/
 
-	UINT16 note_count;
-	UINT16 head; /* First note in play */
+	UINT16 note_count;	/*(Total number of notes in the song*/
+	UINT16 head;	/*First note in on the screen*/
 
-	UINT8 render_bg; /* Bool: should render background */
+	UINT8 new_bg;	/*Flag for changing backgrounds*/
 
 	/* ==== Clock ====*/
-	UINT32 game_clock;	  /* Current game time */
-	UINT32 start_time;	  /* Clock time at level start */
-	UINT32 last_interval; /* Clock ticks since last frame. */
+	UINT32 game_clock;	/*Ticks since game start*/
+	UINT32 start_time;	/*Clock ticks at game start*/
+	UINT32 last_interval;	/*Ticks passed since last model update*/
 } Model;
 
-/*------ Function: model_init ------
+/* ==== Function: model_init ====
 PURPOSE: Initializes Model.  Assumes that notes are ordered by spawn time. Songs over 512 notes are truncated.
 
 INPUT: Takes Model, the song array, and the amount of notes as parameters.
@@ -52,29 +71,16 @@ OUTPUT: N/A
 */
 void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now);
 
-/*------ Function: model_time_sync ------
-PURPOSE: Increments the models clock. Note these ticks are 1/70th of a second.
-
-INPUT: pointer to Model
-
-OUTPUT: N/A
-
-NOTE : MOVE NOTES FIRST THEN TICK.
-*/
-void model_time_sync(Model *model, UINT32 time_now);
-
-/*------ Function: model_next_disp_note ------
+/* ==== Function: model_next_disp_note ====
 PURPOSE: Calculates the index of the last note on screen. This gives the bounds for the array which is functional. Assumes the array is non empty.
 
 INPUT: pointer to Model
 
 OUTPUT: Returns index of the last note which is on screen (Unsigned Integer, length word).
-
-BUG: TECHNICALLY IT IS RETURNING THE FIRST NOTE OUTSIDE THE SCREEN. HOWEVER I HAVE ALREADY WRITTEN MOST OF THE CODEBASE AND CHANGING THE LOGIC SEEMS ARDOUS.
 */
 UINT16 model_next_disp_note(const Model *model);
 
-/*------ Function: model_advance_head ------
+/* ==== Function: model_advance_head ====
 PURPOSE: Advances the model head.
 
 INPUT: pointer to Model

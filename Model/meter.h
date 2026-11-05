@@ -34,13 +34,56 @@ typedef struct Meter
 	UINT32 score;
 	INT8 multiplier;
 	INT8 multi_progress;
-	INT8 dirty; /* A bool flag, wether or not to redraw */
+	INT8 dirty; /* A flag for, wether or not the meter changed this clock */
 } Meter;
 
-void meter_init(Meter *meter);						   /*initializes meter*/
-void meter_update_enjoyment(Meter *meter, INT8 delta); /* Updates change enjoyment */
-void meter_update_score(Meter *meter, UINT32 points);  /* Add's score to meter */
-void meter_increase_multiplier(Meter *meter);		   /* Increases the multiplier */
-void meter_reset_multiplier(Meter *meter);			   /* multiplier goes to 1 */
+/* ==== Function: meter_init ====
+PURPOSE: Initializes Meter struct
+
+INPUT: Meter*, a pointer to a Meter struct
+
+OUTPUT: N/A
+*/
+void meter_init(Meter *meter);
+
+/* ==== Function: meter_update_enjoyment ====
+PURPOSE: Updates the enjoyment meter
+
+INPUT: Meter*, a pointer to a Meter struct and the amount to change it by in the 
+form of a byte sized signed integer
+
+OUTPUT: N/A
+
+NOTE: Assumes ENJOYMENT_MAX + delta < 127
+*/
+void meter_update_enjoyment(Meter *meter, INT8 delta);
+
+/* ==== Function: meter_update_score ====
+PURPOSE: Adds score to meter
+
+INPUT: Meter*, a pointer to a Meter struct, and the number of points to be added 
+in the form of a 32-bit unsigned Integer
+
+OUTPUT: N/A
+*/
+void meter_update_score(Meter *meter, UINT32 points);
+
+/* ==== Function: meter_increase_multiplier ====
+PURPOSE: Increases the multiplier progress and the multiplier, if applicable
+
+INPUT: pointer to Meter
+
+OUTPUT: N/A
+*/
+void meter_increase_multiplier(Meter *meter);
+
+/* ==== Function: meter_reset_multiplier ====
+PURPOSE: Resets Multiplier to 1, resets multiplier progress to 0
+
+INPUT: pointer to Meter
+
+OUTPUT: N/A
+*/
+void meter_reset_multiplier(Meter *meter);
 
 #endif

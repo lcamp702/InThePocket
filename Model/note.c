@@ -18,12 +18,11 @@
 
 #include "note.h"
 
-/* sets x = NOTE_START_X */
-/*------ Function: note_init ------
+/* ==== Function: note_init ====
 PURPOSE: Initializes note object
 
-INPUT: Note object pointer, UINT pitch value (from 1-4), and UINT32 time object (time when note will begin on screen)
-	neighbour(UINT8) Boolean: Is the next neighbour of this note played at the same time?
+INPUT: Note object pointer, UINT32 time (time when note should be played), UINT pitch value (from 1-4)
+	neighbour(UINT8) Boolean: Is the next neighbour of this note played at the same time? (For multiple notes at the same time)
 OUTPUT: N/A
 */
 void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, UINT8 neighbour)

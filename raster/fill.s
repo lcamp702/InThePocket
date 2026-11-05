@@ -1,3 +1,26 @@
+;	Peter Ursem
+;	purse327@mtroyal.ca
+
+;	Logan Campbell
+;	lcamp702@mtroyal.ca
+
+;	COMP2659-001
+;	Steve Kalmar
+
+;	In the Pocket - Checkpoint 3
+;	Due: Nov 9, 2026
+;	raster/fill.s    
+
+;	Status:
+;	  Not Tested:
+;
+;	  Visual Tests:
+;		fill_region
+;		clear_20l
+
+;	Purpose:
+;	Extra filling and clearing functions for the raster engine for our game, In the Pocket on the Atari ST.
+
 ;	Screen details
 ROWS		equ		400
 COLS		equ		640

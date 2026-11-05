@@ -1,3 +1,27 @@
+;	Peter Ursem
+;	purse327@mtroyal.ca
+
+;	Logan Campbell
+;	lcamp702@mtroyal.ca
+
+;	COMP2659-001
+;	Steve Kalmar
+
+;	In the Pocket - Checkpoint 3
+;	Due: Nov 9, 2026
+;	raster/fonts.s    
+
+;	Status:
+;	  Not Tested:
+;
+;	  Visual Tests:
+;               pocket8
+;               pocket16
+;               pocket32
+
+;	Purpose:
+;	Bitmap definitions for the fonts in our game, In the Pocket on the Atari ST.
+
 ; =============== FONTS ===============
 
 ; 8x8 Bitmap Font table

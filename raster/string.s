@@ -1,3 +1,31 @@
+;	Peter Ursem
+;	purse327@mtroyal.ca
+
+;	Logan Campbell
+;	lcamp702@mtroyal.ca
+
+;	COMP2659-001
+;	Steve Kalmar
+
+;	In the Pocket - Checkpoint 3
+;	Due: Nov 9, 2026
+;	raster/string.s    
+
+;	Status:
+;	  Not Tested:
+;
+;	  Visual Tests:
+;		plot_xcharacter
+;		plot_xncharacter
+;		plot_xstring
+;		plot_nxstring
+
+;	Purpose:
+;	Extra string plotting functions for the raster engine for our game, In the Pocket on the Atari ST.
+
+;	Credit:
+;	[1] E. (Specy) Menichelli, “A jump table - M68K assembly,” Asm Editor, https://asm-editor.specy.app/learn/courses/m68k/examples/jump-table (accessed Nov. 5, 2026). 
+
 ; ==== void plot_xcharacter(UINT8 *base, int row, int col, char ch, UINT8 size) ====
 ; ==== void plot_xncharacter(UINT8 *base, int row, int col, char ch, UINT8 size) ====
 ; PURPOSE: Plots a single character, as a bitmap from a font table, to the screen.
@@ -29,13 +57,13 @@ pcx_size	equ		19
 _plot_xcharacter:
 		link		a6,#0
 		movem.l		d0-2/a2-3,-(sp)
-		lea		positive_plots(pc),a2	; Load address of positive plot function jump table
+		lea		positive_plots(pc),a2	; Load address of positive plot function jump table [1]
 		bra.b		pcx_common
 
 _plot_xncharacter:
 		link		a6,#0
 		movem.l		d0-2/a2-3,-(sp)
-		lea		negative_plots(pc),a2	; Load address of negative plot function jump table
+		lea		negative_plots(pc),a2	; Load address of negative plot function jump table [1]
 
 ; This code is reused for positive and negative prints
 pcx_common:
@@ -71,7 +99,7 @@ pcx_sz8:
 		lsl.w		#3,d0		; 8 bytes per char (index << 3)
 		lea		pocket8,a0	; a0 = font bitmap base address
 		moveq		#8,d1		; d1.w = font height
-		movea.l		(a2),a3		; Load plot function address into memory
+		movea.l		(a2),a3		; Load plot function address into memory [1]
 pcx_plot:
 		adda.w		d0,a0		; a0 = font bitmap pointer
 

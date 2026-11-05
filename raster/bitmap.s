@@ -9,26 +9,19 @@
 
 ;	In the Pocket - Checkpoint 3
 ;	Due: Nov 9, 2026
-;	raster/rast_ext.s    
+;	raster/bitmap.s    
 
 ;	Status:
 ;	  Not Tested:
 ;
 ;	  Visual Tests:
-;		fill_screen
-;		fill_region
 ;		plot_n8bit_bitmap
 ;		plot_n16bit_bitmap
 ;		plot_n32bit_bitmap
-;		plot_ncharacter
-;		plot_nstring
 ;		plot_20l_bitmap
 
 ;	Purpose:
-;	Extra functions for the raster engine for our game, In the Pocket on the Atari ST.
-
-
-;		xdef		_shift_region_left
+;	Extra bitmap plotting functions for the raster engine for our game, In the Pocket on the Atari ST.
 
 ;       Screen details
 ROWS		equ		400

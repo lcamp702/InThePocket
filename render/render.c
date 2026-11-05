@@ -69,6 +69,14 @@ void render(UINT32 *base, Model *model)
 	UINT16 i, next_note;
 	UINT32 playback_col;
 
+	if (model->meter.enjoyment <= 0)
+	{
+		fill_screen(base);
+		plot_nxstring(base, 176, 176, "Game Over", 2);
+		plot_nxstring(base, 208, 128, "Doug was booed off stage",1);
+		return;
+	}
+
 	if (model->new_bg)
 	{ /* Plot background once */
 		clear_screen(base);

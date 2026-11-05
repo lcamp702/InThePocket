@@ -26,8 +26,8 @@
 #define KEY_D 1
 #define KEY_F 0
 
-#define TRAVEL_TICKS 600 /* On screen ticks before note needs to be hit */
-#define HIT_WINDOW 16	 /* Total window for button presses */
+#define TRAVEL_TICKS 592  /* On screen ticks before note needs to be hit */
+#define HIT_WINDOW 32	 /* Total window for button presses */
 
 /*
 ==== Note ====

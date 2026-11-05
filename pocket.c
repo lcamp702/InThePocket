@@ -51,10 +51,13 @@ int main()
 		if (waiting_input())
 		{
 			/* Process async events */
-			if (asynch_is_hit(&model, get_input()))
-				asynch_apply_hit(&model);
-			else
-				asynch_apply_miss(&model);
+			while (waiting_input())
+			{
+				if (asynch_is_hit(&model, get_input()))
+					asynch_apply_hit(&model);
+				else
+					asynch_apply_miss(&model);
+			}
 		}
 		/* If clock has ticked*/
 		if (time_elapsed > 0)
@@ -63,7 +66,6 @@ int main()
 			synch_clock_tick(&model, time_now);
 			/* Process cond events */
 			cond_check_misses(&model);
-			model.meter.enjoyment = 48; /* DEBUG ONLY: Nofail mode */
 			quit = cond_game_over(&model);
 			/* Render frame */
 			if (buffer == 0)
@@ -83,6 +85,7 @@ int main()
 		}
 	}
 
+	render(buff_1, &model);
 	set_screen(buff_1);
 
 	return 0;

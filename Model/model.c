@@ -41,8 +41,8 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 	for (i = 0; i < model->note_count; i++)
 	{
 		UINT8 next_neighbour = 0;
-		if ((i < (model->note_count - 1)) && model->notes[i].time == model->notes[i+1].time)
-			next_neighbour = 1;
+		if ((i < (model->note_count - 1)))
+			next_neighbour = (arr[i].time == arr[i+1].time);
 		note_init(&model->notes[i], arr[i].time, arr[i].pitch, arr[i].duration, next_neighbour);
 	}
 

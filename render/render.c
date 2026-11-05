@@ -119,18 +119,26 @@ void render_note(UINT32 *base, Note *note, UINT32 playback_col)
 	int col = playback_col + note->time;
 
 	UINT32 *note_head = note_heads[note->duration];
+
 	plot_32bit_bitmap(base, row, col, note_head, NOTE_HEAD_HEIGHT);
 
 	/*
 	Note Stems (Vertical lines)
 	*/
 
+	row += STEM_ROW;
+
 	if (note->duration > 0 && note->neighbour == 0)
 	{
 		if (note->pitch > 1) /* Bottom 2 tracks */
-			plot_vertical_line(base, row + STEM_ROW, col + STEM_COL_L, STEM_LENGTH);
+			col += STEM_COL_L;
 		else /* Top 2 tracks */
-			plot_vertical_line(base, row + STEM_ROW - STEM_LENGTH, col + STEM_COL_R, STEM_LENGTH);
+		{
+			row -= STEM_LENGTH;
+			col += STEM_COL_R;
+		}
+
+		plot_vertical_line(base, row, col, STEM_LENGTH);
 	}
 }
 
@@ -210,15 +218,15 @@ void clean_staff(UINT32 *base)
 	int row = STAFF_BOTTOM - 1;
 	int i;
 
-	/* Clear below */
-	clear_20l(base, STAFF_BOTTOM + STAFF_LINE_WIDTH, 10);
+	clear_20l(base, row + STAFF_LINE_WIDTH, 2);
 
-	for (i = 0; i < LINE_COUNT; i++)
+	for (i = 0; i < LINE_COUNT - 1; i++)
 	{
 		/* Clear between the lines */
 		clear_20l(base, row - NOTE_HEAD_HEIGHT, NOTE_HEAD_HEIGHT);
 		row -= (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH);
 	}
+	clear_20l(base, row-2, 2);
 }
 
 /* ==== Function: render_targets ====

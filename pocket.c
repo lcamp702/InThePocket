@@ -53,7 +53,7 @@ int main()
 			/* Process async events */
 			UINT8 hit = asynch_key_hit(&model, get_input());
 
-			if (hit == -1)
+			if (hit == (UINT8)-1)
 				asynch_apply_miss(&model);
 			else
 				asynch_apply_hit(&model, hit);

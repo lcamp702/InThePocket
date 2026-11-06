@@ -9,10 +9,13 @@ live: tstlive.tos
 
 # ==== SYSTEM CALLS ====
 # No ext dependencies
-SYSTEM =	build\system.o
+SYSTEM =	build\system.o build\input.o
 
 build\system.o: system\system.c system\system.h
 	cc68x -g -c system\system.c -o build\system.o
+
+build\input.o: system\input.c system\input.h
+	cc68x -g -c system\input.c -o build\input.o
 
 # ==== MODEL OBJECTS ====
 # No ext dependencies

@@ -20,6 +20,7 @@
 #include "model/model.h"
 #include "render/render.h"
 #include "system/system.h"
+#include "system/input.h"
 #include "events/events.h"
 #include "song/song.h"
 
@@ -48,7 +49,7 @@ int main()
 		time_now = get_time();
 		time_elapsed = time_now - time_then;
 		/* If input is pending */
-		if (waiting_input())
+		if (has_input())
 		{
 			/* Process async events */
 			UINT8 hit = asynch_key_hit(&model, get_input());

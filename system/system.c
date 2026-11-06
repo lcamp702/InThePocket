@@ -11,14 +11,14 @@
 	In the Pocket - Checkpoint 3
 	Due: Nov 9, 2026
 
-	TOS System calls. These functions will eventually be replaced when TOS is
+	TOS System display and timer calls. These functions will eventually be replaced when TOS is
 	thrown out in favour of a custom ROM.
 
 	system/system.c
 */
 
 #include <osbind.h>
-#include <stdio.h>
+#include <stdio.h> /* For disabling cursor, hopefully there is a better way. */
 #include "system.h"
 
 static UINT32 buffer[8008]; /* Extra 8 longs for 256 bit alignment */
@@ -54,22 +54,10 @@ void disable_cursor()
 /* Get the current time from the system VBlank timer */
 UINT32 get_time()
 {
-	UINT32 *timer = (UINT32 *)0x462;
-	UINT32 time;
+    UINT32 time;
+	UINT32 *timer = (UINT32 *)0x462; /* Address of timer value */
 	UINT32 exit = Super(0); /* Enter priviledged mode. */
 	time = *timer;			/* Read timer value*/
 	Super(exit);			/* Exit priviledged mode */
 	return time;
-}
-
-/* Check for waiting inputs in the input buffer */
-UINT8 waiting_input()
-{
-	return Cconis();
-}
-
-/* Read the last input from the input buffer */
-UINT8 get_input()
-{
-	return Cnecin();
 }

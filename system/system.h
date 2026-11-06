@@ -28,7 +28,3 @@ void disable_cursor();
 
 /* Clock tools */
 UINT32 get_time();
-
-/* Input tools */
-UINT8 waiting_input();
-UINT8 get_input();

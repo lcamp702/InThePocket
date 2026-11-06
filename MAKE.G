@@ -1,3 +1,5 @@
+echo 'Creating build folder'
+mkdir build
 foreach i { $< }
 	if { -f $i.tos }
 		echo Rm $i.tos

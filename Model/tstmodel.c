@@ -170,7 +170,7 @@ int main(void)
 	printf("inputing F(caps) yields pitch value %d \n", asynch_key_to_pitch('F'));
 	printf("inputing c yields pitch value %d \n", asynch_key_to_pitch('c'));
 	/*testing async_is_hit*/
-	printf("Press any key to proceed with asynch_is_hit (pitch 0) test\n");
+	printf("Press any key to proceed with asynch_key_hit (pitch 0) test\n");
 	fflush(stdout);
 	Cconin();
 
@@ -184,18 +184,18 @@ int main(void)
 		test_model.meter.enjoyment = 64;
 		synch_clock_tick(&test_model, (UINT32)i);
 		printf("-- TICK -- \n");
-		printf("hitting a yields %d \n", asynch_is_hit(&test_model, 0));
+		printf("hitting a yields %d \n", asynch_key_hit(&test_model, 0));
 		print_note(&test_model.notes[test_model.head]);
 	}
-	/*asynch_is_hit (pitch 1) test
+	/*asynch_key_hit (pitch 1) test
 	TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
-	6		checks that the			as above		asynch_is_hit			asynch_is_hit
+	6		checks that the			as above		asynch_key_hit			asynch_key_hit
 			corresponding							returns 1				returns 1
 			pitch value
 			returns 1 from
-			asynch_is_hit
+			asynch_key_hit
 	*/
-	printf("Press any key to proceed with asynch_is_hit (pitch 1) test\n");
+	printf("Press any key to proceed with asynch_key_hit (pitch 1) test\n");
 	fflush(stdout);
 	Cconin();
 
@@ -209,11 +209,11 @@ int main(void)
 		test_model.meter.enjoyment = 64;
 		synch_clock_tick(&test_model, (UINT32)i);
 		printf("-- TICK -- \n");
-		printf("hitting s yields %d \n", asynch_is_hit(&test_model, 1));
+		printf("hitting s yields %d \n", asynch_key_hit(&test_model, 1));
 		print_note(&test_model.notes[test_model.head]);
 	}
-	/*asynch_is_hit (pitch 2) test*/
-	printf("Press any key to proceed with asynch_is_hit (pitch 2) test\n");
+	/*asynch_key_hit (pitch 2) test*/
+	printf("Press any key to proceed with asynch_key_hit (pitch 2) test\n");
 	fflush(stdout);
 	Cconin();
 
@@ -227,11 +227,11 @@ int main(void)
 		test_model.meter.enjoyment = 64;
 		synch_clock_tick(&test_model, (UINT32)i);
 		printf("-- TICK -- \n");
-		printf("hitting d yields %d \n", asynch_is_hit(&test_model, 2));
+		printf("hitting d yields %d \n", asynch_key_hit(&test_model, 2));
 		print_note(&test_model.notes[test_model.head]);
 	}
-	/*asynch_is_hit (pitch 3) test*/
-	printf("Press any key to proceed with asynch_is_hit (pitch 3) test\n");
+	/*asynch_key_hit (pitch 3) test*/
+	printf("Press any key to proceed with asynch_key_hit (pitch 3) test\n");
 	fflush(stdout);
 	Cconin();
 
@@ -245,7 +245,7 @@ int main(void)
 		test_model.meter.enjoyment = 64;
 		synch_clock_tick(&test_model, (UINT32)i);
 		printf("-- TICK -- \n");
-		printf("hitting f yields %d \n", asynch_is_hit(&test_model, 3));
+		printf("hitting f yields %d \n", asynch_key_hit(&test_model, 3));
 		print_note(&test_model.notes[test_model.head]);
 	}
 
@@ -269,7 +269,7 @@ int main(void)
 	{
 		synch_clock_tick(&test_model, (UINT32)i);
 		printf("-- TICK -- \n");
-		if (asynch_is_hit(&test_model, 0) || asynch_is_hit(&test_model, 1) || asynch_is_hit(&test_model, 2) || asynch_is_hit(&test_model, 3))
+		if (asynch_key_hit(&test_model, 0) || asynch_key_hit(&test_model, 1) || asynch_key_hit(&test_model, 2) || asynch_key_hit(&test_model, 3))
 		{
 			asynch_apply_hit(&test_model);
 			printf("hit applied, meter now gives ");
@@ -297,7 +297,7 @@ int main(void)
 	for (i = 133; i < 138; i++)
 	{
 		synch_clock_tick(&test_model, (UINT32)i);
-		if (!asynch_is_hit(&test_model, 3))
+		if (!asynch_key_hit(&test_model, 3))
 		{
 			printf("applying miss, meter now gives ");
 			print_meter(&test_model.meter);
@@ -308,7 +308,7 @@ int main(void)
 	{
 		synch_clock_tick(&test_model, (UINT32)i);
 		printf("-- TICK -- \n");
-		if (asynch_is_hit(&test_model, 0) || asynch_is_hit(&test_model, 1) || asynch_is_hit(&test_model, 2) || asynch_is_hit(&test_model, 3))
+		if (asynch_key_hit(&test_model, 0) || asynch_key_hit(&test_model, 1) || asynch_key_hit(&test_model, 2) || asynch_key_hit(&test_model, 3))
 		{
 			asynch_apply_hit(&test_model);
 			printf("hit applied, meter now gives ");

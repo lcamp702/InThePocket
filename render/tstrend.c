@@ -147,8 +147,8 @@ void apply_hits_and_show(Model *model, UINT32 *base)
 	for (i = 0; i < 30; i++)
 	{
 		synch_clock_tick(model, i);
-		if (asynch_is_hit(model, 0) || asynch_is_hit(model, 1) ||
-			asynch_is_hit(model, 2) || asynch_is_hit(model, 3))
+		if (asynch_key_hit(model, 0) || asynch_key_hit(model, 1) ||
+			asynch_key_hit(model, 2) || asynch_key_hit(model, 3))
 		{
 			asynch_apply_hit(model);
 			show_frame(model, base);
@@ -271,7 +271,7 @@ void test_hit(Model *model, UINT32 *base, UINT8 pitch)
 	{
 		model->meter.enjoyment = ENJOYMENT_MAX;
 		synch_clock_tick(model, i);
-		asynch_is_hit(model, pitch);
+		asynch_key_hit(model, pitch);
 		if (i % 5 == 0)
 		{
 			show_frame(model, base);
@@ -337,7 +337,7 @@ void test_apply_miss(Model *model, UINT32 *base)
 	for (i = 133; i < 138; i++)
 	{
 		synch_clock_tick(model, i);
-		if (!asynch_is_hit(model, 3))
+		if (!asynch_key_hit(model, 3))
 		{
 			asynch_apply_miss(model);
 			show_frame(model, base);

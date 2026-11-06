@@ -51,13 +51,12 @@ int main()
 		if (waiting_input())
 		{
 			/* Process async events */
-			while (waiting_input())
-			{
-				if (asynch_is_hit(&model, get_input()))
-					asynch_apply_hit(&model);
-				else
-					asynch_apply_miss(&model);
-			}
+			UINT8 hit = asynch_key_hit(&model, get_input());
+
+			if (hit == -1)
+				asynch_apply_miss(&model);
+			else
+				asynch_apply_hit(&model, hit);
 		}
 		/* If clock has ticked*/
 		if (time_elapsed > 0)

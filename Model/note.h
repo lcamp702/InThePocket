@@ -42,6 +42,7 @@ typedef struct Note
 	UINT8 pitch;
 	UINT8 duration;
 	UINT8 neighbour;
+	UINT8 hit;	/* 0 - Not hit; 1 - Already hit*/
 } Note;
 
 /* ==== Function: note_init ====

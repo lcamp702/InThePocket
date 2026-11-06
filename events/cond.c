@@ -31,8 +31,11 @@ void cond_check_misses(Model *model)
 {
 	while (SONG_PLAYING && NOTE_PASSED)
 	{																	/*checks that the head is pointed at a note that has passed the hit window*/
-		meter_update_enjoyment(&model->meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/
-		meter_reset_multiplier(&model->meter);							/*sends score multiplier back to 1*/
+		if (model->notes[model->head].hit == 0)
+		{
+			meter_update_enjoyment(&model->meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/
+			meter_reset_multiplier(&model->meter);							/*sends score multiplier back to 1*/
+		}
 		model_advance_head(model);										/*advances index*/
 	}
 }

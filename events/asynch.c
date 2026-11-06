@@ -57,37 +57,52 @@ UINT8 asynch_key_to_pitch(char key)
 }
 
 /* ==== Function: asynch_is_hit ====
-PURPOSE: Checks if note has been hit
+PURPOSE: Checks if the note at the offset or its neighbour can be hit.
+
+INPUT: Pointer to model
+		Pitch of keypress
+		Head offset to check
+
+OUTPUT: Is hit? -1: No 0-3: Head offset of note hit
+*/
+UINT8 asynch_is_hit(Model *model, UINT8 pitch, UINT8 head_offset)
+{
+	Note note = model->notes[model->head + head_offset];
+
+	/* Check if note can be hit based on time */
+	UINT32 hit_time = (note.time + TRAVEL_TICKS);
+
+	UINT8 can_hit = model->game_clock >= hit_time;
+	can_hit &= model->game_clock < (hit_time + HIT_WINDOW);
+
+	if (can_hit && note.pitch == pitch)
+		return head_offset;
+	else if (model->notes[model->head + head_offset].neighbour)
+		return asynch_is_hit(model, pitch, head_offset+1);
+	else
+		return -1;
+}
+
+/* ==== Function: asynch_key_hit ====
+PURPOSE: Checks if note has been hit by this key press
 
 INPUT: Key pressed (char) and pointer to model
 
-OUTPUT: Is hit? (Boolean 1:0)
+OUTPUT: Is hit? -1: No 0-3: Head offset of note hit
 */
-UINT8 asynch_is_hit(Model *model, char key)
+UINT8 asynch_key_hit(Model *model, char key)
 {
 	UINT8 pitch;
-	int song_playing, pitch_ok, can_hit;
+
+	if (model->head > model->note_count)	 /* Check if song is playing  */
+		return -1;
 
 	pitch = asynch_key_to_pitch(key);
 
 	if (pitch < TARGET_COUNT)
 		model->targets[pitch] = 1; /* Enable the target for this pitch. */
 
-	/* Hit conditions */
-	song_playing = model->head <= model->note_count;	 /* Check if song is playing  */
-	pitch_ok = model->notes[model->head].pitch == pitch; /* Check if the pitch matches the next note */
-
-	/* Check if note can be hit based on time */
-	can_hit = model->game_clock >= (model->notes[model->head].time + TRAVEL_TICKS);
-	can_hit &= model->game_clock < (model->notes[model->head].time + TRAVEL_TICKS + HIT_WINDOW);
-
-	/*
-	
-	OPTIONAL: ON LONG NOTES HOLDING = EXTRA SCORE!
-	
-	*/
-
-	return (UINT8)(song_playing && pitch_ok && can_hit);
+	return asynch_is_hit(model, pitch, 0);
 }
 
 /* ==== Function: asynch_apply_hit ====
@@ -97,12 +112,15 @@ INPUT: pointer to Model
 
 OUTPUT: N/A
 */
-void asynch_apply_hit(Model *model)
+void asynch_apply_hit(Model *model, UINT8 head_offset)
 {
 	meter_update_enjoyment(&model->meter, HIT_REWARD_ENJOYMENT); /*adds to enjoyment meter*/
 	meter_update_score(&model->meter, HIT_REWARD_SCORE);		 /*updates score*/
 	meter_increase_multiplier(&model->meter);					 /*double multiplier*/
-	model_advance_head(model);									 /*advance head*/
+	if (head_offset == 0)
+		model_advance_head(model);								/*advance head*/
+	else
+		model->notes[model->head + head_offset].hit = 1;
 }
 
 /* ==== Function: asynch_apply_miss ====

@@ -69,11 +69,20 @@ void render(UINT32 *base, Model *model)
 	UINT16 i, next_note;
 	UINT32 playback_col;
 
-	if (model->meter.enjoyment <= 0)
+	if (model->head > model->note_count)
 	{
-		fill_screen(base);
-		plot_nxstring(base, 176, 176, "Game Over", 2);
-		plot_nxstring(base, 208, 128, "Doug was booed off stage",1);
+		if (model->meter.enjoyment <= 0)
+		{
+			fill_screen(base);
+			plot_nxstring(base, 176, 176, "Game Over", 2);
+			plot_nxstring(base, 208, 128, "Doug was booed off stage",1);
+		}
+		else
+		{
+			fill_screen(base);
+			plot_nxstring(base, 176, 208, "You Win", 2);
+			plot_nxstring(base, 208, 128, "This cat can jam",1);
+		}
 		return;
 	}
 
@@ -90,7 +99,8 @@ void render(UINT32 *base, Model *model)
 	next_note = model_next_disp_note(model);
 	playback_col = NOTE_START_X - model->game_clock;
 	for (i = model->head; i < next_note; i++)
-		render_note(base, &model->notes[i], playback_col);
+		if (model->notes[i].hit == 0)
+			render_note(base, &model->notes[i], playback_col);
 
 	render_targets(base, model->targets);
 
@@ -115,14 +125,6 @@ OUTPUT: N/A
 */
 void render_note(UINT32 *base, Note *note, UINT32 playback_col)
 {
-	/*
-		TODO:
-
-		Note flags
-		(MAYBE) Ligatures (Connected flags)
-		(MAYBE) Connecting stems for multiple notes
-	*/
-
 	int row = pitch_row[note->pitch];
 	int col = playback_col + note->time;
 
@@ -160,7 +162,6 @@ OUTPUT: N/A
 */
 void render_meter(UINT32 *base, Meter *meter)
 {
-	int i;
 	int enjoyment = meter->enjoyment;
 	UINT16 plot_height;
 

@@ -86,5 +86,10 @@ OUTPUT: N/A
 void model_advance_head(Model *model)
 {
 	if (model->head < model->note_count)
+	{
 		model->head++;
+		while (model->head < model->note_count && model->notes[model->head].hit)
+			/* Skip head over already played notes */
+			model->head++;
+	}
 }

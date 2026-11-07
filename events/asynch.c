@@ -106,9 +106,9 @@ void asynch_key_hit(Model *model, char key)
 	hit = asynch_is_hit(model, pitch, 0);
 
 	if (hit == (UINT8)-1)
-		asynch_apply_miss(&model);
+		asynch_apply_miss(model);
 	else
-		asynch_apply_hit(&model, hit);
+		asynch_apply_hit(model, hit);
 }
 
 /* ==== Function: asynch_apply_hit ====

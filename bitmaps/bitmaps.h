@@ -38,10 +38,8 @@ according to the enjoyment meter level.
 */
 #define METER_HEIGHT 64
 
-extern const UINT32 emp_left[METER_HEIGHT];
-extern const UINT32 emp_right[METER_HEIGHT];
-extern const UINT32 full_left[METER_HEIGHT];
-extern const UINT32 full_right[METER_HEIGHT];
+extern const UINT32 sax_empty[METER_HEIGHT];
+extern const UINT32 sax_full[METER_HEIGHT];
 
 /*
 ===============  NOTE HEADS  ===============

@@ -70,21 +70,13 @@ _note_black_head:
 ; UINT32 emp_left[METER_HEIGHT], UINT32 emp_right[METER_HEIGHT]
 ; To be plotted from the top showing 
 ; the empty portion of the meter
-		xdef		_emp_left
-_emp_left:	
-		incbin		"meter\emp_left.bin"
-
-		xdef		_emp_right
-_emp_right:	
-		incbin		"meter\emp_rght.bin"
+		xdef		_sax_empty
+_sax_empty:	
+		incbin		"meter\sax_empt.bin"
 
 ; UINT32 full_left[METER_HEIGHT], UINT32 full_right[METER_HEIGHT]
 ; To be plotted from the bottom showing 
 ; the full portion of the meter
-		xdef		_full_left
-_full_left:	
-		incbin		"meter\ful_left.bin"
-
-		xdef		_full_right
-_full_right:	
-		incbin		"meter\ful_rght.bin"
+		xdef		_sax_full
+_sax_full:	
+		incbin		"meter\sax_full.bin"

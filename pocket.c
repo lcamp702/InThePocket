@@ -31,53 +31,44 @@ int main()
 	UINT32 time_then, time_now, time_elapsed;
 	UINT8 quit, buffer;
 
+	/* Stop OS cursor blink */
 	disable_cursor();
-
-	quit = 0;
-	buffer = 0;
-	buff_1 = get_pbase();
-	buff_2 = buff_256();
-
+	/* Initialize buffers */
+	buffer = 0; /* Set buffer number (main buffer showing) */
+	buff_1 = get_pbase(); /* Get main buffer address */
+	buff_2 = buff_256(); /* Get second buffer address */
 	/* Initialize model */
 	time_then = get_time();
 	model_init(&model, song, SONG_NOTES, time_then);
-	/* Render model */
+	/* Render model (first frame) */
 	render(buff_1, &model);
 	render(buff_2, &model);
+	/* Set quit = false */
+	quit = 0;
 	while (!quit)
-	{
+	{ /* Repeat until quit */
 		time_now = get_time();
 		time_elapsed = time_now - time_then;
-		/* If input is pending */
 		if (has_input())
-		{
-			/* Process async events */
-			UINT8 hit = asynch_key_hit(&model, get_input());
-
-			if (hit == (UINT8)-1)
-				asynch_apply_miss(&model);
-			else
-				asynch_apply_hit(&model, hit);
-		}
-		/* If clock has ticked*/
+			/* If input is pending, process async event */
+			asynch_key_hit(&model, get_input());
 		if (time_elapsed > 0)
-		{
-			/* Process sync events */
+		{ 	/* If clock has ticked, process sync events */
 			synch_clock_tick(&model, time_now);
 			/* Process cond events */
 			cond_check_misses(&model);
 			quit = cond_game_over(&model);
-			/* Render frame */
+			/* Render model (next frame) */
 			if (buffer == 0)
-			{ /* Currently showing main buffer, render on secondary */
-				render(buff_2, &model);
-				set_screen(buff_2);
+			{	/* Currently showing main buffer */
+				render(buff_2, &model); /* Render to second buffer */
+				set_screen(buff_2);		/* Show second buffer */
 				buffer = 1;
 			}
 			else
-			{
-				render(buff_1, &model);
-				set_screen(buff_1);
+			{	/* Currently showing second buffer */
+				render(buff_1, &model); /* Render to main buffer */
+				set_screen(buff_1);		/* Show main buffer */
 				buffer = 0;
 			}
 			/* Update game module clock */
@@ -85,7 +76,9 @@ int main()
 		}
 	}
 
+	/* Render one more frame for game over */
 	render(buff_1, &model);
+	/* Return to main buffer on exit */
 	set_screen(buff_1);
 
 	return 0;

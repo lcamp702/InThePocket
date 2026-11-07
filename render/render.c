@@ -57,6 +57,7 @@ static const UINT32 *note_heads[3] = {
 	note_half_head,
 	note_black_head};
 
+int render_int_to_string(char *str, int value, int places);
 
 /* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
@@ -73,17 +74,27 @@ void render(UINT32 *base, Model *model)
 
 	if (model->head >= model->note_count)
 	{
+		int row = 200 - 32;
+		char score[SCORE_MAX_LEN + 1];
+		int places = render_int_to_string(score, model->meter.score, SCORE_MAX_LEN);
 		fill_screen(base);
-		plot_nxstring(base, 176, 208, "You Win", 2);
-		plot_nxstring(base, 208, 192, "This cat can jam",1);
+		plot_nxstring(base, row, 208, "You Win", 2);
+		plot_nxstring(base, row + 32, 192, "This cat can jam",1);
+		plot_nxstring(base, row + 48, 254 - (8*places), "Score: ",1);
+		plot_nxstring(base, row + 48, 360 - (8*places), score,1);
 		return;
 	}
 
 	if (model->meter.enjoyment <= 0)
 	{
+		int row = 200 - 32;
+		char score[SCORE_MAX_LEN + 1];
+		int places = render_int_to_string(score, model->meter.score, SCORE_MAX_LEN);
 		fill_screen(base);
-		plot_nxstring(base, 176, 176, "Game Over", 2);
-		plot_nxstring(base, 208, 128, "Doug was booed off stage",1);
+		plot_nxstring(base, row, 176, "Game Over", 2);
+		plot_nxstring(base, row + 32, 128, "Doug was booed off stage",1);
+		plot_nxstring(base, row + 48, 254 - (8*places), "Score: ",1);
+		plot_nxstring(base, row + 48, 360 - (8*places), score,1);
 		return;
 	}
 
@@ -275,24 +286,7 @@ OUTPUT: N/A
 void render_score(UINT32 *base, int row, int col, UINT32 score)
 {
 	char s[SCORE_MAX_LEN + 1];
-	int i = 0;
-	int j;
-
-	do
-	{
-		s[i++] = (char)((score % 10) + '0');
-		score /= 10;
-	} while (score > 0 && i < SCORE_MAX_LEN);
-
-	s[i] = '\0';
-
-	for (j = i - 1, i = 0; i < j; i++, j--)
-	{
-		char temp = s[i];
-		s[i] = s[j];
-		s[j] = temp;
-	}
-
+	render_int_to_string(s,score,SCORE_MAX_LEN);
 	fill_region(base, row, col, 16, 16 * SCORE_MAX_LEN);
 	plot_nxstring(base, row, col, s, 1);
 }
@@ -308,12 +302,11 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 OUTPUT: N/A
 */
 void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progress)
-{
-	/* Print score multiplier */
+{	/* Print score multiplier */
 	char str[3] = {'x', '0', '\0'};
 	int i;
-
 	str[1] += multi;
+
 	fill_region(base, row, col + (16 * SCORE_MAX_LEN), 32, 64);
 	plot_nxstring(base, row, col + (16 * SCORE_MAX_LEN), str, 2);
 
@@ -324,4 +317,38 @@ void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progre
 		else
 			plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_off, MULTI_HEIGHT);
 	}
+}
+
+/* ==== Function: render_multiplier ====
+PURPOSE: Renders the multiplier number (X1) and multiplier progress.
+
+INPUT: str(char *): Pointer to string of length places + 1
+		value(int): Integer to write to the string
+	   places(int): Number of decimal digits to print
+
+OUTPUT: Places actually printed
+*/
+int render_int_to_string(char *str, int value, int places)
+{
+	int i = 0;
+	int j;
+	int len;
+
+	do
+	{
+		str[i++] = (char)((value % 10) + '0');
+		value /= 10;
+	} while (value > 0 && i < places);
+
+	str[i] = '\0';
+	len = i-1;
+
+	for (j = i - 1, i = 0; i < j; i++, j--)
+	{
+		char temp = str[i];
+		str[i] = str[j];
+		str[j] = temp;
+	}
+
+	return len;
 }

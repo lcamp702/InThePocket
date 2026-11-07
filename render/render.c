@@ -57,7 +57,6 @@ static const UINT32 *note_heads[3] = {
 	note_half_head,
 	note_black_head};
 
-static UINT32 staff_cache[2160];
 
 /* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.

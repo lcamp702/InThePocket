@@ -72,25 +72,24 @@ void render(UINT32 *base, Model *model)
 	UINT16 i, next_note;
 	UINT32 playback_col;
 
-	if (model->head > model->note_count)
+	if (model->head >= model->note_count)
 	{
-		if (model->meter.enjoyment <= 0)
-		{
-			fill_screen(base);
-			plot_nxstring(base, 176, 176, "Game Over", 2);
-			plot_nxstring(base, 208, 128, "Doug was booed off stage",1);
-		}
-		else
-		{
-			fill_screen(base);
-			plot_nxstring(base, 176, 208, "You Win", 2);
-			plot_nxstring(base, 208, 128, "This cat can jam",1);
-		}
+		fill_screen(base);
+		plot_nxstring(base, 176, 208, "You Win", 2);
+		plot_nxstring(base, 208, 192, "This cat can jam",1);
+		return;
+	}
+
+	if (model->meter.enjoyment <= 0)
+	{
+		fill_screen(base);
+		plot_nxstring(base, 176, 176, "Game Over", 2);
+		plot_nxstring(base, 208, 128, "Doug was booed off stage",1);
 		return;
 	}
 
 	if (model->new_bg)
-	{ /* Plot background once */
+	{ /* Plot new background */
 		clear_screen(base);
 		render_staff(base);
 		plot_20l_bitmap(base, 0, bg, BG_HEIGHT);
@@ -257,11 +256,11 @@ void render_targets(UINT32 *base, UINT8 *targets)
 		int row = STAFF_BOTTOM + 1 - ((i + 1) * (NOTE_HEAD_HEIGHT + STAFF_LINE_WIDTH));
 		if (targets[i])
 		{
-			plot_16bit_bitmap((UINT16 *)base, row, 40, target_on_bmp, NOTE_HEAD_HEIGHT);
+			plot_16bit_bitmap((UINT16 *)base, row, TARGET_COL, target_on_bmp, NOTE_HEAD_HEIGHT);
 			targets[i] = 0; /* Clear after rendering */
 		}
 		else
-			plot_16bit_bitmap((UINT16 *)base, row, 40, target_off_bmp, NOTE_HEAD_HEIGHT);
+			plot_16bit_bitmap((UINT16 *)base, row, TARGET_COL, target_off_bmp, NOTE_HEAD_HEIGHT);
 	}
 }
 

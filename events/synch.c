@@ -31,4 +31,6 @@ void synch_clock_tick(Model *model, UINT32 time_now)
 	UINT32 time = time_now - model->start_time;
 	model->last_interval = time - model->game_clock;
 	model->game_clock = time;
+
+	model_clock_tick();
 }

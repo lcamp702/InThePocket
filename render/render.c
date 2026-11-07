@@ -57,6 +57,13 @@ static const UINT32 *note_heads[3] = {
 	note_half_head,
 	note_black_head};
 
+static const UINT32 *dougs[DOUG_COUNT] = {
+	doug0,
+	doug1,
+	doug2,
+	doug3,
+	doug4
+};
 
 /* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
@@ -72,7 +79,7 @@ void render(UINT32 *base, Model *model)
 	UINT32 playback_col;
 
 	if (model->head >= model->note_count)
-	{
+	{ /* Plot game won screen */
 		fill_screen(base);
 		plot_nxstring(base, 176, 208, "You Win", 2);
 		plot_nxstring(base, 208, 192, "This cat can jam",1);
@@ -80,7 +87,7 @@ void render(UINT32 *base, Model *model)
 	}
 
 	if (model->meter.enjoyment <= 0)
-	{
+	{ /* Plot game over screen */
 		fill_screen(base);
 		plot_nxstring(base, 176, 176, "Game Over", 2);
 		plot_nxstring(base, 208, 128, "Doug was booed off stage",1);
@@ -96,6 +103,24 @@ void render(UINT32 *base, Model *model)
 	}
 
 	clean_staff(base);
+
+	if (model->new_doug)
+	{ /* Animate background */
+		int col = 288;
+		int i;
+		UINT32 *doug = dougs[model->doug];
+
+		clear_region(base, 80, col, DOUG_HEIGHT, 96);
+
+		for (i=0; i < 3; i++)
+		{
+			plot_32bit_bitmap(base, 80, col, doug, DOUG_HEIGHT);
+			doug += DOUG_HEIGHT;
+			col += 32;
+		}
+		
+		model->new_doug--;
+	}
 
 	next_note = model_next_disp_note(model);
 	playback_col = NOTE_START_X - model->game_clock;

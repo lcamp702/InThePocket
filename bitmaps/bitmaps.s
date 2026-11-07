@@ -34,6 +34,29 @@
 _bg:		
 		incbin		"bg\bg.bin"
 
+; ===============  DOUGS  ===============
+; Animation frames for the character on screen
+; UINT32 bg[BG_HEIGHT]
+		xdef		_doug0
+_doug0:		
+		incbin		"doug\doug0.bin"
+
+		xdef		_doug1
+_doug1:		
+		incbin		"doug\doug1.bin"
+
+		xdef		_doug2
+_doug2:		
+		incbin		"doug\doug2.bin"
+
+		xdef		_doug3
+_doug3:		
+		incbin		"doug\doug3.bin"
+
+		xdef		_doug4
+_doug4:		
+		incbin		"doug\doug4.bin"
+
 ; ===============  NOTE HEADS  ===============
 ; Each note head is a 16px tall shape. 
 ; The widest form is 32px wide,

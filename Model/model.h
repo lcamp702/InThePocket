@@ -54,7 +54,11 @@ typedef struct Model
 	UINT16 note_count;	/*(Total number of notes in the song*/
 	UINT16 head;	/*First note in on the screen*/
 
-	UINT8 new_bg;	/*Flag for changing backgrounds*/
+	UINT8 new_bg;	/* Flag for changing backgrounds */
+
+	UINT8 doug;		/* Doug state number */
+	UINT8 doug_delta; /* Direction to count states in */
+	UINT8 new_doug; /* Flag for changing doug */
 
 	/* ==== Clock ====*/
 	UINT32 game_clock;	/*Ticks since game start*/
@@ -70,6 +74,15 @@ INPUT: Takes Model, the song array, and the amount of notes as parameters.
 OUTPUT: N/A
 */
 void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now);
+
+/* ==== Function: model_clock_tick ====
+PURPOSE: Tick over to the next doug state depending on the game time.
+
+INPUT: pointer to Model
+
+OUTPUT: N/A
+*/
+void model_clock_tick(Model *model);
 
 /* ==== Function: model_next_disp_note ====
 PURPOSE: Calculates the index of the last note on screen. This gives the bounds for the array which is functional. Assumes the array is non empty.

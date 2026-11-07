@@ -19,6 +19,8 @@
 #include "model.h"
 #include "../system/system.h"
 
+static state_intervals[4] = { 15, 31, 63, 127 }; /* Speed of Doug state changes */
+
 /* ==== Function: model_init ====
 PURPOSE: Initializes Model.  Assumes that notes are ordered by spawn time. Songs over 512 notes are truncated.
 
@@ -29,6 +31,10 @@ OUTPUT: N/A
 void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now)
 {
 	UINT32 i;
+
+	model->doug = 0;
+	model->doug_delta = 1;
+	model->new_doug = 2;
 
 	model->new_bg = 2; /* Render background on both framebuffers */
 
@@ -56,6 +62,27 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 
 	/* Initialize meter */
 	meter_init(&model->meter);
+}
+
+/* ==== Function: model_clock_tick ====
+PURPOSE: Tick over to the next doug state depending on the game time.
+
+INPUT: pointer to Model
+
+OUTPUT: N/A
+*/
+void model_clock_tick(Model *model) {
+	UINT8 category = 65 - model->meter.enjoyment;
+	category >>= 4;
+
+	if((model->game_clock & state_intervals[category]) == 0)	
+	{
+		model->doug += model->doug_delta;
+		if (model->doug == 4 || model->doug == 0)
+			model->doug_delta *= -1;
+			
+		model->new_doug = 2;
+	}
 }
 
 /* ==== Function: model_next_disp_note ====

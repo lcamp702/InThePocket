@@ -30,6 +30,18 @@
 
 extern const UINT32 bg[BG_HEIGHT];
 
+/*
+===============  Doug  ===============
+Sets of 3 bitmaps to animate the character on screen.
+*/
+#define DOUG_HEIGHT 145
+#define DOUG_COUNT 5
+
+extern const UINT32 doug0[DOUG_HEIGHT * 3];
+extern const UINT32 doug1[DOUG_HEIGHT * 3];
+extern const UINT32 doug2[DOUG_HEIGHT * 3];
+extern const UINT32 doug3[DOUG_HEIGHT * 3];
+extern const UINT32 doug4[DOUG_HEIGHT * 3];
 
 /*
 =============== ENJOYMENT METER ===============

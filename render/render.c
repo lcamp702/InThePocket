@@ -178,18 +178,18 @@ void render_meter(UINT32 *base, Meter *meter)
 	if (enjoyment < METER_HEIGHT)
 	{
 		/* Plot meter in black to erase negative version */
-		plot_32bit_bitmap(base, METER_ROW, METER_COL, full_left, plot_height);
-		plot_32bit_bitmap(base, METER_ROW, METER_COL + 32, full_right, plot_height);
+		plot_32bit_bitmap(base, METER_ROW, METER_COL, sax_full, plot_height);
+		plot_32bit_bitmap(base, METER_ROW, METER_COL + 32, (sax_full + METER_HEIGHT), plot_height);
 		/* Plot empty portion of the meter */
-		plot_n32bit_bitmap(base, METER_ROW, METER_COL, emp_left, plot_height);
-		plot_n32bit_bitmap(base, METER_ROW, METER_COL + 32, emp_right, plot_height);
+		plot_n32bit_bitmap(base, METER_ROW, METER_COL, sax_empty, plot_height);
+		plot_n32bit_bitmap(base, METER_ROW, METER_COL + 32, (sax_empty + METER_HEIGHT), plot_height);
 	}
 
 	if (enjoyment > 0)
 	{
 		/* Plot filled portion of the meter (Always overwrites empty section) */
-		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL, full_left + plot_height, enjoyment);
-		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL + 32, full_right + plot_height, enjoyment);
+		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL, sax_full + plot_height, enjoyment);
+		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL + 32, sax_full + METER_HEIGHT + plot_height, enjoyment);
 	}
 }
 

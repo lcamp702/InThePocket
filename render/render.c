@@ -25,6 +25,9 @@
 #define LINE_COUNT 5	   /* 5 lines, 4 tracks between for notes*/
 #define STAFF_LINE_WIDTH 2 /* Thickness of each staff line */
 
+/* ==== Targets ==== */
+#define TARGET_COL 64
+
 /* ===== Meter ===== */
 #define METER_ROW 8
 #define METER_COL 568

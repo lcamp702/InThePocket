@@ -75,7 +75,7 @@ void model_clock_tick(Model *model) {
 	UINT8 category = 65 - model->meter.enjoyment;
 	category >>= 4;
 
-	if((model->game_clock & state_intervals[category]) == 0)	
+	if((model->game_clock & state_intervals[category]) < model->last_interval)	
 	{
 		model->doug += model->doug_delta;
 		if (model->doug == 4 || model->doug == 0)

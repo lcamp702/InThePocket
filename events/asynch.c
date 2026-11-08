@@ -90,19 +90,25 @@ INPUT: Key pressed (char) and pointer to model
 
 OUTPUT: Is hit? -1: No 0-3: Head offset of note hit
 */
-UINT8 asynch_key_hit(Model *model, char key)
+void asynch_key_hit(Model *model, char key)
 {
-	UINT8 pitch;
+	UINT8 pitch, hit;
 
 	if (model->head > model->note_count)	 /* Check if song is playing  */
-		return -1;
+		return;
 
 	pitch = asynch_key_to_pitch(key);
 
 	if (pitch < TARGET_COUNT)
 		model->targets[pitch] = 1; /* Enable the target for this pitch. */
 
-	return asynch_is_hit(model, pitch, 0);
+	/* Check for a hit */
+	hit = asynch_is_hit(model, pitch, 0);
+
+	if (hit == (UINT8)-1)
+		asynch_apply_miss(model);
+	else
+		asynch_apply_hit(model, hit);
 }
 
 /* ==== Function: asynch_apply_hit ====

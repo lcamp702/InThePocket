@@ -48,7 +48,7 @@ INPUT: Key pressed (char) and pointer to model
 
 OUTPUT: Is hit? (Boolean 1:0)
 */
-UINT8 asynch_key_hit(Model *model, char key);
+void asynch_key_hit(Model *model, char key);
 
 /* ==== Function: asynch_apply_hit ====
 PURPOSE: Handles hit event.

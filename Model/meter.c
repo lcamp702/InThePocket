@@ -86,7 +86,8 @@ void meter_increase_multiplier(Meter *meter)
 		{ /* 10 consecutive notes, increase multiplier */
 			meter->multiplier++;
 			/* Reset multi increase progress */
-			meter->multi_progress = 0;
+			if (meter->multiplier < MAX_MULTI)
+				meter->multi_progress = 0;
 		}
 }
 

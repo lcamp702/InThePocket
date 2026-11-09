@@ -48,10 +48,11 @@ int main()
 	while (!quit)
 	{ /* Repeat until quit */
 		time_now = get_time();
-		time_elapsed = time_now - time_then;
+		time_elapsed = time_now - time_then; /* Time since drawing last frame */
 		if (has_input())
 			/* If input is pending, process async event */
 			asynch_key_hit(&model, get_input());
+			
 		if (time_elapsed > 0)
 		{ 	/* If clock has ticked, process sync events */
 			synch_clock_tick(&model, time_now);
@@ -72,7 +73,7 @@ int main()
 				buffer = 0;
 			}
 			/* Update game module clock */
-			time_then = time_now;
+			time_then = get_time(); /* Time after drawing last frame */
 		}
 	}
 

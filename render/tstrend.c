@@ -43,7 +43,7 @@ void test_init(Model *model, UINT32 *base);
 void test_clock_tick(Model *model, UINT32 *base);
 void test_advance_head(Model *model, UINT32 *base);
 void test_game_over(Model *model, UINT32 *base, INT8 enjoyment, const char *title);
-void test_hit(Model *model, UINT32 *base, UINT8 pitch);
+void test_hit(Model *model, UINT32 *base, char key);
 void test_apply_hit(Model *model, UINT32 *base);
 void test_apply_miss(Model *model, UINT32 *base);
 
@@ -51,16 +51,15 @@ int main(void)
 {
 	UINT32 *base = (UINT32 *)Physbase();
 	static Model test_model;
-	UINT8 pitch;
 
 	test_init(&test_model, base);
 	test_clock_tick(&test_model, base);
 	test_advance_head(&test_model, base);
 	test_game_over(&test_model, base, ENJOYMENT_START, "cond_game_over");
-	for (pitch = KEY_A; pitch <= KEY_F; pitch++)
-	{
-		test_hit(&test_model, base, pitch);
-	}
+	test_hit(&test_model, base, 'a');
+	test_hit(&test_model, base, 's');
+	test_hit(&test_model, base, 'd');
+	test_hit(&test_model, base, 'f');
 	test_apply_hit(&test_model, base);
 	test_apply_miss(&test_model, base);
 
@@ -90,7 +89,9 @@ OUTPUT: N/A
 */
 void show_frame(Model *model, UINT32 *base)
 {
-	render(model, base);
+	model->new_bg = 1;
+	model->meter.dirty = 1;
+	render(base, model);
 	Cnecin();
 	clear_screen(base);
 }
@@ -134,7 +135,7 @@ void skip_ticks(Model *model, UINT16 ticks)
 }
 
 /*------ Function: apply_hits_and_show ------
-PURPOSE: For 30 ticks, applies a hit whenever any lane is hittable and renders the result, so the meter is seen filling.
+PURPOSE: Through the hit windows, applies a hit whenever any lane is hittable and renders the result, so the meter is seen filling.
 
 INPUT: pointer to Model, UINT32 pointer to frame buffer
 
@@ -142,15 +143,17 @@ OUTPUT: N/A
 */
 void apply_hits_and_show(Model *model, UINT32 *base)
 {
-	UINT8 i;
+	UINT16 i;
+	UINT8 hit;
 
-	for (i = 0; i < 30; i++)
+	for (i = 568; i < 620; i++)
 	{
 		synch_clock_tick(model, i);
-		if (asynch_key_hit(model, 0) || asynch_key_hit(model, 1) ||
-			asynch_key_hit(model, 2) || asynch_key_hit(model, 3))
+		cond_check_misses(model);
+		hit = asynch_is_hit(model, KEY_F, 0);
+		if (hit != (UINT8)-1 && model->head < model->note_count)
 		{
-			asynch_apply_hit(model);
+			asynch_apply_hit(model, hit);
 			show_frame(model, base);
 		}
 	}
@@ -243,8 +246,9 @@ void test_game_over(Model *model, UINT32 *base, INT8 enjoyment, const char *titl
 	show(title);
 	model_init(model, test_song, TEST_SONG_LEN, 1);
 	model->meter.enjoyment = enjoyment;
-	for(i=145;i<12;i++) {
+	for(i=595;i<620;i++) {
 		synch_clock_tick(model, i);
+		cond_check_misses(model);
 		show_frame(model, base);
 	}
 }
@@ -252,7 +256,7 @@ void test_game_over(Model *model, UINT32 *base, INT8 enjoyment, const char *titl
 /*------ Function: test_hit ------
 PURPOSE: Renders notes passing through the hit window for one pitch lane, every 5 ticks, with the meter held full.
 
-INPUT: pointer to Model, UINT32 pointer to frame buffer, pitch lane being hit
+INPUT: pointer to Model, UINT32 pointer to frame buffer, key being pressed
 
 TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
 5		Checking that notes		Model with		Notes get hit and		Notes get hit and
@@ -261,17 +265,18 @@ TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
 
 OUTPUT: N/A
 */
-void test_hit(Model *model, UINT32 *base, UINT8 pitch)
+void test_hit(Model *model, UINT32 *base, char key)
 {
-	UINT8 i;
+	UINT16 i;
 
-	show("asynch_is_hit");
+	show("asynch_key_hit");
 	model_init(model, test_song, TEST_SONG_LEN, 1);
-	for (i = 138; i <= 168; i++)
+	for (i = 560; i < 620; i++)
 	{
 		model->meter.enjoyment = ENJOYMENT_MAX;
 		synch_clock_tick(model, i);
-		asynch_key_hit(model, pitch);
+		cond_check_misses(model);
+		asynch_key_hit(model, key);
 		if (i % 5 == 0)
 		{
 			show_frame(model, base);
@@ -300,7 +305,7 @@ void test_apply_hit(Model *model, UINT32 *base)
 {
 	show("asynch_apply_hit");
 	model_init(model, test_song, TEST_SONG_LEN, 1);
-	skip_ticks(model, 138);
+	skip_ticks(model, 568);
 	apply_hits_and_show(model, base);
 }
 
@@ -330,14 +335,14 @@ OUTPUT: N/A
 */
 void test_apply_miss(Model *model, UINT32 *base)
 {
-	UINT8 i;
+	UINT16 i;
 
 	show("asynch_apply_miss");
 	model_init(model, test_song, TEST_SONG_LEN, 1);
-	for (i = 133; i < 138; i++)
+	for (i = 560; i < 568; i++)
 	{
 		synch_clock_tick(model, i);
-		if (!asynch_key_hit(model, 3))
+		if (asynch_is_hit(model, KEY_F, 0) == (UINT8)-1)
 		{
 			asynch_apply_miss(model);
 			show_frame(model, base);

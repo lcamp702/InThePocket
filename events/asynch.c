@@ -99,7 +99,7 @@ void asynch_key_hit(Model *model, char key)
 
 	pitch = asynch_key_to_pitch(key);
 
-	if (pitch == -1)
+	if (pitch == (UINT8)-1)
 		return; /* Guard against bad input */
 
 	if (pitch < TARGET_COUNT)

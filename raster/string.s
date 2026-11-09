@@ -110,7 +110,7 @@ pcx_plot:
 		move.w		pcx_row(a6),-(sp)	; Row
 		move.l		pcx_base(a6),-(sp)	; Framebuffer base pointer
 
-		jsr		(a3)		; Plot bitmap
+		jsr		(a3)		; Plot bitmap [1]
 		adda.w		#14,sp		; Super pop
 
 pcx_end:
@@ -118,7 +118,7 @@ pcx_end:
 		unlk		a6
 		rts
 
-		; --- Plot jump tables ---
+		; --- Plot jump tables [1] ---
 positive_plots:
 		dc.l		_plot_8bit_bitmap
 		dc.l		_plot_16bit_bitmap

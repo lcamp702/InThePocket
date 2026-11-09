@@ -337,11 +337,14 @@ void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progre
 	plot_nxstring(base, row, col + (16 * SCORE_MAX_LEN), str, 2);
 
 	for (i = 0; i < CONSEC_MULTI; i++) {
-		plot_8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_on, MULTI_HEIGHT);
 		if(progress > i)
 			plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_on, MULTI_HEIGHT);
 		else
+		{
+			/* Plot in black to erase potential filled dot */
+			plot_8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_on, MULTI_HEIGHT);
 			plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_off, MULTI_HEIGHT);
+		}
 	}
 }
 

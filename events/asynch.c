@@ -94,10 +94,13 @@ void asynch_key_hit(Model *model, char key)
 {
 	UINT8 pitch, hit;
 
-	if (model->head > model->note_count)	 /* Check if song is playing  */
-		return;
+	if (model->head > model->note_count)
+		return; /* Check if song is playing */
 
 	pitch = asynch_key_to_pitch(key);
+
+	if (pitch == -1)
+		return; /* Guard against bad input */
 
 	if (pitch < TARGET_COUNT)
 		model->targets[pitch] = 1; /* Enable the target for this pitch. */

@@ -1,7 +1,7 @@
 # ==== Keywords ====
 
 game: pocket.tos
-all: model render raster live
+all: model render raster
 model: tstmodel.tos
 render: tstrend.tos
 raster: tstrast.tos

@@ -42,7 +42,6 @@ UINT32 *buff_256()
 void set_screen(UINT32 *base)
 {
 	Setscreen(-1, base, -1);
-	Vsync();
 }
 
 void disable_cursor()

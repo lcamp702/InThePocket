@@ -72,7 +72,7 @@ int main()
 				buffer = 0;
 			}
 			/* Update game module clock */
-			time_then = time_now;
+			time_then = get_time();
 		}
 	}
 

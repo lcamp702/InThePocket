@@ -58,6 +58,7 @@ static const UINT32 *note_heads[3] = {
 	note_black_head};
 
 int render_int_to_string(char *str, UINT32 value, int places);
+void render_end_screen(UINT32 *base, char *t1, UINT16 t1_len, char *t2, UINT16 t2_len, UINT32 score);
 
 /* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
@@ -73,57 +74,67 @@ void render(UINT32 *base, Model *model)
 	UINT32 playback_col;
 
 	if (model->head >= model->note_count)
-	{
-		int row = 168;
-		char score[SCORE_MAX_LEN + 1];
-		int places = render_int_to_string(score, model->meter.score, SCORE_MAX_LEN);
-		fill_screen(base);
-		plot_nxstring(base, row, 208, "You Win", 2);
-		plot_nxstring(base, row + 32, 192, "This cat can jam",1);
-		plot_nxstring(base, row + 48, 254 - (8*places), "Score: ",1);
-		plot_nxstring(base, row + 48, 360 - (8*places), score,1);
-		return;
+	{ /* Game won */
+        render_end_screen(base, "You Win", 7, "This cat can jam!", 17, model->meter.score);
+        return;
 	}
 
 	if (model->meter.enjoyment <= 0)
-	{
-		int row = 168;
-		char score[SCORE_MAX_LEN + 1];
-		int places = render_int_to_string(score, model->meter.score, SCORE_MAX_LEN);
-		fill_screen(base);
-		plot_nxstring(base, row, 176, "Game Over", 2);
-		plot_nxstring(base, row + 32, 128, "Doug was booed off stage",1);
-		plot_nxstring(base, row + 48, 254 - (8*places), "Score: ",1);
-		plot_nxstring(base, row + 48, 360 - (8*places), score,1);
+	{ /* Game over */
+		render_end_screen(base, "Game Over", 9, "Doug was booed off stage", 24, model->meter.score);
 		return;
 	}
 
 	if (model->new_bg)
-	{ /* Plot new background */
+	{ /* Render background and staff */
 		clear_screen(base);
 		render_staff(base);
 		plot_20l_bitmap(base, 0, bg, BG_HEIGHT);
 		model->new_bg--;
 	}
 
-	clean_staff(base);
-
-	next_note = model_next_disp_note(model);
-	playback_col = NOTE_START_X - model->game_clock;
-	for (i = model->head; i < next_note; i++)
-		if (model->notes[i].hit == 0)
-			render_note(base, &model->notes[i], playback_col);
-
-	render_targets(base, model->targets);
-
-	/* Top stats */
 	if (model->meter.dirty)
-	{
-		render_meter(base, &model->meter);
-		render_score(base, SCORE_ROW, SCORE_COL, model->meter.score);
+	{ /* Meter stats */
+		render_enjoyment(base, model->meter.enjoyment); /* Render enjoyment meter */
+		render_score(base, SCORE_ROW, SCORE_COL, model->meter.score); /* Render Score value */
 		render_multiplier(base, SCORE_ROW, SCORE_COL, model->meter.multiplier, model->meter.multi_progress);
 		model->meter.dirty--;
 	}
+
+	render_targets(base, model->targets);
+	
+	clean_staff(base); /* Clear old notes */
+	next_note = model_next_disp_note(model); /* Get end note index */
+	playback_col = NOTE_START_X - model->game_clock; /* Note x position offset */
+
+	for (i = model->head; i < next_note; i++)
+		if (model->notes[i].hit == 0) /* If note is not hit, draw it */
+			render_note(base, &model->notes[i], playback_col);
+}
+
+/* ==== Function: render_end_screen ====
+PURPOSE: Renders an end screen with large text, a smaller subline, and the score of the game.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   t1(char *): Pointer to large text string
+	   t1_len(UINT16): Length of large text string
+	   t2(char *): Pointer to subtext string
+	   t2_len(UINT16): Length of subtext string
+	   score(UINT32): Score to render at the bottom of the screen
+OUTPUT: N/A
+*/
+void render_end_screen(UINT32 *base, char *t1, UINT16 t1_len, char *t2, UINT16 t2_len, UINT32 score)
+{
+    int row = 168;
+    char score_str[SCORE_MAX_LEN + 1];
+    int places = render_int_to_string(score_str, score, SCORE_MAX_LEN);
+	int score_col = 320 - (8 * places);
+    fill_screen(base);
+    plot_nxstring(base, row		, 320 - (8 * t1_len), t1, 2);
+    plot_nxstring(base, row + 32, 320 - (8 * t2_len), t2, 1);
+
+    plot_nxstring(base, row + 48, score_col, "Score: ", 1);
+    plot_nxstring(base, row + 48, score_col + 112, score_str, 1);
 }
 
 /* ==== Function: render_note ====
@@ -164,7 +175,7 @@ void render_note(UINT32 *base, Note *note, UINT32 playback_col)
 	}
 }
 
-/* ==== Function: render_meter ====
+/* ==== Function: render_enjoyment ====
 PURPOSE: Renders meter. Fills it up based on enjoyment.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
@@ -172,9 +183,8 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_meter(UINT32 *base, Meter *meter)
+void render_enjoyment(UINT32 *base, INT8 enjoyment)
 {
-	int enjoyment = meter->enjoyment;
 	UINT16 plot_height;
 
 	/* Clip enjoyment to meter size */

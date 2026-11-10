@@ -19,13 +19,13 @@ Output: Boolean indicating if a value was successfully read or not
 */
 bool read_psg(UINT8 reg, UINT8 *value)
 {
-	UINT32 exit;
+	long exit;
 
 	if (reg & 0xF0) return false; /* Reject out of bounds read */
 
 	exit = Super(0); /* Save old super sp */
-	*(volatile char *)(0xFF8802) = reg; /* Select register */
-	*value = *(volatile char *)0xFF8800; /* Get value */
+	*(volatile char *)(0xFF8800) = reg; /* Select register */
+	*value = *(volatile char *)0xFF8802; /* Get value */
 	Super(exit);
 	
 	return true;
@@ -42,7 +42,7 @@ Output: None
 */
 void write_psg(UINT8 reg, UINT8 val)
 {
-	UINT32 exit;
+	long exit;
 
 	if (reg & 0xF0) return; /* Reject out of bounds read */
 
@@ -70,8 +70,8 @@ void set_tone(UINT8 channel, UINT16 tuning)
 	if (channel & 0xFC) return; /* Reject invalid channel */
 	if (tuning & 0xF000) return; /* Reject invalid tuning */
 
-	write_psg(channel, (UINT8)(tuning & 0x00FF)); /* Write fine tone adjustment */
-	write_psg(channel+1, (UINT8)((tuning & 0x0F00)>>8)); /* Write coarse tone adjustment */
+	write_psg(reg, (UINT8)(tuning & 0x00FF)); /* Write fine tone adjustment */
+	write_psg(reg+1, (UINT8)((tuning & 0x0F00)>>8)); /* Write coarse tone adjustment */
 }
 
 /* ==== Function: set_volume ====
@@ -148,7 +148,8 @@ void set_envelope(UINT8 shape, UINT16 sustain)
 {
 	if (shape & 0xF0) return; /* Reject invalid shape */
 
-	write_psg(ENV_PERIOD_REG, sustain);
+	write_psg(ENV_PERIOD_REG, (UINT8)(sustain & 0x00FF));
+	write_psg(ENV_PERIOD_REG+1, (UINT8)(sustain >> 8));
 	write_psg(ENV_SHAPE_REG, shape & 0x0F);
 }
 
@@ -165,7 +166,7 @@ void stop_sound()
 	read_psg(SETTINGS_REG, &settings); /* Get contents of settings register */
 
 	/* 1 = off for PSG settings */
-	settings &= 0x3F; /* Disable all channels */
+	settings |= 0x3F; /* Disable all channels */
 
 	write_psg(SETTINGS_REG, settings);
 }

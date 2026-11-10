@@ -3,11 +3,10 @@
 
 int main()
 {
-    /*set_tone(0, 3040);*/
-    set_noise(14);
-    enable_channel(0, false, true);
+    set_tone(0, 1000);
+    enable_channel(0, true, false);
     set_volume(0, 0x07);
-    /*set_envelope(0x0E, 0x0F00);*/
+    set_envelope(0x0E, 0xFFFF);
     Cnecin();
     stop_sound();
 

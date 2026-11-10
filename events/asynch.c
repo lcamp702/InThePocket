@@ -43,9 +43,15 @@ UINT8 asynch_key_to_pitch(char key)
 	case 'D':
 		pitch = KEY_D;
 		break;
+
 	case 'f':
 	case 'F':
 		pitch = KEY_F;
+		break;
+
+	case '`':
+	case '~':
+		pitch = -2;
 		break;
 
 	default:
@@ -98,6 +104,12 @@ void asynch_key_hit(Model *model, char key)
 		return; /* Check if song is playing */
 
 	pitch = asynch_key_to_pitch(key);
+
+	if (pitch == (UINT8)-2)
+	{ /* Handle quit key */
+		model->meter.enjoyment = 0;
+		return;
+	}
 
 	if (pitch == (UINT8)-1)
 		return; /* Guard against bad input */

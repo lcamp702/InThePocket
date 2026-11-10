@@ -1,0 +1,13 @@
+
+test: sound.tos
+
+SOUND =	psg.o
+
+psg.o: psg.c psg.h
+	cc68x -g -c psg.c -o psg.o
+
+psgtst.o: psgtst.c psg.h
+	cc68x -g -c psgtst.c -o psgtst.o
+
+sound.tos: $(SOUND) psgtst.o
+	cc68x -g psgtst.o $(SOUND) -o sound.tos

@@ -22,7 +22,7 @@
 #include "../model/model.h"
 
 /* ==== Function: asynch_key_to_pitch ====
-PURPOSE: Converts char value from input ket to corresponding int value.
+PURPOSE: Converts char value from input key to corresponding int value.
 
 INPUT: Char value of keyboard press
 

@@ -19,6 +19,9 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#define true (bool)1
+#define false (bool)0
+
 typedef unsigned char UINT8;
 typedef unsigned short UINT16;
 typedef unsigned long UINT32;

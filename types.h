@@ -27,4 +27,6 @@ typedef signed char INT8;
 typedef signed short INT16;
 typedef signed long INT32;
 
+typedef signed char bool;
+
 #endif

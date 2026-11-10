@@ -49,7 +49,7 @@ OUTPUT: N/A
 */
 UINT8 cond_game_over(const Model *model)
 {
-	int no_enjoyment = model->meter.enjoyment <= 0;
-	int song_ended = model->head >= model->note_count;
+	bool no_enjoyment = model->meter.enjoyment <= 0;
+	bool song_ended = model->head >= model->note_count;
 	return (UINT8)no_enjoyment || song_ended;
 }

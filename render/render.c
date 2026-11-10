@@ -101,9 +101,10 @@ void render(UINT32 *base, Model *model)
 		model->meter.dirty--;
 	}
 
-	render_targets(base, model->targets);
+	clean_staff(base); /* Clear between staff lines */
+
+	render_targets(base, model->targets); /* Redraw targets */
 	
-	clean_staff(base); /* Clear old notes */
 	next_note = model_next_disp_note(model); /* Get end note index */
 	playback_col = NOTE_START_X - model->game_clock; /* Note x position offset */
 
@@ -128,9 +129,9 @@ void render_end_screen(UINT32 *base, char *t1, UINT16 t1_len, char *t2, UINT16 t
     int row = 168;
     char score_str[SCORE_MAX_LEN + 1];
     int places = render_int_to_string(score_str, score, SCORE_MAX_LEN);
-	int score_col = 320 - (8 * places);
+	int score_col = 264 - (8 * places);
     fill_screen(base);
-    plot_nxstring(base, row		, 320 - (8 * t1_len), t1, 2);
+    plot_nxstring(base, row		, 320 - (16 * t1_len), t1, 2);
     plot_nxstring(base, row + 32, 320 - (8 * t2_len), t2, 1);
 
     plot_nxstring(base, row + 48, score_col, "Score: ", 1);

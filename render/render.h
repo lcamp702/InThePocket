@@ -47,14 +47,14 @@ OUTPUT: N/A
 void render_note(UINT32 *base, Note *note, UINT32 time);
 
 /* ==== Function: render_enjoyment ====
-PURPOSE: Renders meter. Fills it up based on enjoyment.
+PURPOSE: Renders enjoyment meter. Fills it up based on enjoyment value.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
-	   meter(Meter *): pointer to meter
+	   enjoyment(INT8): Current enjoyment
 
 OUTPUT: N/A
 */
-void render_enjoyment(UINT32 *base, Meter *meter);
+void render_enjoyment(UINT32 *base, INT8 enjoyment);
 
 /* ==== Function: render_staff ====
 PURPOSE: Renders one four line staff.

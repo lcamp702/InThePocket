@@ -38,7 +38,7 @@
 #define SCORE_MAX_LEN 6
 
 /* ===== Notes ===== */
-#define STEM_LENGTH (int)((NOTE_HEAD_HEIGHT) * 3)
+#define STEM_LENGTH (UINT16)((NOTE_HEAD_HEIGHT) * 3)
 #define STEM_COL_R 26 /* Stem column offset */
 #define STEM_COL_L 5
 #define STEM_ROW 8
@@ -74,7 +74,7 @@ void render(UINT32 *base, Model *model)
 
 	if (model->head >= model->note_count)
 	{
-		int row = 200 - 32;
+		int row = 168;
 		char score[SCORE_MAX_LEN + 1];
 		int places = render_int_to_string(score, model->meter.score, SCORE_MAX_LEN);
 		fill_screen(base);
@@ -87,7 +87,7 @@ void render(UINT32 *base, Model *model)
 
 	if (model->meter.enjoyment <= 0)
 	{
-		int row = 200 - 32;
+		int row = 168;
 		char score[SCORE_MAX_LEN + 1];
 		int places = render_int_to_string(score, model->meter.score, SCORE_MAX_LEN);
 		fill_screen(base);

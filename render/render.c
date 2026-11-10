@@ -57,7 +57,7 @@ static const UINT32 *note_heads[3] = {
 	note_half_head,
 	note_black_head};
 
-int render_int_to_string(char *str, int value, int places);
+int render_int_to_string(char *str, UINT32 value, int places);
 
 /* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
@@ -322,8 +322,8 @@ void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progre
 	}
 }
 
-/* ==== Function: render_multiplier ====
-PURPOSE: Renders the multiplier number (X1) and multiplier progress.
+/* ==== Function: render_int_to_string ====
+PURPOSE: Converts an int value to a string and writes it to the given char array
 
 INPUT: str(char *): Pointer to string of length places + 1
 		value(int): Integer to write to the string
@@ -331,7 +331,7 @@ INPUT: str(char *): Pointer to string of length places + 1
 
 OUTPUT: Places actually printed
 */
-int render_int_to_string(char *str, int value, int places)
+int render_int_to_string(char *str, UINT32 value, int places)
 {
 	int i = 0;
 	int j;

@@ -93,19 +93,6 @@ void render(Model *model)
 	
 	buffer = (++buffer) & 1; /* Next frame # (0/1) */
 
-	/* Render next frame */
-	if (model->head >= model->note_count)
-	{ /* Game won */
-        render_end_screen(buffers[buffer], "You Win", 7, "This cat can jam!", 17, model->meter.score);
-        return;
-	}
-
-	if (model->meter.enjoyment <= 0)
-	{ /* Game over */
-		render_end_screen(buffers[buffer], "Game Over", 9, "Doug was booed off stage", 24, model->meter.score);
-		return;
-	}
-
 	if (model->new_bg)
 	{ /* Render background and staff */
 		clear_screen(buffers[buffer]);
@@ -123,7 +110,6 @@ void render(Model *model)
 	}
 
 	clean_staff(buffers[buffer]); /* Clear between staff lines */
-
 	render_targets(buffers[buffer], model->targets);
 	
 	next_note = model_next_disp_note(model); /* Get end note index */
@@ -132,6 +118,12 @@ void render(Model *model)
 	for (i = model->head; i < next_note; i++)
 		if (model->notes[i].hit == 0) /* If note is not hit, draw it */
 			render_note(buffers[buffer], &model->notes[i], playback_col);
+	
+	/* Check for game ended condition */
+	if (model->head >= model->note_count)
+        render_end_screen(buffers[buffer], "You Win", 7, "This cat can jam!", 17, model->meter.score);
+	else if (model->meter.enjoyment <= 0)
+		render_end_screen(buffers[buffer], "Game Over", 9, "Doug was booed off stage", 24, model->meter.score);
 	
 	set_screen(buffers[buffer]); /* Queue frame for display */
 }

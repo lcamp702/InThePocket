@@ -91,7 +91,7 @@ void render(Model *model)
 	UINT16 i, next_note;
 	UINT32 playback_col;
 	
-	buffer = (++buffer) & 1;
+	buffer = (++buffer) & 1; /* Next frame # (0/1) */
 
 	/* Render next frame */
 	if (model->head >= model->note_count)
@@ -107,7 +107,7 @@ void render(Model *model)
 	}
 
 	if (model->new_bg)
-	{ /* Render background and staff (If needed) */
+	{ /* Render background and staff */
 		clear_screen(buffers[buffer]);
 		render_staff(buffers[buffer]);
 		plot_20l_bitmap(buffers[buffer], 0, bg, BG_HEIGHT);
@@ -124,7 +124,7 @@ void render(Model *model)
 
 	clean_staff(buffers[buffer]); /* Clear between staff lines */
 
-	render_targets(buffers[buffer], model->targets); /* Redraw targets */
+	render_targets(buffers[buffer], model->targets);
 	
 	next_note = model_next_disp_note(model); /* Get end note index */
 	playback_col = NOTE_START_X - model->game_clock; /* Note x position offset */
@@ -133,7 +133,7 @@ void render(Model *model)
 		if (model->notes[i].hit == 0) /* If note is not hit, draw it */
 			render_note(buffers[buffer], &model->notes[i], playback_col);
 	
-	set_screen(buffers[buffer]); /* Queue last frame for display */
+	set_screen(buffers[buffer]); /* Queue frame for display */
 }
 
 /* ==== Function: render_exit ====

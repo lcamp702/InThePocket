@@ -98,60 +98,46 @@ void render(Model *model)
 {
 	UINT16 i, next_note;
 	UINT32 playback_col;
-	
-	buffer = (++buffer) & 1; /* Next frame # (0/1) */
+	UINT32 *render_buff;
+
+	buffer = (++buffer) & 1; /* Next buffer # (0/1) */
+	render_buff = buffers[buffer];
 
 	if (model->new_bg)
 	{ /* Render background and staff */
-		clear_screen(buffers[buffer]);
-		render_staff(buffers[buffer]);
-		plot_20l_bitmap(buffers[buffer], 0, bg, BG_HEIGHT);
+		clear_screen(render_buff);
+		plot_20l_bitmap(render_buff, 0, bg, BG_HEIGHT);
+		render_staff(render_buff);
 		model->new_bg--;
 	}
 
-	if (model->new_doug)
-	{ /* Animate background */
-		int col = 288;
-		int i;
-		UINT32 *doug = dougs[model->doug];
-
-		clear_region(buffers[buffer], 80, col, DOUG_HEIGHT, 96);
-
-		for (i=0; i < 3; i++)
-		{
-			plot_32bit_bitmap(buffers[buffer], 80, col, doug, DOUG_HEIGHT);
-			doug += DOUG_HEIGHT;
-			col += 32;
-		}
-		
-		model->new_doug--;
-	}
+	if (model->new_doug) /* Animate background if needed */
+		render_animate_bg(render_buff, model->doug, &model->new_doug);
 
 	if (model->meter.dirty)
 	{ /* Render stats (Enjoyment, score, multiplier) */
-		render_enjoyment(buffers[buffer], model->meter.enjoyment); /* Render enjoyment meter */
-		render_score(buffers[buffer], SCORE_ROW, SCORE_COL, model->meter.score); /* Render Score value */
-		render_multiplier(buffers[buffer], SCORE_ROW, SCORE_COL, model->meter.multiplier, model->meter.multi_progress);
+		render_enjoyment(render_buff, model->meter.enjoyment);
+		render_score(render_buff, SCORE_ROW, SCORE_COL, model->meter.score);
+		render_multiplier(render_buff, SCORE_ROW, SCORE_COL, model->meter.multiplier, model->meter.multi_progress);
 		model->meter.dirty--;
 	}
 
-	clean_staff(buffers[buffer]); /* Clear between staff lines */
-	render_targets(buffers[buffer], model->targets);
+	clean_staff(render_buff); /* Clear between staff lines */
+	render_targets(render_buff, model->targets);
 	
 	next_note = model_next_disp_note(model); /* Get end note index */
 	playback_col = NOTE_START_X - model->game_clock; /* Note x position offset */
 
 	for (i = model->head; i < next_note; i++)
 		if (model->notes[i].hit == 0) /* If note is not hit, draw it */
-			render_note(buffers[buffer], &model->notes[i], playback_col);
+			render_note(render_buff, &model->notes[i], playback_col);
 	
-	/* Check for game ended condition */
-	if (model->head >= model->note_count)
-        render_end_screen(buffers[buffer], "You Win", 7, "This cat can jam!", 17, model->meter.score);
-	else if (model->meter.enjoyment <= 0)
-		render_end_screen(buffers[buffer], "Game Over", 9, "Doug was booed off stage", 24, model->meter.score);
+	if (model->head >= model->note_count) /* End of song, game won! */
+        render_end_screen(render_buff, "You Win", 7, "This cat can jam!", 17, model->meter.score);
+	else if (model->meter.enjoyment <= 0) /* No enjoyment. game over. */
+		render_end_screen(render_buff, "Game Over", 9, "Doug was booed off stage", 24, model->meter.score);
 	
-	set_screen(buffers[buffer]); /* Queue frame for display */
+	set_screen(render_buff); /* Queue frame for display */
 }
 
 /* ==== Function: render_exit ====
@@ -190,6 +176,32 @@ void render_end_screen(UINT32 *base, char *t1, UINT16 t1_len, char *t2, UINT16 t
 
     plot_nxstring(base, row + 48, score_col, "Score: ", 1);
     plot_nxstring(base, row + 48, score_col + 112, score_str, 1);
+}
+
+/* ==== Function: render_animate_bg ====
+PURPOSE: Renders an animation frame for a portion of the background above the staff
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	frame(UINT8): the frame # in the bg animation to render
+	new_frame(UINT8 *): Pointer to the model flag for changing backgrounds
+
+OUTPUT: N/A
+*/
+void render_animate_bg(UINT32 *base, UINT8 frame, UINT8 *new_frame) {
+	int col = 288;
+	int i;
+	UINT32 *doug_ptr = dougs[frame];
+
+	clear_region(base, 80, col, DOUG_HEIGHT, 96);
+
+	for (i=0; i < 3; i++)
+	{ /* Render 96px wide bitmap in 3 parts */
+		plot_32bit_bitmap(base, 80, col, doug_ptr, DOUG_HEIGHT);
+		doug_ptr += DOUG_HEIGHT;
+		col += 32;
+	}
+		
+	(*new_frame)--;
 }
 
 /* ==== Function: render_staff ====

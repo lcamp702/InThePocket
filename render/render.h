@@ -52,6 +52,30 @@ OUTPUT: N/A
 */
 void render_exit(Model *model);
 
+/* ==== Function: render_end_screen ====
+PURPOSE: Renders an end screen with large text, a smaller subline, and the score of the game.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   t1(char *): Pointer to large text string
+	   t1_len(UINT16): Length of large text string
+	   t2(char *): Pointer to subtext string
+	   t2_len(UINT16): Length of subtext string
+	   score(UINT32): Score to render at the bottom of the screen
+OUTPUT: N/A
+*/
+void render_end_screen(UINT32 *base, char *t1, UINT16 t1_len, char *t2, UINT16 t2_len, UINT32 score);
+
+/* ==== Function: render_animate_bg ====
+PURPOSE: Renders an animation frame for a portion of the background above the staff
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	frame(UINT8): the frame # in the bg animation to render
+	new_frame(UINT8 *): Pointer to the model flag for changing backgrounds
+
+OUTPUT: N/A
+*/
+void render_animate_bg(UINT32 *base, UINT8 frame, UINT8 *new_frame);
+
 /* ==== Function: render_staff ====
 PURPOSE: Renders one four line staff.
 

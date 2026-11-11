@@ -41,7 +41,7 @@ UINT32 *buff_256()
 
 void set_screen(UINT32 *base)
 {
-	Setscreen(-1, base, -1);
+	Setscreen((void *)-1, (void *)base, (INT16)-1);
 }
 
 void disable_cursor()

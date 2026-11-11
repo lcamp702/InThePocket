@@ -26,7 +26,7 @@
 
 int main()
 {
-	static Model model;
+	Model model;
 	UINT32 time_then, time_now;
 	UINT8 quit;
 

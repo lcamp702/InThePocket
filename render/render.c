@@ -17,6 +17,7 @@
 */
 
 #include "render.h"
+#include "../system/system.h"
 #include "../bitmaps/bitmaps.h"
 #include "../raster/raster.h"
 
@@ -57,8 +58,25 @@ static const UINT32 *note_heads[3] = {
 	note_half_head,
 	note_black_head};
 
+static UINT32 *buffers[2];
+static UINT8 buffer = 0; /* On-screen buffer */
+
 int render_int_to_string(char *str, UINT32 value, int places);
 void render_end_screen(UINT32 *base, char *t1, UINT16 t1_len, char *t2, UINT16 t2_len, UINT32 score);
+
+/* ==== Function: render_init_buffers ====
+PURPOSE: Initialize the buffers for use with the main rendering function
+
+INPUT: N/A
+
+OUTPUT: N/A
+*/
+void render_init_buffers()
+{
+	disable_cursor();
+	buffers[0] = get_pbase();
+	buffers[1] = buff_256();
+}
 
 /* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
@@ -68,49 +86,67 @@ INPUT: base(UINT32 *): Pointer to frame buffer,
 
 OUTPUT: N/A
 */
-void render(UINT32 *base, Model *model)
+void render(Model *model)
 {
 	UINT16 i, next_note;
 	UINT32 playback_col;
+	
+	buffer = (++buffer) & 1;
 
+	/* Render next frame */
 	if (model->head >= model->note_count)
 	{ /* Game won */
-        render_end_screen(base, "You Win", 7, "This cat can jam!", 17, model->meter.score);
+        render_end_screen(buffers[buffer], "You Win", 7, "This cat can jam!", 17, model->meter.score);
         return;
 	}
 
 	if (model->meter.enjoyment <= 0)
 	{ /* Game over */
-		render_end_screen(base, "Game Over", 9, "Doug was booed off stage", 24, model->meter.score);
+		render_end_screen(buffers[buffer], "Game Over", 9, "Doug was booed off stage", 24, model->meter.score);
 		return;
 	}
 
 	if (model->new_bg)
-	{ /* Render background and staff */
-		clear_screen(base);
-		render_staff(base);
-		plot_20l_bitmap(base, 0, bg, BG_HEIGHT);
+	{ /* Render background and staff (If needed) */
+		clear_screen(buffers[buffer]);
+		render_staff(buffers[buffer]);
+		plot_20l_bitmap(buffers[buffer], 0, bg, BG_HEIGHT);
 		model->new_bg--;
 	}
 
 	if (model->meter.dirty)
-	{ /* Meter stats */
-		render_enjoyment(base, model->meter.enjoyment); /* Render enjoyment meter */
-		render_score(base, SCORE_ROW, SCORE_COL, model->meter.score); /* Render Score value */
-		render_multiplier(base, SCORE_ROW, SCORE_COL, model->meter.multiplier, model->meter.multi_progress);
+	{ /* Render stats (Enjoyment, score, multiplier) */
+		render_enjoyment(buffers[buffer], model->meter.enjoyment); /* Render enjoyment meter */
+		render_score(buffers[buffer], SCORE_ROW, SCORE_COL, model->meter.score); /* Render Score value */
+		render_multiplier(buffers[buffer], SCORE_ROW, SCORE_COL, model->meter.multiplier, model->meter.multi_progress);
 		model->meter.dirty--;
 	}
 
-	clean_staff(base); /* Clear between staff lines */
+	clean_staff(buffers[buffer]); /* Clear between staff lines */
 
-	render_targets(base, model->targets); /* Redraw targets */
+	render_targets(buffers[buffer], model->targets); /* Redraw targets */
 	
 	next_note = model_next_disp_note(model); /* Get end note index */
 	playback_col = NOTE_START_X - model->game_clock; /* Note x position offset */
 
 	for (i = model->head; i < next_note; i++)
 		if (model->notes[i].hit == 0) /* If note is not hit, draw it */
-			render_note(base, &model->notes[i], playback_col);
+			render_note(buffers[buffer], &model->notes[i], playback_col);
+	
+	set_screen(buffers[buffer]); /* Queue last frame for display */
+}
+
+/* ==== Function: render_exit ====
+PURPOSE: Render to and show buffer 0
+
+INPUT: N/A
+
+OUTPUT: N/A
+*/
+void render_exit(Model *model)
+{
+	buffer = 1;
+	render(model); /* Render will display to buffer 0 before exiting */
 }
 
 /* ==== Function: render_end_screen ====
@@ -136,83 +172,6 @@ void render_end_screen(UINT32 *base, char *t1, UINT16 t1_len, char *t2, UINT16 t
 
     plot_nxstring(base, row + 48, score_col, "Score: ", 1);
     plot_nxstring(base, row + 48, score_col + 112, score_str, 1);
-}
-
-/* ==== Function: render_note ====
-PURPOSE: Renders a single note to screen. It's place in the staff is determined by its pitch.
-
-INPUT: base(UINT32 *): Pointer to frame buffer
-	   note(Note *): Pointer to note
-
-
-OUTPUT: N/A
-*/
-void render_note(UINT32 *base, Note *note, UINT32 playback_col)
-{
-	int row = pitch_row[note->pitch];
-	int col = playback_col + note->time;
-
-	UINT32 *note_head = note_heads[note->duration];
-
-	plot_32bit_bitmap(base, row, col, note_head, NOTE_HEAD_HEIGHT);
-
-	/*
-	Note Stems (Vertical lines)
-	*/
-
-	row += STEM_ROW;
-
-	if (note->duration > 0 && note->neighbour == 0)
-	{
-		if (note->pitch > 1) /* Bottom 2 tracks */
-			col += STEM_COL_L;
-		else /* Top 2 tracks */
-		{
-			row -= STEM_LENGTH;
-			col += STEM_COL_R;
-		}
-
-		plot_vertical_line(base, row, col, STEM_LENGTH);
-	}
-}
-
-/* ==== Function: render_enjoyment ====
-PURPOSE: Renders meter. Fills it up based on enjoyment.
-
-INPUT: base(UINT32 *): Pointer to frame buffer
-	   meter(Meter *): pointer to meter
-
-OUTPUT: N/A
-*/
-void render_enjoyment(UINT32 *base, INT8 enjoyment)
-{
-	UINT16 plot_height;
-
-	/* Clip enjoyment to meter size */
-	/* Replace with scaling if meter height and max value are different. */
-	if (enjoyment > METER_HEIGHT)
-		enjoyment = METER_HEIGHT;
-	if (enjoyment < 0)
-		enjoyment = 0;
-
-	plot_height = (UINT16)METER_HEIGHT - enjoyment;
-
-	if (enjoyment < METER_HEIGHT)
-	{
-		/* Plot meter in black to erase negative version */
-		plot_32bit_bitmap(base, METER_ROW, METER_COL, sax_full, plot_height);
-		plot_32bit_bitmap(base, METER_ROW, METER_COL + 32, (sax_full + METER_HEIGHT), plot_height);
-		/* Plot empty portion of the meter */
-		plot_n32bit_bitmap(base, METER_ROW, METER_COL, sax_empty, plot_height);
-		plot_n32bit_bitmap(base, METER_ROW, METER_COL + 32, (sax_empty + METER_HEIGHT), plot_height);
-	}
-
-	if (enjoyment > 0)
-	{
-		/* Plot filled portion of the meter (Always overwrites empty section) */
-		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL, sax_full + plot_height, enjoyment);
-		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL + 32, sax_full + METER_HEIGHT + plot_height, enjoyment);
-	}
 }
 
 /* ==== Function: render_staff ====
@@ -261,6 +220,44 @@ void clean_staff(UINT32 *base)
 	clear_20l(base, row-2, 2);
 }
 
+/* ==== Function: render_note ====
+PURPOSE: Renders a single note to screen. It's place in the staff is determined by its pitch.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   note(Note *): Pointer to note
+
+
+OUTPUT: N/A
+*/
+void render_note(UINT32 *base, Note *note, UINT32 playback_col)
+{
+	int row = pitch_row[note->pitch];
+	int col = playback_col + note->time;
+
+	UINT32 *note_head = note_heads[note->duration];
+
+	plot_32bit_bitmap(base, row, col, note_head, NOTE_HEAD_HEIGHT);
+
+	/*
+	Note Stems (Vertical lines)
+	*/
+
+	row += STEM_ROW;
+
+	if (note->duration > 0 && note->neighbour == 0)
+	{
+		if (note->pitch > 1) /* Bottom 2 tracks */
+			col += STEM_COL_L;
+		else /* Top 2 tracks */
+		{
+			row -= STEM_LENGTH;
+			col += STEM_COL_R;
+		}
+
+		plot_vertical_line(base, row, col, STEM_LENGTH);
+	}
+}
+
 /* ==== Function: render_targets ====
 PURPOSE: Renders one target.
 
@@ -282,6 +279,45 @@ void render_targets(UINT32 *base, UINT8 *targets)
 		}
 		else
 			plot_16bit_bitmap((UINT16 *)base, row, TARGET_COL, target_off_bmp, NOTE_HEAD_HEIGHT);
+	}
+}
+
+/* ==== Function: render_enjoyment ====
+PURPOSE: Renders meter. Fills it up based on enjoyment.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   meter(Meter *): pointer to meter
+
+OUTPUT: N/A
+*/
+void render_enjoyment(UINT32 *base, INT8 enjoyment)
+{
+	UINT16 plot_height;
+
+	/* Clip enjoyment to meter size */
+	/* Replace with scaling if meter height and max value are different. */
+	if (enjoyment > METER_HEIGHT)
+		enjoyment = METER_HEIGHT;
+	if (enjoyment < 0)
+		enjoyment = 0;
+
+	plot_height = (UINT16)METER_HEIGHT - enjoyment;
+
+	if (enjoyment < METER_HEIGHT)
+	{
+		/* Plot meter in black to erase negative version */
+		plot_32bit_bitmap(base, METER_ROW, METER_COL, sax_full, plot_height);
+		plot_32bit_bitmap(base, METER_ROW, METER_COL + 32, (sax_full + METER_HEIGHT), plot_height);
+		/* Plot empty portion of the meter */
+		plot_n32bit_bitmap(base, METER_ROW, METER_COL, sax_empty, plot_height);
+		plot_n32bit_bitmap(base, METER_ROW, METER_COL + 32, (sax_empty + METER_HEIGHT), plot_height);
+	}
+
+	if (enjoyment > 0)
+	{
+		/* Plot filled portion of the meter (Always overwrites empty section) */
+		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL, sax_full + plot_height, enjoyment);
+		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL + 32, sax_full + METER_HEIGHT + plot_height, enjoyment);
 	}
 }
 

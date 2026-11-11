@@ -25,36 +25,32 @@
 #include "../types.h"
 #include "../model/model.h"
 
+/* ==== Function: render_init_buffers ====
+PURPOSE: Initialize the buffers for use with the main rendering function
+
+INPUT: N/A
+
+OUTPUT: N/A
+*/
+void render_init_buffers();
+
 /* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
 
-INPUT: base(UINT32 *): Pointer to frame buffer,
-	   model(Model *): Pointer to Model
+INPUT: model(Model *): Pointer to Model
 
 OUTPUT: N/A
 */
-void render(UINT32 *base, Model *model);
+void render(Model *model);
 
-/* ==== Function: render_note ====
-PURPOSE: Renders a single note to screen. It's place in the staff is determined by its pitch.
+/* ==== Function: render_exit ====
+PURPOSE: Render to and show buffer 0
 
-INPUT: base(UINT32 *): Pointer to frame buffer
-	   note(Note *): Pointer to note
-
+INPUT: N/A
 
 OUTPUT: N/A
 */
-void render_note(UINT32 *base, Note *note, UINT32 time);
-
-/* ==== Function: render_enjoyment ====
-PURPOSE: Renders enjoyment meter. Fills it up based on enjoyment value.
-
-INPUT: base(UINT32 *): Pointer to frame buffer
-	   enjoyment(INT8): Current enjoyment
-
-OUTPUT: N/A
-*/
-void render_enjoyment(UINT32 *base, INT8 enjoyment);
+void render_exit(Model *model);
 
 /* ==== Function: render_staff ====
 PURPOSE: Renders one four line staff.
@@ -75,6 +71,17 @@ OUTPUT: N/A
 */
 void clean_staff(UINT32 *base);
 
+/* ==== Function: render_note ====
+PURPOSE: Renders a single note to screen. It's place in the staff is determined by its pitch.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   note(Note *): Pointer to note
+
+
+OUTPUT: N/A
+*/
+void render_note(UINT32 *base, Note *note, UINT32 time);
+
 /* ==== Function: render_targets ====
 PURPOSE: Renders one target.
 
@@ -84,6 +91,16 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 OUTPUT: N/A
 */
 void render_targets(UINT32 *base, UINT8 *targets);
+
+/* ==== Function: render_enjoyment ====
+PURPOSE: Renders meter. Fills it up based on enjoyment.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   meter(Meter *): pointer to meter
+
+OUTPUT: N/A
+*/
+void render_enjoyment(UINT32 *base, INT8 enjoyment);
 
 /* ==== Function: render_score ====
 PURPOSE: Renders the score.

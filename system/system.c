@@ -41,7 +41,7 @@ UINT32 *buff_256()
 
 void set_screen(UINT32 *base)
 {
-	Setscreen(-1, base, -1);
+	Setscreen((void *)-1, (void *)base, (INT16)-1);
 }
 
 void disable_cursor()
@@ -55,7 +55,7 @@ UINT32 get_time()
 {
     UINT32 time;
 	UINT32 *timer = (UINT32 *)0x462; /* Address of timer value */
-	UINT32 exit = Super(0); /* Enter priviledged mode. */
+	long exit = Super(0); /* Enter priviledged mode. */
 	time = *timer;			/* Read timer value*/
 	Super(exit);			/* Exit priviledged mode */
 	return time;

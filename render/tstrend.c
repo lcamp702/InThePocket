@@ -296,7 +296,7 @@ TEST #	REASON					TEST DATA		EXPECTED RESULT			ACTUAL RESULT
 		the rendering of the
 		meter being filled is
 		handled correctly by the
-		render_meter function.
+		render_enjoyment function.
 INPUT: pointer to Model, UINT32 pointer to frame buffer
 
 OUTPUT: N/A

@@ -55,7 +55,7 @@ int main()
 		if ((time_now - time_then) > 0)
 		{
 			synch_clock_tick(&model, time_now);
-
+			cond_check_key_buffer(&model);
 			cond_check_misses(&model);
 			quit = cond_game_over(&model);
 

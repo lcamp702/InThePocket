@@ -36,7 +36,10 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 	model->note_count = (notes_amt > MAX_NOTES) ? MAX_NOTES : notes_amt;
 
 	model->head = 0; /* Start at note 0 */
+	model->quit_request_buff=0;
 	
+	model_clear_key_buff(model);
+
 	/* Initialize all notes */
 	for (i = 0; i < model->note_count; i++)
 	{
@@ -91,5 +94,20 @@ void model_advance_head(Model *model)
 		while (model->head < model->note_count && model->notes[model->head].hit)
 			/* Skip head over already played notes */
 			model->head++;
+	}
+}
+
+/* ==== Function: model_clear_key_buff ====
+PURPOSE: clears keyboard input buffer.
+
+INPUT: pointer to Model
+
+OUTPUT: N/A
+*/
+
+void model_clear_key_buff(Model *model){
+	int i;
+	for(i=0; i<TARGET_COUNT; i++){
+		model->key_press_buff[i]=0;
 	}
 }

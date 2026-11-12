@@ -21,7 +21,7 @@
 #include <stdio.h> /* For disabling cursor, hopefully there is a better way. */
 #include "system.h"
 
-static UINT32 buffer[8064]; /* Extra 8 longs for 256 bit alignment */
+static UINT32 buffer[8064]; /* Extra 64 longs for 256 byte alignment */
 
 /* Return the memory address of the framebuffer */
 UINT32 *get_pbase()
@@ -31,12 +31,8 @@ UINT32 *get_pbase()
 
 UINT32 *buff_256()
 {
-	UINT32 *buff = buffer;
+	return (UINT32 *)(((UINT32)buffer + 255) & ~255); /* 256 byte align */
 
-	/* 256 byte align */
-	buff = (UINT32 *)(((UINT32)buff + 255) & ~255);
-
-	return buff;
 }
 
 void set_screen(UINT32 *base)

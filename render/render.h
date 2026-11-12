@@ -25,32 +25,15 @@
 #include "../types.h"
 #include "../model/model.h"
 
-/* ==== Function: render_init_buffers ====
-PURPOSE: Initialize the buffers for use with the main rendering function
-
-INPUT: N/A
-
-OUTPUT: N/A
-*/
-void render_init_buffers();
-
 /* ==== Function: render ====
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
 
-INPUT: model(Model *): Pointer to Model
+INPUT: base(UINT32 *): Pointer to frame buffer,
+	   model(Model *): Pointer to Model
 
 OUTPUT: N/A
 */
-void render(Model *model);
-
-/* ==== Function: render_exit ====
-PURPOSE: Render to and show buffer 0
-
-INPUT: N/A
-
-OUTPUT: N/A
-*/
-void render_exit(Model *model);
+void render(UINT32 *base, Model *model);
 
 /* ==== Function: render_end_screen ====
 PURPOSE: Renders an end screen with large text, a smaller subline, and the score of the game.
@@ -148,5 +131,29 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 OUTPUT: N/A
 */
 void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progress);
+
+/* ==== Function: render_end_screen ====
+PURPOSE: Renders an end screen with large text, a smaller subline, and the score of the game.
+
+INPUT: base(UINT32 *): Pointer to frame buffer
+	   t1(char *): Pointer to large text string
+	   t1_len(UINT16): Length of large text string
+	   t2(char *): Pointer to subtext string
+	   t2_len(UINT16): Length of subtext string
+	   score(UINT32): Score to render at the bottom of the screen
+OUTPUT: N/A
+*/
+void render_end_screen(UINT32 *base, char *t1, UINT16 t1_len, char *t2, UINT16 t2_len, UINT32 score);
+
+/* ==== Function: render_int_to_string ====
+PURPOSE: Converts an int value to a string and writes it to the given char array
+
+INPUT: str(char *): Pointer to string of length places + 1
+		value(int): Integer to write to the string
+	   places(int): Number of decimal digits to print
+
+OUTPUT: Places actually printed
+*/
+int render_int_to_string(char *str, UINT32 value, int places);
 
 #endif

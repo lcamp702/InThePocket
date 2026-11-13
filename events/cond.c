@@ -46,12 +46,12 @@ INPUT: pointer to Model
 
 OUTPUT: N/A
 */
-UINT8 cond_game_over(const Model *model)
+bool cond_game_over(const Model *model)
 {	
 	UINT8 quit_flag = model->quit_request_buff;
 	bool no_enjoyment = model->meter.enjoyment <= 0;
 	bool song_ended = model->head >= model->note_count;
-	return (UINT8)no_enjoyment || song_ended || quit_flag;
+	return no_enjoyment || song_ended || quit_flag;
 }
 
 /* ==== Function: cond_check_key_buffer ====

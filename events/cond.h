@@ -35,9 +35,9 @@ PURPOSE: Checks if game is over (enjoyment meter has gone to 0, quit key input f
 
 INPUT: pointer to Model
 
-OUTPUT: N/A
+OUTPUT: bool (Game is over?)
 */
-UINT8 cond_game_over(const Model *model);
+bool cond_game_over(const Model *model);
 
 /* ==== Function: cond_check_key_buffer ====
 PURPOSE: checks key buffer and triggers appropriate events

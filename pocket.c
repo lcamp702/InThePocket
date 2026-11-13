@@ -26,6 +26,13 @@
 
 void main_init_buffers(UINT32 *buffers[2]);
 
+/* ==== Function: cond_game_over ====
+PURPOSE: Main game setup and loop
+
+INPUT: N/A
+
+OUTPUT: N/A
+*/
 int main()
 {
 	UINT32 time_then, time_now, time_flip;
@@ -78,6 +85,13 @@ int main()
 	return 0;
 }
 
+/* ==== Function: main_init_buffers ====
+PURPOSE: Initialize the buffer pointer array and disable cursor flash
+
+INPUT: (UINT32 *[2]) Pointer to array of 2 buffer pointers
+
+OUTPUT: N/A
+*/
 void main_init_buffers(UINT32 *buffers[2])
 {
 	/* Stop OS cursor blink */

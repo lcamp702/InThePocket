@@ -43,9 +43,10 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 	/* Initialize all notes */
 	for (i = 0; i < model->note_count; i++)
 	{
-		UINT8 next_neighbour = 0;
-		if ((i < (model->note_count - 1)))
-			next_neighbour = (arr[i].time == arr[i+1].time);
+		Note *next_neighbour = 0;
+		if ((i < (model->note_count - 1)) && (arr[i].time == arr[i+1].time))
+			next_neighbour = &model->notes[i+1];
+		
 		note_init(&model->notes[i], arr[i].time, arr[i].pitch, arr[i].duration, next_neighbour);
 	}
 
@@ -89,12 +90,7 @@ OUTPUT: N/A
 void model_advance_head(Model *model)
 {
 	if (model->head < model->note_count)
-	{
 		model->head++;
-		while (model->head < model->note_count && model->notes[model->head].hit)
-			/* Skip head over already played notes */
-			model->head++;
-	}
 }
 
 /* ==== Function: model_clear_key_buff ====

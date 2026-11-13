@@ -55,8 +55,9 @@ int main()
 		if ((time_now - time_then) > 0)
 		{
 			synch_clock_tick(&model, time_now);
-			cond_check_key_buffer(&model);
-			cond_check_misses(&model);
+
+			cond_check_key_buffer(&model); /* Apply key hit/misses */
+			cond_check_misses(&model); /* Apply passed note misses */
 			quit = cond_game_over(&model);
 
 			buffer = (buffer + 1) & 1;

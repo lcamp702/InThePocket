@@ -34,14 +34,14 @@
 	UINT32 time (Time when note should appear on screen)
 	UINT8 pitch	(Track number for note to run along)
 	UINT8 duration (Icon number to be be drawn)
-	UINT8 neighbour (Is the next neighbour played at the same time?)
+	Note *neighbour (Pointer to the next note, if it is played at the same time. Otherwise 0.)
 */
 typedef struct Note
 {
 	UINT32 time; /* Time when note should be hit */
 	UINT8 pitch;
 	UINT8 duration;
-	UINT8 neighbour;
+	struct Note *neighbour;
 	UINT8 hit;	/* 0 - Not hit; 1 - Already hit*/
 } Note;
 
@@ -49,9 +49,18 @@ typedef struct Note
 PURPOSE: Initializes note object
 
 INPUT: Note object pointer, UINT32 time (time when note should appear on screen), UINT pitch value (from 1-4)
-	neighbour(UINT8) Boolean: Is the next neighbour of this note played at the same time? (For multiple notes at the same time)
+	neighbour(Note *): Pointer to the next note, if it is played at the same time. Otherwise 0.
 OUTPUT: N/A
 */
-void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, UINT8 neighbour);
+void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, Note *neighbour);
+
+/* ==== Function: note_is_hit ====
+PURPOSE: Check wether the game time and key input are correct to hit the note passed
+
+INPUT: Note object pointer, UINT32 game_clock (time of hit), UINT pitch value (from 1-4)
+
+OUTPUT: N/A
+*/
+bool note_is_hit(Note *note, UINT32 game_clock, UINT8 pitch);
 
 #endif

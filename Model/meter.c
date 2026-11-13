@@ -36,6 +36,32 @@ void meter_init(Meter *meter)
 	meter->dirty = 2;
 }
 
+/* ==== Function: meter_apply_hit ====
+PURPOSE: Update all meters and stats to reflect a hit
+
+INPUT: Meter*, a pointer to a Meter struct to update
+
+OUTPUT: N/A
+*/
+void meter_apply_hit(Meter *meter) {
+	meter_update_enjoyment(meter, HIT_REWARD_ENJOYMENT); /*adds to enjoyment meter*/
+	meter_update_score(meter, HIT_REWARD_SCORE);		 /*updates score*/
+	meter_increase_multiplier(meter);
+}
+
+/* ==== Function: meter_apply_miss ====
+PURPOSE: Update all meters and stats to reflect a miss
+
+INPUT: Meter*, a pointer to a Meter struct to update
+
+OUTPUT: N/A
+*/
+void meter_apply_miss(Meter *meter)
+{
+	meter_update_enjoyment(meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/
+	meter_reset_multiplier(meter);							/*sends score multiplier back to 1*/
+}
+
 /* ==== Function: meter_update_enjoyment ====
 PURPOSE: Updates the enjoyment meter
 

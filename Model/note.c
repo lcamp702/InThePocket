@@ -25,11 +25,30 @@ INPUT: Note object pointer, UINT32 time (time when note should be played), UINT 
 	neighbour(UINT8) Boolean: Is the next neighbour of this note played at the same time?
 OUTPUT: N/A
 */
-void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, UINT8 neighbour)
+void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, Note *neighbour)
 {
 	note->time = time;
 	note->pitch = pitch;
 	note->duration = duration;
 	note->neighbour = neighbour;
 	note->hit = 0;
+}
+
+bool note_is_hit(Note *note, UINT32 game_clock, UINT8 pitch)
+{
+	/* Check if note can be hit based on time */
+	UINT32 hit_time = (note->time + TRAVEL_TICKS);
+
+	UINT8 can_hit = game_clock >= hit_time; /* Time is greater than start hit time */
+	can_hit &= game_clock < (hit_time + HIT_WINDOW); /* Time is less than end hit time */
+
+	if (can_hit && pitch == note->pitch) 
+	{ /* Right key, right time. This note is hit */
+		note->hit = 1;
+		return true;
+	}
+	else if ((UINT32)(note->neighbour)) /* If neighbour pointer is not 0, check neighbour. */
+		return note_is_hit(note->neighbour, game_clock, pitch);
+	else 
+		return false;
 }

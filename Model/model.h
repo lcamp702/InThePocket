@@ -32,7 +32,7 @@ Stores general game information and objects
 
 == Objects ==
 Note notes[MAX_NOTES];	(Song array of note objects)
-UINT8 targets[TARGET_COUNT];  (Array of target states)
+bool targets[TARGET_COUNT];  (Array of target states)
 Meter meter;	(Object of scores and enjoyment meter)
 UINT8 key_press_buff[TARGET_COUNT]; (array of keyboard inputs)
 UINT8 quit_request_buff; (quit request inputs)

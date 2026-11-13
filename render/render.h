@@ -69,11 +69,11 @@ void render_note(UINT32 *base, Note *note, UINT32 time);
 PURPOSE: Renders one target.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
-	   targets(UINT8 *): Pointer to targets struct
+	   targets(bool *): Pointer to targets struct
 
 OUTPUT: N/A
 */
-void render_targets(UINT32 *base, UINT8 *targets);
+void render_targets(UINT32 *base, bool *targets);
 
 /* ==== Function: render_enjoyment ====
 PURPOSE: Renders meter. Fills it up based on enjoyment.

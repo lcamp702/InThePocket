@@ -25,15 +25,14 @@
 #include "song/song.h"
 
 void main_init_buffers(UINT32 *buffers[2]);
-void main_render(UINT32 *base, Model *model);
 
 int main()
 {
-	UINT32 time_then, time_now;
+	UINT32 time_then, time_now, time_flip;
 	Model model;
 	UINT32 *buffers[2];
 	UINT8 buffer = 1;
-	UINT8 quit;
+	bool quit, render_ready;
 
 	time_then = get_time();
 	model_init(&model, song, SONG_NOTES, time_then);
@@ -51,7 +50,7 @@ int main()
 		if (has_input())
 			asynch_key_hit(&model, get_input());
 			
-		if ((time_now - time_then) > 0)
+		if (!render_ready && (time_now > time_then))
 		{
 			synch_clock_tick(&model, time_now);
 
@@ -59,11 +58,17 @@ int main()
 			cond_check_misses(&model); /* Apply passed note misses */
 			quit = cond_game_over(&model);
 
-			set_screen(buffers[buffer]);
-			buffer = (buffer + 1) & 1;
-			render(buffers[buffer], &model);
+			set_screen(buffers[buffer]); /* Show previous back buffer */
+			buffer = 1 - buffer; /* Swap back buffer index */
 
+			time_flip = time_now;
+			render_ready = true; /* Ready to render on next tick */
+		}
+		else if (render_ready && (time_now > time_flip))
+		{
+			render(buffers[buffer], &model); /* Render to back buffer */
 			time_then = get_time();
+			render_ready = false; /* No longer ready to render */
 		}
 	}
 

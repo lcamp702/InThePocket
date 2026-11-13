@@ -16,6 +16,7 @@
 */
 
 #include "cond.h"
+#include "../model/model.h"
 
 #define SONG_PLAYING model->head < model->note_count /* The head is not at the end of the song */
 #define NOTE_PASSED model->game_clock > (model->notes[model->head].time + TRAVEL_TICKS + HIT_WINDOW) /* Game clock passed hit time */
@@ -31,25 +32,54 @@ void cond_check_misses(Model *model)
 {
 	while (SONG_PLAYING && NOTE_PASSED)
 	{																	/*checks that the head is pointed at a note that has passed the hit window*/
-		if (model->notes[model->head].hit == 0)
-		{
-			meter_update_enjoyment(&model->meter, -MISS_PENALTY_ENJOYMENT); /*applies miss penalty*/
-			meter_reset_multiplier(&model->meter);							/*sends score multiplier back to 1*/
-		}
+		if (!model->notes[model->head].hit)
+			meter_apply_miss(&model->meter);
+
 		model_advance_head(model);										/*advances index*/
 	}
 }
 
 /* ==== Function: cond_game_over ====
-PURPOSE: Checks if game is over (enjoyment meter has gone to 0)
+PURPOSE: Checks if game is over (enjoyment meter has gone to 0, quit key input flag was set)
 
 INPUT: pointer to Model
 
 OUTPUT: N/A
 */
-UINT8 cond_game_over(const Model *model)
-{
+bool cond_game_over(const Model *model)
+{	
+	UINT8 quit_flag = model->quit_request_buff;
 	bool no_enjoyment = model->meter.enjoyment <= 0;
 	bool song_ended = model->head >= model->note_count;
-	return (UINT8)no_enjoyment || song_ended;
+	return no_enjoyment || song_ended || quit_flag;
 }
+
+/* ==== Function: cond_check_key_buffer ====
+PURPOSE: checks key buffer and triggers appropriate events
+
+INPUT: Pointer to game model
+
+OUTPUT: N/A
+*/
+void cond_check_key_buffer(Model *model){
+	UINT8 i;
+
+	for(i = 0; i<TARGET_COUNT; i++){
+		if(model->key_press_buff[i] && SONG_PLAYING){
+			model->targets[i] = true;
+			
+			if(note_is_hit(&model->notes[model->head], model->game_clock, model->last_interval, i))
+			{
+				meter_apply_hit(&model->meter);
+				
+				if(model->notes[model->head].hit)
+					model_advance_head(model);
+			}
+			else
+				meter_apply_miss(&model->meter);
+		}
+	}
+
+	model_clear_key_buff(model);
+}
+

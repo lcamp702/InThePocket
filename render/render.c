@@ -232,11 +232,11 @@ void render_note(UINT32 *base, Note *note, UINT32 playback_col)
 PURPOSE: Renders one target.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
-	   targets(UINT8 *): Pointer to targets struct
+	   targets(bool *): Pointer to targets struct
 
 OUTPUT: N/A
 */
-void render_targets(UINT32 *base, UINT8 *targets)
+void render_targets(UINT32 *base, bool *targets)
 {
 	int i;
 	for (i = 0; i < TARGET_COUNT; i++) /* Draw one target for each space (0 to 3) */
@@ -245,7 +245,7 @@ void render_targets(UINT32 *base, UINT8 *targets)
 		if (targets[i])
 		{
 			plot_16bit_bitmap((UINT16 *)base, row, TARGET_COL, target_on_bmp, NOTE_HEAD_HEIGHT);
-			targets[i] = 0; /* Clear after rendering */
+			targets[i] = false; /* Clear after rendering */
 		}
 		else
 			plot_16bit_bitmap((UINT16 *)base, row, TARGET_COL, target_off_bmp, NOTE_HEAD_HEIGHT);

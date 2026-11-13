@@ -30,42 +30,13 @@ OUTPUT: UINT8 of corresponding key press to the "pitch" of the note.
 */
 UINT8 asynch_key_to_pitch(char key);
 
-/* ==== Function: asynch_is_hit ====
-PURPOSE: Checks if the note at the offset or its neighbour can be hit.
-
-INPUT: Pointer to model
-		Pitch of keypress
-		Head offset to check
-
-OUTPUT: Is hit? -1: No 0-3: Head offset of note hit
-*/
-UINT8 asynch_is_hit(Model *model, UINT8 pitch, UINT8 head_offset);
-
 /* ==== Function: asynch_key_hit ====
-PURPOSE: Checks if note has been hit
+PURPOSE: checks to see if input buffer must be set and then sets it
 
 INPUT: Key pressed (char) and pointer to model
 
-OUTPUT: Is hit? (Boolean 1:0)
+OUTPUT: N/A	
 */
 void asynch_key_hit(Model *model, char key);
-
-/* ==== Function: asynch_apply_hit ====
-PURPOSE: Handles hit event.
-
-INPUT: pointer to Model, offset of note from head
-
-OUTPUT: N/A
-*/
-void asynch_apply_hit(Model *model, UINT8 head_offset);
-
-/* ==== Function: asynch_apply_miss ====
-PURPOSE: Handles miss event.
-
-INPUT: pointer to Model.
-
-OUTPUT: N/A
-*/
-void asynch_apply_miss(Model *model);
 
 #endif

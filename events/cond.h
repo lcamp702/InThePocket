@@ -31,12 +31,22 @@ OUTPUT: N/A
 void cond_check_misses(Model *model);
 
 /* ==== Function: cond_game_over ====
-PURPOSE: Checks if game is over (enjoyment meter has gone to 0)
+PURPOSE: Checks if game is over (enjoyment meter has gone to 0, quit key input flag was set)
 
 INPUT: pointer to Model
 
+OUTPUT: bool (Game is over?)
+*/
+bool cond_game_over(const Model *model);
+
+/* ==== Function: cond_check_key_buffer ====
+PURPOSE: checks key buffer and triggers appropriate events
+
+INPUT: Pointer to game model
+
 OUTPUT: N/A
 */
-UINT8 cond_game_over(const Model *model);
+void cond_check_key_buffer(Model *model);
+
 
 #endif

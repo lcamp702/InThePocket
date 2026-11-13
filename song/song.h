@@ -21,7 +21,7 @@
 
 #include "../model/note.h"
 
-#define SONG_NOTES 374
+#define SONG_NOTES 296
 
 extern const Note song[SONG_NOTES];
 

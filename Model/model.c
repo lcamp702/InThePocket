@@ -42,19 +42,23 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 	model->note_count = (notes_amt > MAX_NOTES) ? MAX_NOTES : notes_amt;
 
 	model->head = 0; /* Start at note 0 */
+	model->quit_request_buff=0;
 	
+	model_clear_key_buff(model);
+
 	/* Initialize all notes */
 	for (i = 0; i < model->note_count; i++)
 	{
-		UINT8 next_neighbour = 0;
-		if ((i < (model->note_count - 1)))
-			next_neighbour = (arr[i].time == arr[i+1].time);
+		Note *next_neighbour = 0;
+		if ((i < (model->note_count - 1)) && (arr[i].time == arr[i+1].time))
+			next_neighbour = &model->notes[i+1];
+		
 		note_init(&model->notes[i], arr[i].time, arr[i].pitch, arr[i].duration, next_neighbour);
 	}
 
 	/* Initialize targets */
 	for (i = 0; i < TARGET_COUNT; i++)
-		model->targets[i] = 0;
+		model->targets[i] = false;
 
 	/* Initialize clocks */
 	model->game_clock = 0; /* Game clock */
@@ -113,10 +117,22 @@ OUTPUT: N/A
 void model_advance_head(Model *model)
 {
 	if (model->head < model->note_count)
-	{
-		model->head++;
-		while (model->head < model->note_count && model->notes[model->head].hit)
-			/* Skip head over already played notes */
-			model->head++;
+		do 
+			model->head++; /* Advance and skip head over already played notes */
+		while (model->head < model->note_count && model->notes[model->head].hit);
+}
+
+/* ==== Function: model_clear_key_buff ====
+PURPOSE: clears keyboard input buffer.
+
+INPUT: pointer to Model
+
+OUTPUT: N/A
+*/
+
+void model_clear_key_buff(Model *model){
+	int i;
+	for(i=0; i<TARGET_COUNT; i++){
+		model->key_press_buff[i]=0;
 	}
 }

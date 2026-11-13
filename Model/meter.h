@@ -34,7 +34,7 @@ typedef struct Meter
 	UINT32 score;
 	INT8 multiplier;
 	INT8 multi_progress;
-	INT8 dirty; /* A flag for wether or not the meter changed this clock */
+	INT8 dirty; /* A flag for whether or not the meter changed this clock */
 } Meter;
 
 /* ==== Function: meter_init ====
@@ -45,6 +45,24 @@ INPUT: Meter*, a pointer to a Meter struct
 OUTPUT: N/A
 */
 void meter_init(Meter *meter);
+
+/* ==== Function: meter_apply_hit ====
+PURPOSE: Update all meters and stats to reflect a hit
+
+INPUT: Meter*, a pointer to a Meter struct to update
+
+OUTPUT: N/A
+*/
+void meter_apply_hit(Meter *meter);
+
+/* ==== Function: meter_apply_miss ====
+PURPOSE: Update all meters and stats to reflect a miss
+
+INPUT: Meter*, a pointer to a Meter struct to update
+
+OUTPUT: N/A
+*/
+void meter_apply_miss(Meter *meter);
 
 /* ==== Function: meter_update_enjoyment ====
 PURPOSE: Updates the enjoyment meter

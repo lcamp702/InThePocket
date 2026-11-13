@@ -32,8 +32,10 @@ Stores general game information and objects
 
 == Objects ==
 Note notes[MAX_NOTES];	(Song array of note objects)
-UINT8 targets[TARGET_COUNT];  (Array of target states)
+bool targets[TARGET_COUNT];  (Array of target states)
 Meter meter;	(Object of scores and enjoyment meter)
+UINT8 key_press_buff[TARGET_COUNT]; (array of keyboard inputs)
+UINT8 quit_request_buff; (quit request inputs)
 
 UINT16 note_count; (Total number of notes in the song)
 UINT16 head;	(First note in on the screen)
@@ -48,7 +50,9 @@ UINT32 last_interval; (Ticks passed since last model update)
 typedef struct Model
 {
 	Note notes[MAX_NOTES];	/*Song array of note objects*/
-	UINT8 targets[TARGET_COUNT];	/*Array of target states*/
+	bool targets[TARGET_COUNT];	/*Array of target states*/
+	UINT8 key_press_buff[TARGET_COUNT]; /*buffers a keyboard input until the next clock tick*/
+	UINT8 quit_request_buff; /*buffers a quit key input until the next clock tick*/
 	Meter meter;	/*Object of scores and enjoyment meter*/
 
 	UINT16 note_count;	/*(Total number of notes in the song*/
@@ -101,5 +105,15 @@ INPUT: pointer to Model
 OUTPUT: N/A
 */
 void model_advance_head(Model *model);
+
+/* ==== Function: model_clear_key_buff ====
+PURPOSE: clears keyboard input buffer.
+
+INPUT: pointer to Model
+
+OUTPUT: N/A
+*/
+
+void model_clear_key_buff(Model *model);
 
 #endif

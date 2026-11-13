@@ -315,7 +315,7 @@ void render_end_screen(UINT32 *base, char *t1, UINT16 t1_len, char *t2, UINT16 t
     int row = 168;
     char score_str[SCORE_MAX_LEN + 1];
     int places = render_int_to_string(score_str, score, SCORE_MAX_LEN);
-	int score_col = 264 - (8 * places);
+	int score_col = 256 - (8 * places);
     fill_screen(base);
     plot_nxstring(base, row		, 320 - (16 * t1_len), t1, 2);
     plot_nxstring(base, row + 32, 320 - (8 * t2_len), t2, 1);

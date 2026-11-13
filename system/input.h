@@ -19,6 +19,22 @@
 
 #include "../types.h"
 
-/* Input tools */
-UINT8 has_input();
+/* ==== Function: has_input ====
+
+PURPOSE: Check wether an input is waiting in the buffer.
+
+INPUT: N/A
+
+OUTPUT: (bool) Is there an input waiting in the buffer?
+*/
+bool has_input();
+
+/* ==== Function: get_input ====
+
+PURPOSE: Read an input from the input buffer.
+
+INPUT: N/A
+
+OUTPUT: (UINT8) ASCII input code from buffer.
+*/
 UINT8 get_input();

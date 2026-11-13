@@ -34,13 +34,13 @@ void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, Note *neigh
 	note->hit = 0;
 }
 
-bool note_is_hit(Note *note, UINT32 game_clock, UINT8 pitch)
+bool note_is_hit(Note *note, UINT32 game_clock, UINT32 last_interval, UINT8 pitch)
 {
 	/* Check if note can be hit based on time */
 	UINT32 hit_time = (note->time + TRAVEL_TICKS);
 
 	UINT8 can_hit = game_clock >= hit_time; /* Time is greater than start hit time */
-	can_hit &= game_clock < (hit_time + HIT_WINDOW); /* Time is less than end hit time */
+	can_hit &= (game_clock - last_interval) < (hit_time + HIT_WINDOW); /* Time is less than end hit time */
 
 	if (can_hit && pitch == note->pitch) 
 	{ /* Right key, right time. This note is hit */
@@ -48,7 +48,7 @@ bool note_is_hit(Note *note, UINT32 game_clock, UINT8 pitch)
 		return true;
 	}
 	else if ((UINT32)(note->neighbour)) /* If neighbour pointer is not 0, check neighbour. */
-		return note_is_hit(note->neighbour, game_clock, pitch);
+		return note_is_hit(note->neighbour, game_clock, last_interval, pitch);
 	else 
 		return false;
 }

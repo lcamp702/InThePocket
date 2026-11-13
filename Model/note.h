@@ -61,6 +61,6 @@ INPUT: Note object pointer, UINT32 game_clock (time of hit), UINT pitch value (f
 
 OUTPUT: N/A
 */
-bool note_is_hit(Note *note, UINT32 game_clock, UINT8 pitch);
+bool note_is_hit(Note *note, UINT32 game_clock, UINT32 last_interval, UINT8 pitch);
 
 #endif

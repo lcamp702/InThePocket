@@ -52,7 +52,7 @@ void model_init(Model *model, const Note *arr, UINT16 notes_amt, UINT32 time_now
 
 	/* Initialize targets */
 	for (i = 0; i < TARGET_COUNT; i++)
-		model->targets[i] = 0;
+		model->targets[i] = false;
 
 	/* Initialize clocks */
 	model->game_clock = 0; /* Game clock */
@@ -90,7 +90,9 @@ OUTPUT: N/A
 void model_advance_head(Model *model)
 {
 	if (model->head < model->note_count)
-		model->head++;
+		do 
+			model->head++; /* Advance and skip head over already played notes */
+		while (model->head < model->note_count && model->notes[model->head].hit);
 }
 
 /* ==== Function: model_clear_key_buff ====

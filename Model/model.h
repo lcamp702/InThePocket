@@ -50,7 +50,7 @@ UINT32 last_interval; (Ticks passed since last model update)
 typedef struct Model
 {
 	Note notes[MAX_NOTES];	/*Song array of note objects*/
-	UINT8 targets[TARGET_COUNT];	/*Array of target states*/
+	bool targets[TARGET_COUNT];	/*Array of target states*/
 	UINT8 key_press_buff[TARGET_COUNT]; /*buffers a keyboard input until the next clock tick*/
 	UINT8 quit_request_buff; /*buffers a quit key input until the next clock tick*/
 	Meter meter;	/*Object of scores and enjoyment meter*/

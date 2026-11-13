@@ -43,7 +43,7 @@ bool note_is_hit(Note *note, UINT32 game_clock, UINT32 last_interval, UINT8 pitc
 	can_hit &= (game_clock - last_interval) < (hit_time + HIT_WINDOW); /* Time is less than end hit time */
 
 	if (can_hit && pitch == note->pitch) 
-	{ /* Right key, right time. This note is hit */
+	{ /* Right key, right time, not already hit. Now this note is hit */
 		note->hit = 1;
 		return true;
 	}

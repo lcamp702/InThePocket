@@ -67,16 +67,18 @@ void cond_check_key_buffer(Model *model){
 	for(i = 0; i<TARGET_COUNT; i++){
 		if(model->key_press_buff[i] && SONG_PLAYING){
 			model->targets[i] = true;
+			
 			if(note_is_hit(&model->notes[model->head], model->game_clock, model->last_interval, i))
 			{
 				meter_apply_hit(&model->meter);
-				model_advance_head(model);
+				
+				if(model->notes[model->head].hit)
+					model_advance_head(model);
 			}
 			else
 				meter_apply_miss(&model->meter);
 		}
 	}
-
 
 	model_clear_key_buff(model);
 }

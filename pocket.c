@@ -9,7 +9,7 @@
 	Steve Kalmar
 
 	In the Pocket - Checkpoint 3
-	Due: Nov 9, 2026
+	Due: Nov 13, 2026
 
 	The main game module for In the Pocket.
 	This module will orchestrate the main game loop using submodule functions.

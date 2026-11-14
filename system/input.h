@@ -9,7 +9,7 @@
 	Steve Kalmar
 
 	In the Pocket - Checkpoint 3
-	Due: Nov 9, 2026
+	Due: Nov 13, 2026
 
 	Header file for the input.c file. Contains function prototypes for the functions in input.c.
 	These functions will eventually be replaced when TOS is thrown out in favour of a custom ROM.

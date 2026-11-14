@@ -34,7 +34,8 @@ typedef struct Meter
 	UINT32 score;
 	INT8 multiplier;
 	INT8 multi_progress;
-	INT8 dirty; /* A flag for whether or not the meter changed this clock */
+	INT8 dirty;	/* A flag for whether or not the enjoyment changed this clock */
+	INT8 dirty_sco;	/* A flag for whether or not the score changed this clock */
 } Meter;
 
 /* ==== Function: meter_init ====

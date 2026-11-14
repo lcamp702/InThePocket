@@ -34,6 +34,7 @@ void meter_init(Meter *meter)
 	meter->multiplier = 1;
 	meter->multi_progress = 0;
 	meter->dirty = 2;
+	meter->dirty_sco = 2;
 }
 
 /* ==== Function: meter_apply_hit ====
@@ -95,6 +96,7 @@ OUTPUT: N/A
 void meter_update_score(Meter *meter, UINT32 points)
 {
 	meter->score += points * meter->multiplier;
+	meter->dirty_sco = 2;
 }
 
 /* ==== Function: meter_increase_multiplier ====
@@ -107,7 +109,7 @@ OUTPUT: N/A
 void meter_increase_multiplier(Meter *meter)
 {
 	if (meter->multiplier < MAX_MULTI)
-		/* Don't track progress if multiplier can't increase */
+	{	/* Don't track progress if multiplier can't increase */
 		if (++meter->multi_progress >= CONSEC_MULTI) /* Increase multi progress */
 		{ /* 10 consecutive notes, increase multiplier */
 			meter->multiplier++;
@@ -115,6 +117,7 @@ void meter_increase_multiplier(Meter *meter)
 			if (meter->multiplier < MAX_MULTI)
 				meter->multi_progress = 0;
 		}
+	}
 }
 
 /* ==== Function: meter_reset_multiplier ====

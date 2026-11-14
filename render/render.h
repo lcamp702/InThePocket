@@ -33,7 +33,7 @@ INPUT: base(UINT32 *): Pointer to frame buffer,
 
 OUTPUT: N/A
 */
-void render(UINT32 *base, Model *model);
+void render(UINT32 *base, UINT8 buffer, Model *model);
 
 /* ==== Function: render_staff ====
 PURPOSE: Renders one four line staff.
@@ -83,7 +83,7 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_enjoyment(UINT32 *base, INT8 enjoyment);
+void render_enjoyment(UINT32 *base, UINT8 buffer, INT8 enjoyment);
 
 /* ==== Function: render_score ====
 PURPOSE: Renders the score.
@@ -106,7 +106,7 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progress);
+void render_multiplier(UINT32 *base, UINT8 buffer, int row, int col, UINT8 multi, UINT8 progress);
 
 /* ==== Function: render_end_screen ====
 PURPOSE: Renders an end screen with large text, a smaller subline, and the score of the game.

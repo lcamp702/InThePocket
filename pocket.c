@@ -45,7 +45,7 @@ int main()
 	model_init(&model, song, SONG_NOTES, time_then);
 
 	main_init_buffers(buffers);
-	render(buffers[1], &model);
+	render(buffers[1], 1, &model);
 
 	time_then = get_time();
 
@@ -73,13 +73,13 @@ int main()
 		}
 		else if (render_ready && (time_now > time_flip))
 		{
-			render(buffers[buffer], &model); /* Render to back buffer */
+			render(buffers[buffer], buffer, &model); /* Render to back buffer */
 			time_then = get_time();
 			render_ready = false; /* No longer ready to render */
 		}
 	}
 
-	render(buffers[0], &model);
+	render(buffers[0], 0, &model);
 	set_screen(buffers[0]);
 
 	return 0;

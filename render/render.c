@@ -61,11 +61,12 @@ static const UINT32 *note_heads[3] = {
 PURPOSE: Master render function. Calls the other render functions, and renders the game world onto the screen.
 
 INPUT: base(UINT32 *): Pointer to frame buffer,
+	   buffer(UINT8): Buffer # being rendered to
 	   model(Model *): Pointer to Model
 
 OUTPUT: N/A
 */
-void render(UINT32 *base, Model *model)
+void render(UINT32 *base, UINT8 buffer, Model *model)
 {
 	UINT16 i, end_note;
 	UINT32 playback_col;
@@ -79,11 +80,15 @@ void render(UINT32 *base, Model *model)
 	}
 
 	if (model->meter.dirty)
-	{ /* Render stats (Enjoyment, score value, multiplier) */
-		render_enjoyment(base, model->meter.enjoyment);
-		render_score(base, SCORE_ROW, SCORE_COL, model->meter.score);
-		render_multiplier(base, SCORE_ROW, SCORE_COL, model->meter.multiplier, model->meter.multi_progress);
+	{
+		render_enjoyment(base, buffer, model->meter.enjoyment);
+		render_multiplier(base, buffer, SCORE_ROW, SCORE_COL, model->meter.multiplier, model->meter.multi_progress);
 		model->meter.dirty--;
+	}
+	if (model->meter.dirty_sco)
+	{
+		render_score(base, SCORE_ROW, SCORE_COL, model->meter.score);
+		model->meter.dirty_sco--;
 	}
 
 	clean_staff(base); /* Clear between staff lines */
@@ -216,13 +221,16 @@ void render_targets(UINT32 *base, bool *targets)
 PURPOSE: Renders meter. Fills it up based on enjoyment.
 
 INPUT: base(UINT32 *): Pointer to frame buffer
-	   meter(Meter *): pointer to meter
+	   buffer(UINT8): Buffer # being rendered to
+	   enjoyment(INT8): Enjoyment value
+
 
 OUTPUT: N/A
 */
-void render_enjoyment(UINT32 *base, INT8 enjoyment)
+void render_enjoyment(UINT32 *base, UINT8 buffer, INT8 enjoyment)
 {
-	UINT16 plot_height;
+	static INT8 last_enjoyment[2] = {-1, -1};
+	INT16 plot_height;
 
 	/* Clip enjoyment to meter size */
 	/* Replace with scaling if meter height and max value are different. */
@@ -231,24 +239,39 @@ void render_enjoyment(UINT32 *base, INT8 enjoyment)
 	if (enjoyment < 0)
 		enjoyment = 0;
 
-	plot_height = (UINT16)METER_HEIGHT - enjoyment;
+	buffer = buffer & 1;
+	plot_height = enjoyment - last_enjoyment[buffer];
 
-	if (enjoyment < METER_HEIGHT)
-	{
-		/* Plot meter in black to erase negative version */
-		plot_32bit_bitmap(base, METER_ROW, METER_COL, sax_full, plot_height);
-		plot_32bit_bitmap(base, METER_ROW, METER_COL + 32, (sax_full + METER_HEIGHT), plot_height);
-		/* Plot empty portion of the meter */
-		plot_n32bit_bitmap(base, METER_ROW, METER_COL, sax_empty, plot_height);
-		plot_n32bit_bitmap(base, METER_ROW, METER_COL + 32, (sax_empty + METER_HEIGHT), plot_height);
+	if (last_enjoyment[buffer] == -1)
+	{	/* No previous enjoyment, render full meter */
+		UINT16 empty = METER_HEIGHT - enjoyment;
+		if (empty > 0)
+		{
+			plot_n32bit_bitmap(base, METER_ROW, METER_COL, sax_empty, empty);
+			plot_n32bit_bitmap(base, METER_ROW, METER_COL + 32, sax_empty + METER_HEIGHT, empty);
+		} 
+		if (empty < METER_HEIGHT)
+		{
+			plot_n32bit_bitmap(base, METER_ROW + empty, METER_COL, sax_full + empty, enjoyment);
+			plot_n32bit_bitmap(base, METER_ROW + empty, METER_COL + 32, sax_full + METER_HEIGHT + empty, enjoyment);
+		}
+	}
+	else if (plot_height > 0)
+	{	/* New enjoyment is higher than old, plot filled lines */
+		UINT16 start = METER_HEIGHT - enjoyment;
+		plot_n32bit_bitmap(base, METER_ROW + start, METER_COL, sax_full + start, plot_height);
+		plot_n32bit_bitmap(base, METER_ROW + start, METER_COL + 32, (sax_full + METER_HEIGHT + start), plot_height);
+	} else if (plot_height < 0) { /* New enjoyment lower than old, erase then plot */
+		UINT16 start = METER_HEIGHT - last_enjoyment[buffer];
+		/* Erase */
+		plot_32bit_bitmap(base, METER_ROW + start, METER_COL, sax_full + start, -plot_height);
+		plot_32bit_bitmap(base, METER_ROW + start, METER_COL + 32, (sax_full + METER_HEIGHT + start), -plot_height);
+		/* Plot outline of the meter */
+		plot_n32bit_bitmap(base, METER_ROW + start, METER_COL, sax_empty + start, -plot_height);
+		plot_n32bit_bitmap(base, METER_ROW + start, METER_COL + 32, (sax_empty + METER_HEIGHT + start), -plot_height);
 	}
 
-	if (enjoyment > 0)
-	{
-		/* Plot filled portion of the meter (Always overwrites empty section) */
-		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL, sax_full + plot_height, enjoyment);
-		plot_n32bit_bitmap(base, METER_ROW + plot_height, METER_COL + 32, sax_full + METER_HEIGHT + plot_height, enjoyment);
-	}
+	last_enjoyment[buffer] = enjoyment;
 }
 
 /* ==== Function: render_score ====
@@ -278,24 +301,44 @@ INPUT: base(UINT32 *): Pointer to frame buffer
 
 OUTPUT: N/A
 */
-void render_multiplier(UINT32 *base, int row, int col, UINT8 multi, UINT8 progress)
+void render_multiplier(UINT32 *base, UINT8 buffer, int row, int col, UINT8 multi, UINT8 progress)
 {	/* Print score multiplier */
-	char str[3] = {'x', '0', '\0'};
+	static INT8 last_mul_progress[2] = {-1, -1};
+	static INT8 last_multi[2] = {-1, -1};
+
+	INT8 delta = progress - last_mul_progress[buffer];
 	int i;
-	str[1] += multi;
 
-	fill_region(base, row, col + (16 * SCORE_MAX_LEN), 32, 64);
-	plot_nxstring(base, row, col + (16 * SCORE_MAX_LEN), str, 2);
+	if (last_multi[buffer] != multi)
+	{ /* Render multiplier number */
+		char str[3] = {'x', '0', '\0'};
+		str[1] += multi;
 
-	for (i = 0; i < CONSEC_MULTI; i++) {
-		if(progress > i)
-			plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_on, MULTI_HEIGHT);
-		else
-		{
-			/* Plot in black to erase potential filled dot */
-			plot_8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_on, MULTI_HEIGHT);
-			plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_off, MULTI_HEIGHT);
+		fill_region(base, row, col + (16 * SCORE_MAX_LEN), 32, 64);
+		plot_nxstring(base, row, col + (16 * SCORE_MAX_LEN), str, 2);
+
+		last_multi[buffer] = multi;
+	}
+
+	if (delta)
+	{ /* Render multiplier progress bubbles */
+		if (last_mul_progress[buffer] == -1)
+		{ /* Initial draw */
+			for (i = 0; i < CONSEC_MULTI; i++)
+				plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_off, MULTI_HEIGHT);
+			delta = progress;
+			last_mul_progress[buffer] = 0;
 		}
+		if (delta > 0) /* Progress counted up */
+			for (i = last_mul_progress[buffer]; i < progress; i++)
+				plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_on, MULTI_HEIGHT);
+		else if (delta < 0)
+			for (i = progress; i < last_mul_progress[buffer]; i++) 
+			{ /* Plot in black to erase filled dot */
+				plot_8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_on, MULTI_HEIGHT);
+				plot_n8bit_bitmap((UINT8 *)base, row + 16, col + (i * 9), multi_off, MULTI_HEIGHT);
+			}
+		last_mul_progress[buffer] = progress;
 	}
 }
 

@@ -26,10 +26,10 @@
 #include <stdio.h>
 
 static const Note test_song[] = {
-	{0, 0, 0, 0},
-	{6, 0, 1, 1},
-	{12, 0, 2, 2},
-	{18, 0, 3, 3}};
+	{0, 0, 0},
+	{6, 0, 1},
+	{12, 0, 2},
+	{18, 0, 3}};
 
 #define TEST_SONG_LEN (sizeof(test_song) / sizeof(test_song[0]))
 #define RENDER_EVERY 10 /* ticks between renders in long loops */
@@ -91,7 +91,7 @@ void show_frame(Model *model, UINT32 *base)
 {
 	model->new_bg = 1;
 	model->meter.dirty = 1;
-	render(base, model);
+	render(base, 0, model);
 	Cnecin();
 	clear_screen(base);
 }
@@ -150,11 +150,15 @@ void apply_hits_and_show(Model *model, UINT32 *base)
 	{
 		synch_clock_tick(model, i);
 		cond_check_misses(model);
-		hit = asynch_is_hit(model, KEY_F, 0);
-		if (hit != (UINT8)-1 && model->head < model->note_count)
+		if (model->head < model->note_count)
 		{
-			asynch_apply_hit(model, hit);
-			show_frame(model, base);
+			hit = note_is_hit(&model->notes[model->head], model->game_clock, model->last_interval, KEY_F);
+			if (hit)
+			{
+				meter_apply_hit(&model->meter);
+				model_advance_head(model);
+				show_frame(model, base);
+			}
 		}
 	}
 }
@@ -275,8 +279,9 @@ void test_hit(Model *model, UINT32 *base, char key)
 	{
 		model->meter.enjoyment = ENJOYMENT_MAX;
 		synch_clock_tick(model, i);
-		cond_check_misses(model);
 		asynch_key_hit(model, key);
+		cond_check_key_buffer(model);
+		cond_check_misses(model);
 		if (i % 5 == 0)
 		{
 			show_frame(model, base);
@@ -342,9 +347,10 @@ void test_apply_miss(Model *model, UINT32 *base)
 	for (i = 560; i < 568; i++)
 	{
 		synch_clock_tick(model, i);
-		if (asynch_is_hit(model, KEY_F, 0) == (UINT8)-1)
+		if (model->head < model->note_count &&
+		    !note_is_hit(&model->notes[model->head], model->game_clock, model->last_interval, KEY_F))
 		{
-			asynch_apply_miss(model);
+			meter_apply_miss(&model->meter);
 			show_frame(model, base);
 		}
 	}

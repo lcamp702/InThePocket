@@ -190,6 +190,7 @@ int main(void)
 		cond_check_misses(&test_model);
 		printf("-- TICK -- \n");
 		asynch_key_hit(&test_model, 'a');
+		cond_check_key_buffer(&test_model);
 		printf("hitting a gives ");
 		print_meter(&test_model.meter);
 		print_note(&test_model.notes[test_model.head]);
@@ -218,6 +219,7 @@ int main(void)
 		cond_check_misses(&test_model);
 		printf("-- TICK -- \n");
 		asynch_key_hit(&test_model, 's');
+		cond_check_key_buffer(&test_model);
 		printf("hitting s gives ");
 		print_meter(&test_model.meter);
 		print_note(&test_model.notes[test_model.head]);
@@ -239,6 +241,7 @@ int main(void)
 		cond_check_misses(&test_model);
 		printf("-- TICK -- \n");
 		asynch_key_hit(&test_model, 'd');
+		cond_check_key_buffer(&test_model);
 		printf("hitting d gives ");
 		print_meter(&test_model.meter);
 		print_note(&test_model.notes[test_model.head]);
@@ -260,6 +263,7 @@ int main(void)
 		cond_check_misses(&test_model);
 		printf("-- TICK -- \n");
 		asynch_key_hit(&test_model, 'f');
+		cond_check_key_buffer(&test_model);
 		printf("hitting f gives ");
 		print_meter(&test_model.meter);
 		print_note(&test_model.notes[test_model.head]);
@@ -286,12 +290,16 @@ int main(void)
 		synch_clock_tick(&test_model, (UINT32)i);
 		cond_check_misses(&test_model);
 		printf("-- TICK -- \n");
-		hit = asynch_is_hit(&test_model, KEY_F, 0);
-		if (hit != (UINT8)-1 && test_model.head < test_model.note_count)
+		if (test_model.head < test_model.note_count)
 		{
-			asynch_apply_hit(&test_model, hit);
-			printf("hit applied, meter now gives ");
-			print_meter(&test_model.meter);
+			hit = note_is_hit(&test_model.notes[test_model.head], test_model.game_clock, test_model.last_interval, KEY_F);
+			if (hit)
+			{
+				meter_apply_hit(&test_model.meter);
+				model_advance_head(&test_model);
+				printf("hit applied, meter now gives ");
+				print_meter(&test_model.meter);
+			}
 		}
 	}
 
@@ -315,11 +323,12 @@ int main(void)
 	for (i = 560; i < 568; i++)
 	{
 		synch_clock_tick(&test_model, (UINT32)i);
-		if (asynch_is_hit(&test_model, KEY_F, 0) == (UINT8)-1)
+		if (test_model.head < test_model.note_count &&
+		    !note_is_hit(&test_model.notes[test_model.head], test_model.game_clock, test_model.last_interval, KEY_F))
 		{
 			printf("applying miss, meter now gives ");
 			print_meter(&test_model.meter);
-			asynch_apply_miss(&test_model);
+			meter_apply_miss(&test_model.meter);
 		}
 	}
 	for (i = 568; i < 615; i++)
@@ -327,12 +336,16 @@ int main(void)
 		synch_clock_tick(&test_model, (UINT32)i);
 		cond_check_misses(&test_model);
 		printf("-- TICK -- \n");
-		hit = asynch_is_hit(&test_model, KEY_F, 0);
-		if (hit != (UINT8)-1 && test_model.head < test_model.note_count)
+		if (test_model.head < test_model.note_count)
 		{
-			asynch_apply_hit(&test_model, hit);
-			printf("hit applied, meter now gives ");
-			print_meter(&test_model.meter);
+			hit = note_is_hit(&test_model.notes[test_model.head], test_model.game_clock, test_model.last_interval, KEY_F);
+			if (hit)
+			{
+				meter_apply_hit(&test_model.meter);
+				model_advance_head(&test_model);
+				printf("hit applied, meter now gives ");
+				print_meter(&test_model.meter);
+			}
 		}
 	}
 

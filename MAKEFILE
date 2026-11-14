@@ -108,14 +108,8 @@ build\tstmodel.o: model\tstmodel.c $(EVENTS_H) $(MODEL_H) types.h
 tstrend.tos: build\tstrend.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) $(RASTER)
 	cc68x -g build\tstrend.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) $(RASTER) -o tstrend.tos
 
-tstlive.tos: build\tstlive.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) $(RASTER)
-	cc68x -g build\tstlive.o build\render.o $(BITMAPS) $(EVENTS) $(MODEL) $(RASTER) -o tstlive.tos
-
 build\tstrend.o: render\tstrend.c render\render.h raster\raster.h $(EVENTS_H) $(MODEL_H) types.h
 	cc68x -g -c render\tstrend.c -o build\tstrend.o
-
-build\tstlive.o: render\tstlive.c render\render.h raster\raster.h $(EVENTS_H) $(MODEL_H) types.h
-	cc68x -g -c render\tstlive.c -o build\tstlive.o
 
 # ==== RASTER TESTS ====
 

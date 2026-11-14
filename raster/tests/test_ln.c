@@ -288,7 +288,7 @@ void test_line()
 
 	plot_line(l_fb, 200, 320, -1, 100);
     plot_line(l_fb, 200, 320, -32768, 200);
-    plot_line(l_fb, 200, 320, ROWS, 300,);
+    plot_line(l_fb, 200, 320, ROWS, 300);
     plot_line(l_fb, 200, 320, ROWS + 100, 400);
     plot_line(l_fb, 200, 320, 32767, 500);
 

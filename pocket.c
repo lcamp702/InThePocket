@@ -45,6 +45,7 @@ int main()
 	model_init(&model, song, SONG_NOTES, time_then);
 
 	main_init_buffers(buffers);
+	render(buffers[0], 0, &model);
 	render(buffers[1], 1, &model);
 
 	time_then = get_time();

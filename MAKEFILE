@@ -6,6 +6,7 @@ model: tstmodel.tos
 render: tstrend.tos
 raster: tstrast.tos
 live: tstlive.tos
+input: tstinput.tos
 
 # ==== SYSTEM CALLS ====
 # No ext dependencies
@@ -98,6 +99,12 @@ build\pocket.o: pocket.c
 	cc68x -g -c pocket.c -o build\pocket.o
 
 # ==== MODEL/EVENT TESTS ====
+tstinput.tos:  build\input.o build\tstinput.o
+	cc68x -g build\input.o build\tstinput.o -o tstinput.tos
+
+build\tstinput.o: system\tstinput.c
+	cc68x -g -c system\tstinput.c -o build\tstinput.o
+
 tstmodel.tos: $(EVENTS) $(MODEL) build\tstmodel.o
 	cc68x -g $(EVENTS) $(MODEL) build\tstmodel.o -o tstmodel.tos
 

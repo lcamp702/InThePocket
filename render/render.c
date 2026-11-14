@@ -189,7 +189,8 @@ void render_note(UINT32 *base, Note *note, UINT32 playback_col)
 			col += STEM_COL_R;
 		}
 
-		plot_vertical_line(base, row, col, STEM_LENGTH);
+		if (col < SCREEN_WIDTH)
+			plot_48px_vline(base, row, col);
 	}
 }
 

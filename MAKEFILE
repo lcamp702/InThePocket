@@ -55,10 +55,13 @@ build\targets.o: bitmaps\targets.c bitmaps\bitmaps.h types.h
 
 # ==== RASTER OBJECTS ====
 # No ext dependencies
-RASTER =	raster\rast_asm.o raster\bitmap.o raster\fill.o raster\fonts.o raster\string.o
+RASTER =	raster\rast_asm.o raster\rast_ext.o raster\bitmap.o raster\fill.o raster\fonts.o raster\string.o
 
 raster\rast_asm.o: raster\rast_asm.s
 	gen -D -L2 raster\rast_asm.s
+
+raster\rast_ext.o: raster\rast_ext.s
+	gen -D -L2 raster\rast_ext.s
 
 raster\bitmap.o: raster\bitmap.s
 	gen -D -L2 raster\bitmap.s

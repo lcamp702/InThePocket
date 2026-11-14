@@ -1,3 +1,21 @@
+/*
+	Peter Ursem
+	purse327@mtroyal.ca
+
+	Logan Campbell
+	lcamp702@mtroyal.ca
+
+	COMP2659-001
+	Steve Kalmar
+
+	In the Pocket - Checkpoint 3
+	Due: Nov 13, 2026
+
+	Header file for the raster module. Contains function prototypes for the routines in the .s files.
+
+	raster/raster.h
+*/
+
 #ifndef RASTER_H
 #define RASTER_H
 
@@ -89,6 +107,17 @@ void plot_vertical_line(UINT32 *base, int row, int col, UINT16 length);
  OUTPUT: None
 */
 void plot_line(UINT32 *base, int start_row, int start_col, int end_row, int end_col);
+
+/*----- Function: plot_48px_vline -----
+
+ PURPOSE: Plots a line on the screen 48px down
+
+ INPUT: Address(UINT32*): to the start of the screen
+        Position(start_row,start_col): the coordinates of the start of the line
+
+ OUTPUT: None
+*/
+void plot_48px_vline(UINT32 *base, int start_row, int start_col);
 
 /*----- Function: plot_rectangle -----
 

@@ -59,7 +59,7 @@ PURPOSE: Check wether the game time and key input are correct to hit the note pa
 
 INPUT: Note object pointer, UINT32 game_clock (time of hit), UINT pitch value (from 1-4)
 
-OUTPUT: N/A
+OUTPUT: (bool) Note is hit?
 */
 bool note_is_hit(Note *note, UINT32 game_clock, UINT32 last_interval, UINT8 pitch);
 

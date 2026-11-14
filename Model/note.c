@@ -21,8 +21,8 @@
 /* ==== Function: note_init ====
 PURPOSE: Initializes note object
 
-INPUT: Note object pointer, UINT32 time (time when note should be played), UINT pitch value (from 1-4)
-	neighbour(UINT8) Boolean: Is the next neighbour of this note played at the same time?
+INPUT: Note object pointer, UINT32 time (time when note should appear on screen), UINT pitch value (from 1-4)
+	neighbour(Note *): Pointer to the next note, if it is played at the same time. Otherwise 0.
 OUTPUT: N/A
 */
 void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, Note *neighbour)
@@ -34,6 +34,13 @@ void note_init(Note *note, UINT32 time, UINT8 pitch, UINT8 duration, Note *neigh
 	note->hit = 0;
 }
 
+/* ==== Function: note_is_hit ====
+PURPOSE: Check wether the game time and key input are correct to hit the note passed
+
+INPUT: Note object pointer, UINT32 game_clock (time of hit), UINT pitch value (from 1-4)
+
+OUTPUT: (bool) Note is hit?
+*/
 bool note_is_hit(Note *note, UINT32 game_clock, UINT32 last_interval, UINT8 pitch)
 {
 	/* Check if note can be hit based on time */

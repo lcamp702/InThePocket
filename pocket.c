@@ -26,7 +26,7 @@
 
 void main_init_buffers(UINT32 *buffers[2]);
 
-/* ==== Function: cond_game_over ====
+/* ==== Function: main ====
 PURPOSE: Main game setup and loop
 
 INPUT: N/A

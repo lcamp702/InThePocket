@@ -44,7 +44,7 @@ PURPOSE: Checks if game is over (enjoyment meter has gone to 0, quit key input f
 
 INPUT: pointer to Model
 
-OUTPUT: N/A
+OUTPUT: (bool) Game is over?
 */
 bool cond_game_over(const Model *model)
 {	
